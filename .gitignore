@@ -1,0 +1,12 @@
+*~
+*[#]*[#]
+elpa/*
+ac-comphist.dat
+*~
+session*
+auto-save-list/
+*.elc
+.smex-items
+tramp
+url/
+org-clock-save.el
