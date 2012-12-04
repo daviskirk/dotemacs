@@ -1,7 +1,6 @@
 ;; To remove the waiting time at startup...
 ;;
 ;; (modify-frame-parameters nil '((wait-for-wm . nil)))
-(setq debug-on-error t)
 
 (require 'cl)
 (setq warning-suppress-types nil)
@@ -10,9 +9,8 @@
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
 			 ("melpa" . "http://melpa.milkbox.net/packages/")))
 (package-initialize)
-;; (add-to-list 'default-frame-alist '(background-mode . dark))
+(add-to-list 'default-frame-alist '(background-mode . dark))
 
-(add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-powerline")
 (powerline-default)
 (load-theme 'zenburn t)
 
@@ -131,37 +129,6 @@ directory. See `byte-recompile-directory'."
 (global-set-key (kbd "C-x V s") 'magit-status)
 (global-set-key (kbd "C-x V l") 'magit-log)
 (require 'helm-git)
-
-
-;; (condition-case nil
-;;     (progn
-;;       ;; (autoload 'magit-status "magit" nil t)
-;;       (global-set-key (kbd "C-x V s") 'magit-status)
-;;       (global-set-key (kbd "C-x V l") 'magit-log)
-;;       )
-;;   (require 'git)
-;;   (global-set-key (kbd "C-x V s") 'git-status)
-;;   (message "Magit not found: using builtin git support")
-;;   )
-
-
-
-;;{{{;;;;;;;;;;;; COLOR THEME ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/zenburn-emacs/")
-;; (require 'color-theme-zenburn)
-;; (color-theme-zenburn)
-
-;; (defun color-theme-face-attr-construct (face frame)
-;;   (if (atom face)
-;;       (custom-face-attributes-get face frame)
-;;     (if (and (consp face) (eq (car face) 'quote))
-;;	(custom-face-attributes-get (cadr face) frame)
-;;       (custom-face-attributes-get (car face) frame))))
-
-;; (load-file "~/.emacs.d/dek-faces.el")
-
-;; (load-library "dek-faces")
 
 
 ;;{{{;;;;;;;;;;;; ZOOMING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -709,10 +676,8 @@ directory. See `byte-recompile-directory'."
     (occur pdb-regexp)
     ))
 
-(setq python-check-command "~/.emacs.d/flymake/python-flymake.sh")
 (add-hook 'python-mode-hook '(lambda ()
-			       (define-key python-mode-map "\'" 'skeleton-pair-insert-maybe)
-			       (flymake-mode t)
+			       (flycheck-mode 1)
 			       (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
 			       (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
 			       ))
@@ -722,10 +687,6 @@ directory. See `byte-recompile-directory'."
       python-shell-prompt-regexp "In \\[[0-9]+\\]: "
       python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
       python-shell-completion-setup-code "from IPython.core.completerlib import module_completion" python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n" python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
-
-(require 'flymake-python-pyflakes)
-(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
-(setq flymake-python-pyflakes-executable "flake8")
 
 ;; JINJA2
 (autoload 'jinja2-mode "jinja2-mode")
@@ -821,9 +782,9 @@ directory. See `byte-recompile-directory'."
 ;(setq-default whizzy-viewers '(("-pdf" "evince %s" )("-dvi" "evince %s")("-ps" "gv") ))
 
 ; rechtschreibung spellchecking aspell flyspell
-(setq ispell-dictionary "de_DE")
-(setq ispell-local-dictionary "de_DE")
-(setq flyspell-default-dictionary "de_DE")
+(setq ispell-dictionary "english")
+(setq ispell-local-dictionary "english")
+(setq flyspell-default-dictionary "english")
 (setq ispell-enable-tex-parser t)
 (setq flyspell-issue-message-flag nil)
 
@@ -966,7 +927,7 @@ directory. See `byte-recompile-directory'."
 ;;	    ))
 
 ;;{{{;;;;;;;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(add-hook 'emacs-lisp-mode 'flycheck-mode)
 
 ;;{{{;;;;;;;;; OTHER MODES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1093,7 +1054,7 @@ directory. See `byte-recompile-directory'."
  ; scalable-fonts-allowed t
  column-number-mode t
  require-final-newline t ; make newline at end of file)
- vc-handled-backends nil
+ ;; vc-handled-backends nil
  )
 
 (define-globalized-minor-mode global-fci-mode fci-mode (lambda () (fci-mode 1)))
@@ -1101,16 +1062,12 @@ directory. See `byte-recompile-directory'."
 
 (fset 'yes-or-no-p 'y-or-n-p) ;; Use "y or n" answers instead of full words "yes or no"
 (global-font-lock-mode t)
-;; (toggle-truncate-lines t)
-(setq truncate-partial-width-windows 0)
 (blink-cursor-mode 1)
 (tool-bar-mode -1)
 (fringe-mode '(1 . 0))
 (setq fringes-outside-margins t)
-(set-fringe-style)
 (setq font-lock-maximum-decoration (quote ((dired-mode) (t . t)))) ; apperantly adds nice colors
 
-(hl-line-mode 1)
 (setq scroll-bar-mode-explicit t)
 (set-scroll-bar-mode `right)
 
@@ -1133,6 +1090,7 @@ directory. See `byte-recompile-directory'."
  ;; If there is more than one, they won't work right.
  '(fci-rule-color "#2b2b2b")
  '(fill-column 80)
+ '(flymake-no-changes-timeout 1.5)
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
  '(py-shell-switch-buffers-on-execute nil)
@@ -1145,8 +1103,8 @@ directory. See `byte-recompile-directory'."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "#3f3f3f" :foreground "#dcdccc" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "Monaco"))))
- '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))) t)
- '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))) t)
+ '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))))
+ '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))))
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
  '(mode-line ((t (:background "#506070" :foreground "#dcdccc" :box (:line-width -1 :style released-button) :family "Ubuntu Condensed"))))
  '(mode-line-inactive ((t (:foreground "#808080" :background "#666666" :box nil))))

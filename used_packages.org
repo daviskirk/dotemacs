@@ -1,11 +1,11 @@
 auctex
 auto-complete
-autopair
 back-button
 button-lock
 color-theme
 csv-mode
 csv-nav
+dash
 dired+
 dired-details
 dired-details+
@@ -14,9 +14,9 @@ edit-server
 fill-column-indicator
 fixmee
 flymake-cursor
-flymake-easy
-flymake-python-pyflakes
-flymake-shell
+flycheck
+frame-cmds
+frame-fns
 guru-mode
 haskell-mode
 helm
@@ -35,12 +35,14 @@ org-cua-dwim
 pcache
 persistent-soft
 popup
+powerline
 prelude-programming
 prelude-python
 python
 rainbow-delimiters
 slime
 smart-mode-line
+smartparens
 smartrep
 smex
 smooth-scrolling
@@ -53,3 +55,4 @@ workgroups
 yaml-mode
 yasnippet
 zenburn-theme
+zoom-frm
