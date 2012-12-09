@@ -68,6 +68,8 @@ directory. See `byte-recompile-directory'."
     (backup-buffer)))
 (add-hook 'before-save-hook  'force-backup-of-buffer)
 
+;;{{{;;;;;;;;;;;;;;; SSH / TRAMP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq tramp-default-method "ssh")
 
 ;;{{{;;;;;;;;;;;;;; EMACS CLIENT STUFF ;;;;;;;;;;;;;;;;;;;;;
 
@@ -656,6 +658,9 @@ directory. See `byte-recompile-directory'."
 
 ;;{{{;;;;;;;;;;;;;;;;;; PYTHON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(add-to-list 'load-path "~/.emacs.d/site-lisp/python.el")
+(require 'python)
+
 (defun dek-python-add-breakpoint ()
   (interactive)
   (let (pdb-regexp)
@@ -686,7 +691,9 @@ directory. See `byte-recompile-directory'."
       python-shell-interpreter-args ""
       python-shell-prompt-regexp "In \\[[0-9]+\\]: "
       python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-      python-shell-completion-setup-code "from IPython.core.completerlib import module_completion" python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n" python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
+      python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
+      python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n"
+      python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
 
 ;; JINJA2
 (autoload 'jinja2-mode "jinja2-mode")
@@ -694,8 +701,8 @@ directory. See `byte-recompile-directory'."
 
 
 ;;{{{;;;;;;;; LATEX AND AUCTEX  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(add-to-list 'auto-mode-alist '("\\.rwthtex$" . latex-mode))
+(add-to-list 'auto-mode-alist '("\\.rwthtex$" . TeX-latex-mode))
+(add-to-list 'auto-mode-alist '("\\.tex$" . TeX-latex-mode))
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
 (setq-default TeX-master nil)
@@ -720,11 +727,11 @@ directory. See `byte-recompile-directory'."
 	     (flyspell-mode 1)
 	     (LaTeX-math-mode t)
 	     (local-set-key [tab] 'yas/expand)
-	     (load-library "latex-commands")
+	     ;; (load-library "latex-commands")
 	     (define-key LaTeX-mode-map (kbd "M-q") 'fill-sentence)
 	     (define-key LaTeX-mode-map (kbd ".") 'end-fill-and-start-new-sentence)
-	     (load-library "~/.emacs.d/dek-lisp/latex-snippets")
-	     (load-library "~/.emacs.d/dek-lisp/latex-math-snippets")
+	     ;; (load-library "~/.emacs.d/dek-lisp/latex-snippets")
+	     ;; (load-library "~/.emacs.d/dek-lisp/latex-math-snippets")
 	     ))
 
 (add-hook 'TeX-mode-hook
@@ -1082,6 +1089,7 @@ directory. See `byte-recompile-directory'."
 
 (add-hook 'prog-mode-hook 'whitespace-turn-off t)
 (add-hook 'python-mode-hook 'whitespace-turn-off t)
+(require 'virtualenv)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -1093,8 +1101,6 @@ directory. See `byte-recompile-directory'."
  '(flymake-no-changes-timeout 1.5)
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
- '(py-shell-switch-buffers-on-execute nil)
- '(python-shell-interpreter "ipython")
  '(virtualenv-root "~/.virtualenvs/"))
 
 (custom-set-faces
@@ -1107,7 +1113,7 @@ directory. See `byte-recompile-directory'."
  '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))))
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
  '(mode-line ((t (:background "#506070" :foreground "#dcdccc" :box (:line-width -1 :style released-button) :family "Ubuntu Condensed"))))
- '(mode-line-inactive ((t (:foreground "#808080" :background "#666666" :box nil))))
+ '(mode-line-inactive ((t (:background "#555555" :foreground "#808080" :box nil :family "Ubuntu Condensed"))))
  '(semantic-tag-boundary-face ((t (:overline "#93e0e3"))) t))
 
 
