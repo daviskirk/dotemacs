@@ -104,9 +104,9 @@ directory. See `byte-recompile-directory'."
 
 
 ;; Chrome Edit with emacs server
+
 (if (equal user-login-name "dek")
-    (lambda ()
-      (require 'edit-server)
+    (when (and (require 'edit-server nil t) (daemonp))
       (edit-server-start))
   (message "user is not dek ... chromium server not loaded")
 )
@@ -466,26 +466,25 @@ directory. See `byte-recompile-directory'."
 
 (defun dek-find-yasnippet-dirname-in-list(filelist)
   "DOCSTRING"
-  (interactive)
   (if (> (length filelist) 0)
       (if (or (= (length filelist) 1)
-	      (string-match "yasnippet-[0-9]+" (car filelist)))
+	      (string-match "^yasnippet-[0-9.]+" (car filelist)))
 	  (car filelist)
 	(dek-find-yasnippet-dirname-in-list (cdr filelist))
 	)))
 
+(defun dek-find-elpa-yasnippet-snippet-dir ()
+  (interactive)
+  (concat
+   package-user-dir "/"
+   (dek-find-yasnippet-dirname-in-list (directory-files package-user-dir))
+   "/snippets"))
 
-
-(setq yas/snippet-dirs '("~/.emacs.d/dek-lisp/snippets"))
-(add-to-list
- 'yas/snippet-dirs
- (concat
-  package-user-dir "/"
-  (dek-find-yasnippet-dirname-in-list (directory-files package-user-dir))
-  "/snippets") t)
+(setq yas-snippet-dirs
+      (list "~/.emacs.d/dek-lisp/yasnippet-snippets"
+	    (dek-find-elpa-yasnippet-snippet-dir)))
 
 (yas-global-mode t)
-
 ;; old snippet definitions do not work anymore
 ;; (load-library "latex-snippets")
 ;; (load "latex-math-snippets")
@@ -1109,8 +1108,8 @@ directory. See `byte-recompile-directory'."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "#3f3f3f" :foreground "#dcdccc" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "Monaco"))))
- '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))))
- '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))))
+ '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))) t)
+ '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))) t)
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
  '(mode-line ((t (:background "#506070" :foreground "#dcdccc" :box (:line-width -1 :style released-button) :family "Ubuntu Condensed"))))
  '(mode-line-inactive ((t (:background "#555555" :foreground "#808080" :box nil :family "Ubuntu Condensed"))))
