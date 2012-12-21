@@ -2,6 +2,7 @@
 ;;
 ;; (modify-frame-parameters nil '((wait-for-wm . nil)))
 
+(setq debug-on-error t)
 (require 'cl)
 (setq warning-suppress-types nil)
 (setq frame-title-format '("" "Emacs - %b - %m"))
@@ -11,6 +12,7 @@
 (package-initialize)
 (add-to-list 'default-frame-alist '(background-mode . dark))
 
+(require 'powerline)
 (powerline-default)
 (load-theme 'zenburn t)
 
@@ -24,6 +26,11 @@
 
 ;;}}}
 
+
+;; {{{ ;;;;;;;;;;;;;;;;; PRELUDE ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq prelude-whitespace nil)
+(setq prelude-flyspell t)
+(setq prelude-guru t)
 
 ;;{{{;;;;;;;;;;;;;;;;;; BYTE COMPILE ;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -458,7 +465,7 @@ directory. See `byte-recompile-directory'."
 (require 'smartparens)
 (smartparens-global-mode 1)
 (show-smartparens-global-mode t)
-
+(sp-add-local-pair "`" "`" 'python-mode)
 (global-rainbow-delimiters-mode t)
 
 
@@ -788,6 +795,8 @@ directory. See `byte-recompile-directory'."
 ;(setq-default whizzy-viewers '(("-pdf" "evince %s" )("-dvi" "evince %s")("-ps" "gv") ))
 
 ; rechtschreibung spellchecking aspell flyspell
+(setq ispell-program-name "aspell")
+(setq ispell-extra-args '("--sug-mode=ultra"))
 (setq ispell-dictionary "english")
 (setq ispell-local-dictionary "english")
 (setq flyspell-default-dictionary "english")
@@ -1086,8 +1095,7 @@ directory. See `byte-recompile-directory'."
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-(add-hook 'prog-mode-hook 'whitespace-turn-off t)
-(add-hook 'python-mode-hook 'whitespace-turn-off t)
+
 (require 'virtualenv)
 
 (custom-set-variables
@@ -1096,7 +1104,7 @@ directory. See `byte-recompile-directory'."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(fci-rule-color "#2b2b2b")
- '(fill-column 80)
+ '(fill-column 79)
  '(flymake-no-changes-timeout 1.5)
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
