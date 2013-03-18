@@ -2,13 +2,13 @@
 ;;
 ;; (modify-frame-parameters nil '((wait-for-wm . nil)))
 
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 (require 'cl)
 (setq warning-suppress-types nil)
 (setq frame-title-format '("" "Emacs - %b - %m"))
 
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-			 ("melpa" . "http://melpa.milkbox.net/packages/")))
+	     ("melpa" . "http://melpa.milkbox.net/packages/")))
 (package-initialize)
 (add-to-list 'default-frame-alist '(background-mode . dark))
 
@@ -81,11 +81,11 @@ directory. See `byte-recompile-directory'."
 ;;{{{;;;;;;;;;;;;;; EMACS CLIENT STUFF ;;;;;;;;;;;;;;;;;;;;;
 
 (add-hook 'server-switch-hook
-	  (lambda ()
-	    (when (current-local-map)
-	      (use-local-map (copy-keymap (current-local-map))))
-	    (when server-buffer-clients
-	      (local-set-key (kbd "C-x k") 'server-edit))))
+      (lambda ()
+	(when (current-local-map)
+	  (use-local-map (copy-keymap (current-local-map))))
+	(when server-buffer-clients
+	  (local-set-key (kbd "C-x k") 'server-edit))))
 
 
 ;;;;;;;;;;;;;;;;;; REOPEN BUFFER AS SUDO ;;;;;;;;;;;;;;;
@@ -93,11 +93,11 @@ directory. See `byte-recompile-directory'."
   (when (file-remote-p (buffer-file-name))
     (rename-buffer
      (format "%s:%s"
-	     (file-remote-p (buffer-file-name) 'method)
-	     (buffer-name)))))
+	 (file-remote-p (buffer-file-name) 'method)
+	 (buffer-name)))))
 
 (add-hook 'find-file-hook
-	  'dek-rename-tramp-buffer)
+      'dek-rename-tramp-buffer)
 
 (defun dek-reopen-file-sudo ()
   "Opens FILE with root privileges."
@@ -128,28 +128,26 @@ directory. See `byte-recompile-directory'."
       (call-interactively 'rename-buffer)
     (let ((file (buffer-file-name)))
       (with-temp-buffer
-	(set-buffer (dired-noselect file))
-	(dired-do-rename)
-	(kill-buffer nil))))
+    (set-buffer (dired-noselect file))
+    (dired-do-rename)
+    (kill-buffer nil))))
   nil)
 
 ;;{{{ ;;;;;;;;;;;;;;; VERSION CONTROL / GIT ;;;;;;;;;;;;;;;;
 
 (global-set-key (kbd "C-x V s") 'magit-status)
 (global-set-key (kbd "C-x V l") 'magit-log)
-(require 'helm-git)
-
 
 ;;{{{;;;;;;;;;;;; ZOOMING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'zoom-frm) ; ZOOMING
 (global-set-key (if (boundp 'mouse-wheel-down-event) ; Emacs 22+
-		    (vector (list 'control mouse-wheel-down-event))
-		  [C-mouse-wheel])    ; Emacs 20, 21
-		'zoom-in)
+	    (vector (list 'control mouse-wheel-down-event))
+	  [C-mouse-wheel])    ; Emacs 20, 21
+	'zoom-in)
 (when (boundp 'mouse-wheel-up-event) ; Emacs 22+
   (global-set-key (vector (list 'control mouse-wheel-up-event))
-		  'zoom-out))
+	  'zoom-out))
 
 
 ;;{{{;;;;;;;;;;; ANYTHING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -175,15 +173,15 @@ directory. See `byte-recompile-directory'."
   (if (magit-git-string "rev-parse" "--git-dir")
     (let (helm-for-files-preferred-list)
       (setq  helm-for-files-preferred-list
-	       (quote (helm-c-source-ffap-line
-		       helm-c-source-ffap-guesser
-		       helm-c-source-buffers-list
-		       helm-c-source-git-files
-		       helm-c-source-recentf
-		       helm-c-source-locate
-		       helm-c-source-bookmarks
-		       helm-c-source-file-cache)))
-	(helm-for-files))
+	   (quote (helm-c-source-ffap-line
+	       helm-c-source-ffap-guesser
+	       helm-c-source-buffers-list
+	       helm-c-source-git-files
+	       helm-c-source-recentf
+	       helm-c-source-locate
+	       helm-c-source-bookmarks
+	       helm-c-source-file-cache)))
+    (helm-for-files))
     (helm-for-files)))
 
 (global-set-key (kbd "C-x f") 'helm-for-git-files)
@@ -240,9 +238,9 @@ directory. See `byte-recompile-directory'."
 
 ;;;;;;;;;; Insert Line like vim ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "\C-o") '(lambda ()
-				(interactive)
-				(end-of-line)
-				(newline-and-indent)))
+		(interactive)
+		(end-of-line)
+		(newline-and-indent)))
 
 
 
@@ -308,10 +306,10 @@ directory. See `byte-recompile-directory'."
   (let (userinput)
     (setq userinput (string-to-number (read-from-minibuffer "")))
     (if (eq userinput 0)
-	(linum-mode -1)
+    (linum-mode -1)
       (progn
-	(goto-line userinput)
-	(linum-mode -1))
+    (goto-line userinput)
+    (linum-mode -1))
       )))
 (global-set-key (kbd "M-g") 'dek-goto-line)
 
@@ -327,7 +325,7 @@ directory. See `byte-recompile-directory'."
 (require 'dired-details)
 
 (add-hook 'dired-load-hook
-	  (lambda () (require 'dired-sort-menu+)))
+      (lambda () (require 'dired-sort-menu+)))
 
 (toggle-diredp-find-file-reuse-dir 1)
 
@@ -352,16 +350,16 @@ directory. See `byte-recompile-directory'."
     (setq bookmark-prefix-string "bmk:")
     (setq dek-all-bookmark-names (bookmark-all-names))
     (dolist (tmp-bookmark-name (bookmark-all-names))
-	    (setq dek-bookmark-list
-		  (cons (concat bookmark-prefix-string tmp-bookmark-name) dek-bookmark-list)))
+	(setq dek-bookmark-list
+	  (cons (concat bookmark-prefix-string tmp-bookmark-name) dek-bookmark-list)))
     ;; query ido for recent files and bookmarks
     (setq ido-result-string
-	  (ido-completing-read "open recent or bookmarks:"
-			       (append recentf-list dek-bookmark-list)
-			       nil t))
+      (ido-completing-read "open recent or bookmarks:"
+		   (append recentf-list dek-bookmark-list)
+		   nil t))
     ;; take action according to result being a bookmark or a recent file
     (if (eql (search bookmark-prefix-string ido-result-string) 0)
-	(bookmark-jump (substring ido-result-string (length bookmark-prefix-string)))
+    (bookmark-jump (substring ido-result-string (length bookmark-prefix-string)))
       (find-file ido-result-string)
       )
     )
@@ -379,8 +377,8 @@ directory. See `byte-recompile-directory'."
   (save-excursion
     (let (min max)
       (if (region-active-p)
-	  (setq min (region-beginning) max (region-end))
-	(setq min (point) max (point)))
+      (setq min (region-beginning) max (region-end))
+    (setq min (point) max (point)))
       (comment-or-uncomment-region
        (progn (goto-char min) (line-beginning-position))
        (progn (goto-char max) (line-end-position))))))
@@ -408,7 +406,7 @@ directory. See `byte-recompile-directory'."
 
 (or (assoc "mutt-" auto-mode-alist)
     (setq auto-mode-alist
-	  (cons '("mutt-" . mail-mode) auto-mode-alist)))
+      (cons '("mutt-" . mail-mode) auto-mode-alist)))
 
 (add-hook 'mail-mode-hook 'deks-mail-mode-hook)
 
@@ -420,7 +418,7 @@ directory. See `byte-recompile-directory'."
 (add-hook 'isearch-mode-end-hook 'my-goto-match-beginning)
 (defun my-goto-match-beginning ()
       (when (and isearch-forward (not isearch-mode-end-hook-quit))
-	(goto-char isearch-other-end)))
+    (goto-char isearch-other-end)))
 (defadvice isearch-exit (after my-goto-match-beginning activate)
   "Go to beginning of match."
   (when isearch-forward (goto-char isearch-other-end)))
@@ -441,7 +439,7 @@ directory. See `byte-recompile-directory'."
 ;;   (interactive "*p")
 ;;   (let ((char last-command-event))
 ;;     (if (and (assq char my-skeleton-pair-alist)
-;;	     (eq char (following-char)))
+;;       (eq char (following-char)))
 ;;	(forward-char)
 ;;       (self-insert-command (prefix-numeric-value arg)))))
 
@@ -450,8 +448,8 @@ directory. See `byte-recompile-directory'."
 ;;   "When deleting the beginning of a pair, and the ending is next char, delete it too."
 ;;   (let ((pair (assq (following-char) my-skeleton-pair-alist)))
 ;;     (and pair
-;;	 (eq (preceding-char) (rest pair))
-;;	 (delete-char 1))))
+;;   (eq (preceding-char) (rest pair))
+;;   (delete-char 1))))
 
 ;; (dolist (pair my-skeleton-pair-alist)
 ;;   ;; Use backward delete function
@@ -460,12 +458,23 @@ directory. See `byte-recompile-directory'."
 ;;   ;; If the char for begin and end is the same,
 ;;   ;; use the original skeleton
 ;;   (global-set-key (char-to-string (rest pair))
-;;		  'skeleton-pair-insert-maybe))
+;;        'skeleton-pair-insert-maybe))
 
+
+;; {{{ ;;;;;;;;;;;;;;; SMARTPARENS ;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'smartparens)
 (smartparens-global-mode 1)
 (show-smartparens-global-mode t)
-(sp-add-local-pair "`" "`" 'python-mode)
+(setq sp-autoescape-string-quote nil)
+
+(sp-with-modes '(TeX-latex-mode)
+  ;; math modes, yay.  The :actions are provided automatically if
+  ;; these pairs do not have global definition.
+  (sp-local-pair "`" "'")
+  (sp-local-pair "$" "$")
+  (sp-local-pair "\\[" "\\]")
+  (sp-local-tag "\\b" "\\begin{_}" "\\end{_}"))
+
 (global-rainbow-delimiters-mode t)
 
 
@@ -475,10 +484,10 @@ directory. See `byte-recompile-directory'."
   "DOCSTRING"
   (if (> (length filelist) 0)
       (if (or (= (length filelist) 1)
-	      (string-match "^yasnippet-[0-9.]+" (car filelist)))
-	  (car filelist)
-	(dek-find-yasnippet-dirname-in-list (cdr filelist))
-	)))
+	  (string-match "^yasnippet-[0-9.]+" (car filelist)))
+      (car filelist)
+    (dek-find-yasnippet-dirname-in-list (cdr filelist))
+    )))
 
 (defun dek-find-elpa-yasnippet-snippet-dir ()
   (interactive)
@@ -489,7 +498,7 @@ directory. See `byte-recompile-directory'."
 
 (setq yas-snippet-dirs
       (list "~/.emacs.d/dek-lisp/yasnippet-snippets"
-	    (dek-find-elpa-yasnippet-snippet-dir)))
+	(dek-find-elpa-yasnippet-snippet-dir)))
 
 (yas-global-mode t)
 ;; old snippet definitions do not work anymore
@@ -508,9 +517,9 @@ directory. See `byte-recompile-directory'."
 (ac-config-default)
 
 ;; (setq-default ac-sources '(ac-source-yasnippet
-;;			   ac-source-abbrev
-;;			   ac-source-dictionary
-;;			   ac-source-words-in-same-mode-buffers))
+;;             ac-source-abbrev
+;;             ac-source-dictionary
+;;             ac-source-words-in-same-mode-buffers))
 ;; ;(define-key ac-menu-map (kbd "<f7>") 'ac-next)
 ;; (ac-set-trigger-key "TAB")
 ;; (global-set-key [(control \#)] 'auto-complete)
@@ -537,14 +546,14 @@ directory. See `byte-recompile-directory'."
 ;; (auto-insert-mode 1)
 ;; (setq auto-insert-directory "~/.emacs.d/auto-insert-templates/")
 ;; (setq auto-insert-alist '((("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") . ["insert.h" c++-mode my/autoinsert-yas-expand])
-;;			  (("\\.\\([C]\\|cc\\|cpp\\)\\'" . "C++ source") . ["insert.cc" my/autoinsert-yas-expand])
-;;			  (("\\.sh\\'" . "Shell script") . ["insert.sh" my/autoinsert-yas-expand])
-;;			  (("\\.el\\'" . "Emacs Lisp") . ["insert.el" my/autoinsert-yas-expand])
-;;			  (("\\.pl\\'" . "Perl script") . ["insert.pl" my/autoinsert-yas-expand])
-;;			  (("\\.pm\\'" . "Perl module") . ["insert.pm" my/autoinsert-yas-expand])
-;;			  (("\\.py\\'" . "Python script") . ["insert.py" my/autoinsert-yas-expand])
-;;			  (("[mM]akefile\\'" . "Makefile") . ["Makefile" my/autoinsert-yas-expand])
-;;			  (("\\.tex\\'" . "TeX/LaTeX") . ["insert.tex" my/autoinsert-yas-expand])))
+;;            (("\\.\\([C]\\|cc\\|cpp\\)\\'" . "C++ source") . ["insert.cc" my/autoinsert-yas-expand])
+;;            (("\\.sh\\'" . "Shell script") . ["insert.sh" my/autoinsert-yas-expand])
+;;            (("\\.el\\'" . "Emacs Lisp") . ["insert.el" my/autoinsert-yas-expand])
+;;            (("\\.pl\\'" . "Perl script") . ["insert.pl" my/autoinsert-yas-expand])
+;;            (("\\.pm\\'" . "Perl module") . ["insert.pm" my/autoinsert-yas-expand])
+;;            (("\\.py\\'" . "Python script") . ["insert.py" my/autoinsert-yas-expand])
+;;            (("[mM]akefile\\'" . "Makefile") . ["Makefile" my/autoinsert-yas-expand])
+;;            (("\\.tex\\'" . "TeX/LaTeX") . ["insert.tex" my/autoinsert-yas-expand])))
 
 ;; ;;;;;;;;;;;;;;;; JABBER/CHAT STUFF ;;;;;;;;;;
 
@@ -565,10 +574,10 @@ directory. See `byte-recompile-directory'."
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 ;; Make TAB the yas trigger key in the org-mode-hook
 (add-hook 'org-mode-hook
-	  #'(lambda ()
-	      (defvar yas/key-syntaxes (list "!_." "w" "w_.\\" "^ "))
-	      (auto-fill-mode 0)
-	      ))
+      #'(lambda ()
+	  (defvar yas/key-syntaxes (list "!_." "w" "w_.\\" "^ "))
+	  (auto-fill-mode 0)
+	  ))
 
 
 (setq org-odd-levels-only t)
@@ -613,9 +622,9 @@ directory. See `byte-recompile-directory'."
 
 (setq org-remember-templates
       '(("Todo" ?t "* TODO %?\n  %i\n  %a" "~/org/TODO.org" "Tasks")
-	("system" ?s "* TODO %?\n  %i\n  %a" "~/org/system.org" "Tasks")
-	("ll" ?l "* TODO %?\n  %i\n  %a" "~/org/liquid_lightning.org" "Tasks")
-	("rwth" ?r "* TODO %?\n  %i\n  %a" dek-rwth-org-filepath "Tasks")))
+    ("system" ?s "* TODO %?\n  %i\n  %a" "~/org/system.org" "Tasks")
+    ("ll" ?l "* TODO %?\n  %i\n  %a" "~/org/liquid_lightning.org" "Tasks")
+    ("rwth" ?r "* TODO %?\n  %i\n  %a" dek-rwth-org-filepath "Tasks")))
 
 ;; ORG links:
 (setq org-return-follows-link t)
@@ -642,11 +651,11 @@ directory. See `byte-recompile-directory'."
 ;; php files, that can been intertwined with HTML code
 
 (add-hook 'php-mode-hook
-	  (lambda()
-	    (define-key php-mode-map [f5] 'html-mode)))
+      (lambda()
+	(define-key php-mode-map [f5] 'html-mode)))
 (add-hook 'html-mode-hook
-	  (lambda()
-	    (define-key html-mode-map [f5] 'php-mode)))
+      (lambda()
+	(define-key html-mode-map [f5] 'php-mode)))
 
 ;;{{{;;;;;;;;;;; NXHTML-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -666,6 +675,8 @@ directory. See `byte-recompile-directory'."
 
 (add-to-list 'load-path "~/.emacs.d/site-lisp/python.el")
 (require 'python)
+(require 'cython-mode)
+(add-to-list 'auto-mode-alist '("\\.pyx$" . cython-mode))
 
 (defun dek-python-add-breakpoint ()
   (interactive)
@@ -688,10 +699,10 @@ directory. See `byte-recompile-directory'."
     ))
 
 (add-hook 'python-mode-hook '(lambda ()
-			       (flycheck-mode 1)
-			       (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
-			       (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
-			       ))
+		   (flycheck-mode 1)
+		   (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
+		   (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
+		   ))
 
 (setq python-shell-interpreter "ipython"
       python-shell-interpreter-args ""
@@ -723,35 +734,35 @@ directory. See `byte-recompile-directory'."
 ;(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
 (add-hook 'LaTeX-mode-hook
-	  '(lambda ()
-	     (modify-syntax-entry ?\$ "$")
-	     (tex-pdf-mode 1)
-	     (auto-fill-mode t)
-	     (setq TeX-auto-save t)
-	     (setq TeX-parse-self t)
-	     (setq ispell-enable-tex-parser t)
-	     (flyspell-mode 1)
-	     (LaTeX-math-mode t)
-	     (local-set-key [tab] 'yas/expand)
-	     ;; (load-library "latex-commands")
-	     (define-key LaTeX-mode-map (kbd "M-q") 'fill-sentence)
-	     (define-key LaTeX-mode-map (kbd ".") 'end-fill-and-start-new-sentence)
-	     ;; (load-library "~/.emacs.d/dek-lisp/latex-snippets")
-	     ;; (load-library "~/.emacs.d/dek-lisp/latex-math-snippets")
-	     ))
+      '(lambda ()
+	 (modify-syntax-entry ?\$ "$")
+	 (tex-pdf-mode 1)
+	 (auto-fill-mode t)
+	 (setq TeX-auto-save t)
+	 (setq TeX-parse-self t)
+	 (setq ispell-enable-tex-parser t)
+	 (flyspell-mode 1)
+	 (LaTeX-math-mode t)
+	 (local-set-key [tab] 'yas/expand)
+	 ;; (load-library "latex-commands")
+	 (define-key LaTeX-mode-map (kbd "M-q") 'fill-sentence)
+	 (define-key LaTeX-mode-map (kbd ".") 'end-fill-and-start-new-sentence)
+	 ;; (load-library "~/.emacs.d/dek-lisp/latex-snippets")
+	 ;; (load-library "~/.emacs.d/dek-lisp/latex-math-snippets")
+	 ))
 
 (add-hook 'TeX-mode-hook
-	  '(lambda ()
-	    (define-key TeX-mode-map (kbd "\C-c\C-c")
-	      (lambda ()
-		(interactive)
-		(save-buffer)
-		(TeX-command-menu "LaTeX")))
-	    (define-key TeX-mode-map (kbd "<f12>")
-	      (lambda ()
-		(interactive)
-		(TeX-view)
-		[return]))))
+      '(lambda ()
+	(define-key TeX-mode-map (kbd "\C-c\C-c")
+	  (lambda ()
+	(interactive)
+	(save-buffer)
+	(TeX-command-menu "LaTeX")))
+	(define-key TeX-mode-map (kbd "<f12>")
+	  (lambda ()
+	(interactive)
+	(TeX-view)
+	[return]))))
 
 (defun fill-sentence ()
   (interactive)
@@ -760,11 +771,11 @@ directory. See `byte-recompile-directory'."
     (forward-sentence -1)
     (indent-relative t)
     (let ((beg (point))
-	  (ix (string-match "LaTeX" mode-name)))
+      (ix (string-match "LaTeX" mode-name)))
       (forward-sentence)
       (if (and ix (equal "LaTeX" (substring mode-name ix)))
-	  (LaTeX-fill-region-as-paragraph beg (point))
-	  (fill-region-as-paragraph beg (point))))))
+      (LaTeX-fill-region-as-paragraph beg (point))
+      (fill-region-as-paragraph beg (point))))))
 
 (defun end-fill-and-start-new-sentence ()
   (interactive)
@@ -784,10 +795,10 @@ directory. See `byte-recompile-directory'."
 (setq TeX-newline-function (quote reindent-then-newline-and-indent))
 (setq TeX-fold-env-spec-list
        (quote
-	(
-	 (2 ("frame")
-	 ("[comment]" ("comment"))
-	 ))))
+    (
+     (2 ("frame")
+     ("[comment]" ("comment"))
+     ))))
 
 
 ;(autoload 'whizzytex-mode "whizzytex"
@@ -806,7 +817,7 @@ directory. See `byte-recompile-directory'."
 (defun dek-switch-dictionary()
   (interactive)
   (let* ((dic ispell-current-dictionary)
-	 (change (if (string= dic "german") "english" "german")))
+     (change (if (string= dic "german") "english" "german")))
     (ispell-change-dictionary change)
     (message "Dictionary switched from %s to %s" dic change)
     ))
@@ -842,29 +853,29 @@ directory. See `byte-recompile-directory'."
 ;; (add-hook 'c-mode-common-hook 'my-turn-on-auto-newline)
 
 (setq c-default-style "linux"
-	   c-basic-offset 4)
+       c-basic-offset 4)
 
 
 (add-hook 'c++-mode-hook
-	  (lambda ()
-	    (unless (or (file-exists-p "makefile")
-			(file-exists-p "Makefile"))
-	      (set (make-local-variable 'compile-command)
-		   (concat "make -k "
-			   (file-name-sans-extension buffer-file-name))))))
+      (lambda ()
+	(unless (or (file-exists-p "makefile")
+	    (file-exists-p "Makefile"))
+	  (set (make-local-variable 'compile-command)
+	   (concat "make -k "
+	       (file-name-sans-extension buffer-file-name))))))
 (add-hook 'c++-mode-hook
-	  '(lambda ()
-	     ;(local-set-key "." 'semantic-complete-self-insert)
-	     (setq compilation-finish-function
-		   (lambda (buf str)
-		     (if (string-match "exited abnormally" str)
-			 ;;there were errors
-			 (message "compilation errors, press C-x ` to visit")
-		       ;;no errors:
-		       ;; make the compilation window go away in 0.5 seconds
-		       (run-at-time 1.0 nil 'delete-windows-on buf)
-		       (message "NO COMPILATION ERRORS!")
-		       (setq compilation-window-height 8))))))
+      '(lambda ()
+	 ;(local-set-key "." 'semantic-complete-self-insert)
+	 (setq compilation-finish-function
+	   (lambda (buf str)
+	     (if (string-match "exited abnormally" str)
+	     ;;there were errors
+	     (message "compilation errors, press C-x ` to visit")
+	       ;;no errors:
+	       ;; make the compilation window go away in 0.5 seconds
+	       (run-at-time 1.0 nil 'delete-windows-on buf)
+	       (message "NO COMPILATION ERRORS!")
+	       (setq compilation-window-height 8))))))
 
 ;(define-key c++-mode-map "<f5>" 'compile)
 ;(define-key c++-mode-map (kbd "<f6>") 'gdb)
@@ -922,24 +933,24 @@ directory. See `byte-recompile-directory'."
 
 ;; (add-hook 'java-mode-hook
 ;;           (lambda ()
-;;	    (define-key java-mode-map "\C-c\C-c" 'compile)
-;;	    (define-key java-mode-map (kbd "RET") 'newline-and-indent)
-;;	    (set (make-local-variable 'compile-command)
-;;		 (concat "javac "
-;;			 (buffer-file-name)
-;;			 ;" && java "
-;;			 ;(file-name-sans-extension buffer-file-name)
-;;			 ))
-;;	    (require 'java-docs)
-;;	    ; replace docs lookup funktion with better one
-;;	    (load-library "java-docs-dek-plus")
-;;	    (java-docs-clear)
-;;	    (java-docs "/usr/share/doc/openjdk-6-jdk/api")
-;;	    (define-key java-mode-map "\C-cd" 'java-docs-lookup)
-;;	    (define-key java-mode-map "{" 'java-open-brace)
-;;	    (c-toggle-auto-hungry-state 1)
-;;	    (c-toggle-auto-newline 1)
-;;	    ))
+;;      (define-key java-mode-map "\C-c\C-c" 'compile)
+;;      (define-key java-mode-map (kbd "RET") 'newline-and-indent)
+;;      (set (make-local-variable 'compile-command)
+;;       (concat "javac "
+;;           (buffer-file-name)
+;;           ;" && java "
+;;           ;(file-name-sans-extension buffer-file-name)
+;;           ))
+;;      (require 'java-docs)
+;;      ; replace docs lookup funktion with better one
+;;      (load-library "java-docs-dek-plus")
+;;      (java-docs-clear)
+;;      (java-docs "/usr/share/doc/openjdk-6-jdk/api")
+;;      (define-key java-mode-map "\C-cd" 'java-docs-lookup)
+;;      (define-key java-mode-map "{" 'java-open-brace)
+;;      (c-toggle-auto-hungry-state 1)
+;;      (c-toggle-auto-newline 1)
+;;      ))
 
 ;;{{{;;;;;;;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-hook 'emacs-lisp-mode 'flycheck-mode)
@@ -1025,17 +1036,18 @@ directory. See `byte-recompile-directory'."
   )
 
 (add-hook 'matlab-shell-mode-hook
-	  '(lambda ()
-	     (define-key matlab-shell-mode-map (kbd "C-<up>") 'windmove-up)
-	     (define-key matlab-shell-mode-map (kbd "C-<down>") 'windmove-down)
-	     (define-key matlab-shell-mode-map (kbd "<f5>") 'dek-matlab-send-dbcont)
-	     (define-key matlab-shell-mode-map (kbd "<f11>") 'dek-matlab-send-dbstep)
-	     ))
+      '(lambda ()
+	 (define-key matlab-shell-mode-map (kbd "C-<up>") 'windmove-up)
+	 (define-key matlab-shell-mode-map (kbd "C-<down>") 'windmove-down)
+	 (define-key matlab-shell-mode-map (kbd "<f5>") 'dek-matlab-send-dbcont)
+	 (define-key matlab-shell-mode-map (kbd "<f11>") 'dek-matlab-send-dbstep)
+	 ))
 
 (add-hook 'matlab-mode-hook
 	  '(lambda ()
+	     (auto-complete-mode 1)
 	     (define-key matlab-mode-map (kbd "<f12>") 'dek-matlab-set-breakpoint)
-	     ))
+	 ))
 
 
 (defun mfindent ()
@@ -1045,9 +1057,9 @@ directory. See `byte-recompile-directory'."
     (setq rectstart (point))
     (re-search-forward "\\(\\([[:space:]]+.*\\)?\n\\)*?end")
     (if (y-or-n-p "Do it?")
-	(progn
-	  (insert " ")
-	  (replace-rectangle rectstart (point) "")))))
+    (progn
+      (insert " ")
+      (replace-rectangle rectstart (point) "")))))
 
 (message "MATLAB ALL LOADED!!!")
 
@@ -1188,10 +1200,10 @@ directory. See `byte-recompile-directory'."
   "DOCSTRING"
   (if (>= (length fontlist) 2)
       (let (tmpsystem tmpfont tmpfontheight)
-	(setq tmpsystem (car fontlist)
-	      tmpfont (cadr fontlist)
-	      tmpfontheight (caddr fontlist))
-	(if (equal system-name tmpsystem)
-	    (set-face-attribute 'default nil :family tmpfont :height tmpfontheight)
-	  (dek-set-system-dependant-default-font (cddr fontlist)))
-	)))
+    (setq tmpsystem (car fontlist)
+	  tmpfont (cadr fontlist)
+	  tmpfontheight (caddr fontlist))
+    (if (equal system-name tmpsystem)
+	(set-face-attribute 'default nil :family tmpfont :height tmpfontheight)
+      (dek-set-system-dependant-default-font (cddr fontlist)))
+    )))
