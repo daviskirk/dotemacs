@@ -7,18 +7,23 @@
 # --
 class ${1:ClassName}(${2:object}):
     """$3
+
+    Attributes
+    ----------
+    $4
+
     """
 
-    def __init__(self, $4):
-        """$5
-        ${4:$
+    def __init__(self, $5):
+        """$6
+        ${5:$
         (let* ((indent
                 (concat "\n" (make-string (current-column) 32)))
                (args
                 (mapconcat
                  '(lambda (x)
                     (if (not (string= (nth 0 x) ""))
-                        (concat ":arg " (nth 0 x) ":")))
+                        (concat (nth 0 x) " : ")))
                  (mapcar
                   '(lambda (x)
                      (mapcar
@@ -32,10 +37,10 @@ class ${1:ClassName}(${2:object}):
               (make-string 3 34)
             (mapconcat
              'identity
-             (list "" args (make-string 3 34))
+             (list "" "Parameters" "-----------" args "" (make-string 3 34))
              indent)))
         }
-        ${4:$
+        ${5:$
         (mapconcat
          '(lambda (x)
             (if (not (string= (nth 0 x) ""))
