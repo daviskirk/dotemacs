@@ -13,7 +13,7 @@
 (add-to-list 'default-frame-alist '(background-mode . dark))
 
 (require 'powerline)
-(powerline-default)
+(powerline-default-theme)
 (load-theme 'zenburn t)
 
 ;;{{{ ;;;;;;;;;;;;;;;;;;;;;; CUA-MODE ;;;;;;;;;;;;;;;;;;;;;;
@@ -167,27 +167,10 @@ directory. See `byte-recompile-directory'."
 
 ;;(setq split-width-threshold most-positive-fixnum) ;; used to be 160
 
-(defun helm-for-git-files ()
-  "DOCSTRING"
-  (interactive)
-  (if (magit-git-string "rev-parse" "--git-dir")
-    (let (helm-for-files-preferred-list)
-      (setq  helm-for-files-preferred-list
-	   (quote (helm-c-source-ffap-line
-	       helm-c-source-ffap-guesser
-	       helm-c-source-buffers-list
-	       helm-c-source-git-files
-	       helm-c-source-recentf
-	       helm-c-source-locate
-	       helm-c-source-bookmarks
-	       helm-c-source-file-cache)))
-    (helm-for-files))
-    (helm-for-files)))
-
-(global-set-key (kbd "C-x f") 'helm-for-git-files)
+(global-set-key (kbd "C-x f") 'helm-for-files)
 (global-set-key (kbd "C-x y") 'anything-show-kill-ring)
-(global-set-key (kbd "\C-x i") 'helm-browse-code)
 
+(global-set-key (kbd "\C-x i") 'helm-browse-code)
 
 ;;{{{;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -477,7 +460,6 @@ directory. See `byte-recompile-directory'."
 
 (global-rainbow-delimiters-mode t)
 
-
 ;;{{{;;;;;;;;;;;;; YASNIPPET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun dek-find-yasnippet-dirname-in-list(filelist)
@@ -508,8 +490,6 @@ directory. See `byte-recompile-directory'."
 ;; (load "text-snippets")
 ;; (load "elisp-snippets")
 
-
-
 ;;{{{;;;;;;; AUTO-COMPLETE (AC-) ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'auto-complete)
@@ -531,12 +511,11 @@ directory. See `byte-recompile-directory'."
 ;; ;; (define-key ac-completing-map (kbd "<tab>") 'ac-next)
 ;; ;; (define-key ac-completing-map (kbd "<backtab>") 'ac-previous)
 
-;; (add-to-list 'ac-modes 'latex-mode) ; auto-completion
-;; (add-to-list 'ac-modes 'lua-mode) ; auto-completion
-;; (add-to-list 'ac-modes 'matlab-mode) ; auto-completion
-;; (add-to-list 'ac-modes 'conf-space-mode) ; auto-completion
-;; (add-to-list 'ac-modes 'haskell-mode) ; auto-completion
-
+(add-to-list 'ac-modes 'latex-mode) ; auto-completion
+(add-to-list 'ac-modes 'lua-mode) ; auto-completion
+(add-to-list 'ac-modes 'matlab-mode) ; auto-completion
+(add-to-list 'ac-modes 'conf-space-mode) ; auto-completion
+(add-to-list 'ac-modes 'haskell-mode) ; auto-completion
 
 ;;{{{;;;;;;;;;;;; AUTO-INSERT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -673,10 +652,10 @@ directory. See `byte-recompile-directory'."
 
 ;;{{{;;;;;;;;;;;;;;;;;; PYTHON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(add-to-list 'load-path "~/.emacs.d/site-lisp/python.el")
-(require 'python)
-(require 'cython-mode)
-(add-to-list 'auto-mode-alist '("\\.pyx$" . cython-mode))
+;; (add-to-list 'load-path "~/.emacs.d/site-lisp/python.el")
+;; (require 'python)
+;; (require 'cython-mode)
+;; (add-to-list 'auto-mode-alist '("\\.pyx$" . cython-mode))
 
 (defun dek-python-add-breakpoint ()
   (interactive)
@@ -704,13 +683,17 @@ directory. See `byte-recompile-directory'."
 		   (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
 		   ))
 
-(setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args ""
-      python-shell-prompt-regexp "In \\[[0-9]+\\]: "
-      python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-      python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
-      python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n"
-      python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
+(setq
+ python-shell-interpreter "ipython"
+ python-shell-interpreter-args ""
+ python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+ python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+ python-shell-completion-setup-code
+   "from IPython.core.completerlib import module_completion"
+ python-shell-completion-module-string-code
+   "';'.join(module_completion('''%s'''))\n"
+ python-shell-completion-string-code
+ "';'.join(get_ipython().Completer.all_completions('''%s'''))")
 
 ;; JINJA2
 (autoload 'jinja2-mode "jinja2-mode")
@@ -746,7 +729,7 @@ directory. See `byte-recompile-directory'."
 	 (local-set-key [tab] 'yas/expand)
 	 ;; (load-library "latex-commands")
 	 (define-key LaTeX-mode-map (kbd "M-q") 'fill-sentence)
-	 (define-key LaTeX-mode-map (kbd ".") 'end-fill-and-start-new-sentence)
+	 (define-key LaTeX-mode-map (kbd "<tab>") 'LaTeX-indent-line)
 	 ;; (load-library "~/.emacs.d/dek-lisp/latex-snippets")
 	 ;; (load-library "~/.emacs.d/dek-lisp/latex-math-snippets")
 	 ))
@@ -786,7 +769,6 @@ directory. See `byte-recompile-directory'."
     (reindent-then-newline-and-indent)
     )
   )
-
 
 
 (setq LaTeX-math-abbrev-prefix "`")
@@ -1084,8 +1066,9 @@ directory. See `byte-recompile-directory'."
  ;; vc-handled-backends nil
  )
 
-(define-globalized-minor-mode global-fci-mode fci-mode (lambda () (fci-mode 1)))
-(global-fci-mode 1)
+;; (define-globalized-minor-mode global-fci-mode fci-mode (lambda () (fci-mode 1)))
+;; (global-fci-mode 1)
+
 
 (fset 'yes-or-no-p 'y-or-n-p) ;; Use "y or n" answers instead of full words "yes or no"
 (global-font-lock-mode t)
@@ -1207,3 +1190,4 @@ directory. See `byte-recompile-directory'."
 	(set-face-attribute 'default nil :family tmpfont :height tmpfontheight)
       (dek-set-system-dependant-default-font (cddr fontlist)))
     )))
+(put 'upcase-region 'disabled nil)
