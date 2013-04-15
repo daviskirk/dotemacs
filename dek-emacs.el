@@ -1,6 +1,7 @@
 ;; To remove the waiting time at startup...
 ;;
 ;; (modify-frame-parameters nil '((wait-for-wm . nil)))
+(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
 ;; (setq debug-on-error t)
 (require 'cl)
@@ -26,6 +27,15 @@
 
 ;;}}}
 
+;;;;;;;;;;;;;;;;;;MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
+;; (require 'multiple-cursors)
+;; (global-unset-key (kbd "C-m"))
+(global-set-key (kbd "M-m") 'mc/mark-next-like-this)
+(global-set-key (kbd "M-S-m") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-M-m") 'mc/mark-all-in-region)
+(global-set-key (kbd "C-M-<return>") 'mc/edit-lines)
+(global-unset-key (kbd "M-<down-mouse-1>"))
+(global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
 
 ;; {{{ ;;;;;;;;;;;;;;;;; PRELUDE ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq prelude-whitespace nil)
@@ -176,23 +186,23 @@ directory. See `byte-recompile-directory'."
 
 (load-library "dek-ido")
 
-
+;;;;;;;;;;;;;;;;;; KEY-CHORD ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(key-chord-mode 1)
 
 ;;{{{;; NICER MOVEMENT KEYBINDINGS, NAVIGATION ;;;;;;;;;;;;;
 
 ;; (autoload 'ergo-movement-mode "ergo-movement-mode.el" "for movement with \M-jkli")
 ;; (ergo-movement-mode 1)
-
 (global-set-key (kbd "RET") 'reindent-then-newline-and-indent)
 
-(defun dek-end-of-line-then-return ()
-  "End of line, then return"
-  (interactive)
-  (end-of-line)
-  (reindent-then-newline-and-indent)
-  )
+;; (defun dek-end-of-line-then-return ()
+;;   "End of line, then return"
+;;   (interactive)
+;;   (end-of-line)
+;;   (reindent-then-newline-and-indent)
+;;   )
 
-(global-set-key [(control return)] 'dek-end-of-line-then-return)
+;; (global-set-key [(control return)] 'dek-end-of-line-then-return)
 
 (define-key key-translation-map [?\M-h] [?\C-b])
 (define-key key-translation-map [?\M-l] [?\C-f])
@@ -201,6 +211,28 @@ directory. See `byte-recompile-directory'."
 
 (define-key key-translation-map (kbd "C-M-l") (kbd "C-M-f"))
 (define-key key-translation-map (kbd "C-M-h") (kbd "C-M-b"))
+(key-chord-define-global "fg"  'iy-go-to-char)
+(key-chord-define-global "fd"  'iy-go-to-char-backward)
+(global-set-key "\M-." 'iy-go-to-char)
+(global-set-key "\M-," 'iy-go-to-char-backward)
+
+
+;;;;;;;;;;;;;;;;; smart operator ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'smart-operator)
+(defun my-matlab-mode-smart-operator-hook()
+  (smart-insert-operator-hook)
+  (local-unset-key (kbd "."))
+  (local-unset-key (kbd ":"))
+  (local-unset-key (kbd "*"))
+  (local-unset-key (kbd "/"))
+  )
+(defun my-python-mode-smart-operator-hook()
+  (smart-insert-operator-hook)
+  (local-unset-key (kbd "."))
+  (local-unset-key (kbd ":"))
+  )
+(add-hook 'matlab-mode-hook 'my-matlab-mode-smart-operator-hook)
+(add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
 
 ;;;;;;;;;;;;;;; smooth scrolling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time at first
@@ -406,8 +438,6 @@ directory. See `byte-recompile-directory'."
   "Go to beginning of match."
   (when isearch-forward (goto-char isearch-other-end)))
 
-
-
 ;;{{{;;;;;;;; BRACKET COMPLETION AND PAREN MATCHING ;;;;;;;;
 
 ;; (setq skeleton-pair t)
@@ -445,20 +475,25 @@ directory. See `byte-recompile-directory'."
 
 
 ;; {{{ ;;;;;;;;;;;;;;; SMARTPARENS ;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'smartparens)
-(smartparens-global-mode 1)
-(show-smartparens-global-mode t)
-(setq sp-autoescape-string-quote nil)
+;; (require 'smartparens)
+;; (smartparens-global-mode 1)
+;; (show-smartparens-global-mode t)
+;; (setq sp-autoescape-string-quote nil)
 
-(sp-with-modes '(TeX-latex-mode)
-  ;; math modes, yay.  The :actions are provided automatically if
-  ;; these pairs do not have global definition.
-  (sp-local-pair "`" "'")
-  (sp-local-pair "$" "$")
-  (sp-local-pair "\\[" "\\]")
-  (sp-local-tag "\\b" "\\begin{_}" "\\end{_}"))
+;; (sp-with-modes '(TeX-latex-mode)
+;;   ;; math modes, yay.  The :actions are provided automatically if
+;;   ;; these pairs do not have global definition.
+;;   (sp-local-pair "`" "'")
+;;   (sp-local-pair "$" "$")
+;;   (sp-local-pair "\\[" "\\]")
+;;   (sp-local-tag "\\b" "\\begin{_}" "\\end{_}"))
 
-(global-rainbow-delimiters-mode t)
+;; (global-rainbow-delimiters-mode t)
+
+;;;;;;;;;;;;;;;;;;;;; autopair ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'autopair)
+(autopair-global-mode) ;; to enable in all buffers
+
 
 ;;{{{;;;;;;;;;;;;; YASNIPPET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -732,6 +767,7 @@ directory. See `byte-recompile-directory'."
 	 (define-key LaTeX-mode-map (kbd "<tab>") 'LaTeX-indent-line)
 	 ;; (load-library "~/.emacs.d/dek-lisp/latex-snippets")
 	 ;; (load-library "~/.emacs.d/dek-lisp/latex-math-snippets")
+	 (key-chord-define LaTeX-mode-map ". "  ".\C-j")
 	 ))
 
 (add-hook 'TeX-mode-hook
@@ -762,12 +798,9 @@ directory. See `byte-recompile-directory'."
 
 (defun end-fill-and-start-new-sentence ()
   (interactive)
-  (if  (string-match "[^a-zA-Z\(\)\{\}]" (char-to-string (char-before)))
-      (insert ".")
-    (fill-sentence)
-    (insert ".")
-    (reindent-then-newline-and-indent)
-    )
+  (fill-sentence)
+  (insert ".")
+  (reindent-then-newline-and-indent)
   )
 
 
@@ -1029,6 +1062,7 @@ directory. See `byte-recompile-directory'."
 	  '(lambda ()
 	     (auto-complete-mode 1)
 	     (define-key matlab-mode-map (kbd "<f12>") 'dek-matlab-set-breakpoint)
+	     (key-chord-define matlab-mode-map ";;"  "\C-e;")
 	 ))
 
 
@@ -1073,7 +1107,6 @@ directory. See `byte-recompile-directory'."
 (fset 'yes-or-no-p 'y-or-n-p) ;; Use "y or n" answers instead of full words "yes or no"
 (global-font-lock-mode t)
 (blink-cursor-mode 1)
-(tool-bar-mode -1)
 (fringe-mode '(1 . 0))
 (setq fringes-outside-margins t)
 (setq font-lock-maximum-decoration (quote ((dired-mode) (t . t)))) ; apperantly adds nice colors
