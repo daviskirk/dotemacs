@@ -3,6 +3,7 @@
 ;; (modify-frame-parameters nil '((wait-for-wm . nil)))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
+(set-face-attribute 'default nil :height 98 :family "Monaco")
 ;; (setq debug-on-error t)
 (require 'cl)
 (setq warning-suppress-types nil)
@@ -16,18 +17,24 @@
 (require 'powerline)
 (powerline-default-theme)
 (load-theme 'zenburn t)
+(global-rainbow-delimiters-mode 1)
+(show-paren-mode 1)
 
-;;{{{ ;;;;;;;;;;;;;;;;;;;;;; CUA-MODE ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;; PRELUDE ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq prelude-whitespace nil)
+(setq prelude-flyspell t)
+(setq prelude-guru t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;; CUA-MODE ;;;;;;;;;;;;;;;;;;;;;;
 (setq-default transient-mark-mode t)
 (setq-default cua-mode t)
 (setq-default truncate-lines t)
 (cua-mode t)
 (global-set-key (kbd "C-<tab>") 'other-window)
 
-;;}}}
 
-;;;;;;;;;;;;;;;;;;MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'multiple-cursors)
 ;; (global-unset-key (kbd "C-m"))
 (global-set-key (kbd "M-m") 'mc/mark-next-like-this)
@@ -37,12 +44,7 @@
 (global-unset-key (kbd "M-<down-mouse-1>"))
 (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
 
-;; {{{ ;;;;;;;;;;;;;;;;; PRELUDE ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq prelude-whitespace nil)
-(setq prelude-flyspell t)
-(setq prelude-guru t)
-
-;;{{{;;;;;;;;;;;;;;;;;; BYTE COMPILE ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;; BYTE COMPILE ;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun dek-byte-compile-directory(directory)
   "Byte compile every .el file into a .elc file in the given
@@ -54,22 +56,14 @@ directory. See `byte-recompile-directory'."
     (byte-recompile-directory directory 0 t))
   )
 
-;;{{{;;;;;;;;;;;;;;;;;;;;;; LOADPATH ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;; LOADPATH ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Set load path to emacd.d/site-lisp;;;;;;;;
 (setq dek-compile-dest-dir nil) ;dont forget slash
+(add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory ))
+(add-to-list 'load-path (expand-file-name "dek-lisp" user-emacs-directory ))
 
-;; (defun dek-compile-dest-file-function(el-file)
-;;   (concat dek-compile-dest-dir (file-name-nondirectory el-file)))
-;; (setq byte-compile-dest-file-function 'dek-compile-dest-file-function)
-
-;; (if (equal user-login-name "dek")
-;;     (add-to-list 'load-path dek-compile-dest-dir))
-
-(add-to-list 'load-path "~/.emacs.d/site-lisp")
-(add-to-list 'load-path "~/.emacs.d/dek-lisp")
-
-;;{{{;;;;;;;;;;;; BACKUP FILES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; BACKUP FILES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq
    backup-by-copying t      ; don't clobber symlinks
@@ -85,10 +79,16 @@ directory. See `byte-recompile-directory'."
     (backup-buffer)))
 (add-hook 'before-save-hook  'force-backup-of-buffer)
 
-;;{{{;;;;;;;;;;;;;;; SSH / TRAMP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;; save place ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Save point position between sessions
+(require 'saveplace)
+(setq-default save-place t)
+(setq save-place-file (expand-file-name ".places" user-emacs-directory))
+
+;;;;;;;;;;;;;;;;;; SSH / TRAMP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq tramp-default-method "ssh")
 
-;;{{{;;;;;;;;;;;;;; EMACS CLIENT STUFF ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; EMACS CLIENT STUFF ;;;;;;;;;;;;;;;;;;;;;
 
 (add-hook 'server-switch-hook
       (lambda ()
@@ -129,26 +129,38 @@ directory. See `byte-recompile-directory'."
 )
 
 
-;;{{{;;;;;;;;; FILE MANAGEMENT;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;; FILE MANAGEMENT;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; rename current file
-(defun dek-rename-current-file-or-buffer ()
+(defun rename-current-buffer-file ()
+  "Renames current buffer and file it is visiting."
   (interactive)
-  (if (not (buffer-file-name))
-      (call-interactively 'rename-buffer)
-    (let ((file (buffer-file-name)))
-      (with-temp-buffer
-    (set-buffer (dired-noselect file))
-    (dired-do-rename)
-    (kill-buffer nil))))
-  nil)
+  (let ((name (buffer-name))
+	(filename (buffer-file-name)))
+    (if (not (and filename (file-exists-p filename)))
+	(error "Buffer '%s' is not visiting a file!" name)
+      (let ((new-name (read-file-name "New name: " filename)))
+	(if (get-buffer new-name)
+	    (error "A buffer named '%s' already exists!" new-name)
+	  (rename-file filename new-name 1)
+	  (rename-buffer new-name)
+	  (set-visited-file-name new-name)
+	  (set-buffer-modified-p nil)
+	  (message "File '%s' successfully renamed to '%s'"
+		   name (file-name-nondirectory new-name)))))))
 
-;;{{{ ;;;;;;;;;;;;;;; VERSION CONTROL / GIT ;;;;;;;;;;;;;;;;
+;; Auto refresh buffers
+(global-auto-revert-mode 1)
+
+;; Also auto refresh dired, but be quiet about it
+(setq global-auto-revert-non-file-buffers t)
+(setq auto-revert-verbose nil)
+
+;;;;;;;;;;;;;;;;;; VERSION CONTROL / GIT ;;;;;;;;;;;;;;;;
 
 (global-set-key (kbd "C-x V s") 'magit-status)
 (global-set-key (kbd "C-x V l") 'magit-log)
 
-;;{{{;;;;;;;;;;;; ZOOMING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; ZOOMING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'zoom-frm) ; ZOOMING
 (global-set-key (if (boundp 'mouse-wheel-down-event) ; Emacs 22+
@@ -160,49 +172,22 @@ directory. See `byte-recompile-directory'."
 	  'zoom-out))
 
 
-;;{{{;;;;;;;;;;; ANYTHING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/anything-config/")
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/anything-config/extensions/")
-;; (require 'anything-startup)
-;; (require 'anything-match-plugin)
-
-;; (anything-read-string-mode 0)
-;; (define-key anything-map (kbd "TAB") 'anything-next-source)
-;; (define-key anything-map (kbd "M-x") 'anything-select-action)
-;; (global-set-key (kbd "C-x f") 'anything-for-files)
-;; (global-set-key (kbd "C-x y") 'anything-show-kill-ring)
-;; (setq anything-enable-shortcuts t)
-
-
-;;(setq split-width-threshold most-positive-fixnum) ;; used to be 160
-
+;;;;;;;;;;;;;;;;; HELM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "C-x f") 'helm-for-files)
 (global-set-key (kbd "C-x y") 'anything-show-kill-ring)
 
 (global-set-key (kbd "\C-x i") 'helm-browse-code)
 
-;;{{{;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (load-library "dek-ido")
 
 ;;;;;;;;;;;;;;;;;; KEY-CHORD ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (key-chord-mode 1)
 
-;;{{{;; NICER MOVEMENT KEYBINDINGS, NAVIGATION ;;;;;;;;;;;;;
-
-;; (autoload 'ergo-movement-mode "ergo-movement-mode.el" "for movement with \M-jkli")
-;; (ergo-movement-mode 1)
+;;;;; NICER MOVEMENT KEYBINDINGS, NAVIGATION ;;;;;;;;;;;;;
 (global-set-key (kbd "RET") 'reindent-then-newline-and-indent)
-
-;; (defun dek-end-of-line-then-return ()
-;;   "End of line, then return"
-;;   (interactive)
-;;   (end-of-line)
-;;   (reindent-then-newline-and-indent)
-;;   )
-
-;; (global-set-key [(control return)] 'dek-end-of-line-then-return)
 
 (define-key key-translation-map [?\M-h] [?\C-b])
 (define-key key-translation-map [?\M-l] [?\C-f])
@@ -225,6 +210,7 @@ directory. See `byte-recompile-directory'."
   (local-unset-key (kbd ":"))
   (local-unset-key (kbd "*"))
   (local-unset-key (kbd "/"))
+  (local-unset-key (kbd "%"))
   )
 (defun my-python-mode-smart-operator-hook()
   (smart-insert-operator-hook)
@@ -239,8 +225,7 @@ directory. See `byte-recompile-directory'."
 (setq smooth-scroll-margin 5)
 
 
-
-;;;;;;;;;; Better Start of line ;;;;;;;;
+;;;;;;;;;; Better Start of line ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dek-back-to-indentation-or-beginning ()
   (interactive)
   (if (= (point) (save-excursion (back-to-indentation) (point)))
@@ -259,7 +244,7 @@ directory. See `byte-recompile-directory'."
 
 
 
-;;{{{ ;;;;;;;;;;;;;;;;; ALIGN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;; ALIGN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun dek-align-after-commas (beg end)
     (interactive "r")
@@ -282,9 +267,8 @@ directory. See `byte-recompile-directory'."
 
 
 
-;;{{{;;;;;;; COPYING AND KILLING ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;; COPYING AND KILLING ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;(global-set-key "\C-x\C-m" 'execute-extended-command)
 (global-set-key "\M-r" 'backward-kill-word)
 (global-set-key "\C-\M-q" 'fill-paragraph)
 ;(global-set-key [(control \+)] 'dabbrev-expand)
@@ -300,55 +284,70 @@ directory. See `byte-recompile-directory'."
 
 
 
-;;{{{;;;; AUTO-MARK, MARKS, BREADCRUMBS, BOOKMARKS ;;;;;;;;;
+;;;;;;; AUTO-MARK, MARKS, BREADCRUMBS, BOOKMARKS ;;;;;;;;;
 
 ;; BREADCRUMBS
 ;; (add-to-list 'load-path "~/.emacs.d/site-lisp/breadcrumbs")
 ;; (require 'dek-breadcrumbs)
 
-(setq bookmark-default-file "~/.emacs.d/.emacs.bmk")
-(setq bookmark-file "~/.emacs.d/.emacs.bmk")
+(setq bookmark-default-file (expand-file-name ".emacs.bmk" user-emacs-directory))
+(setq bookmark-file (expand-file-name ".emacs.bmk" user-emacs-directory))
 (bookmark-load bookmark-default-file t)
 
 
-
-
-;;{{{;;;;;;;;; LINUM GOTO LINE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dek-goto-line ()
-  "thisandthat."
+;;;;;;;;;;;; LINUM GOTO LINE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun goto-line-with-feedback ()
+  "Show line numbers temporarily, while prompting for the line number input"
   (interactive)
-  (linum-mode 1)
-  (let (userinput)
-    (setq userinput (string-to-number (read-from-minibuffer "")))
-    (if (eq userinput 0)
-    (linum-mode -1)
+  (unwind-protect
       (progn
-    (goto-line userinput)
-    (linum-mode -1))
-      )))
-(global-set-key (kbd "M-g") 'dek-goto-line)
+	(linum-mode 1)
+	(goto-line (read-number "Goto line: ")))
+    (linum-mode -1)))
+
+(global-set-key (kbd "M-g") 'goto-line-with-feedback)
 
 
-
-;;{{{;;;;;;;;; FILES AND BUFFERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;; FILES AND BUFFERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key "\C-x\C-b" 'buffer-menu)
 
 
-;;{{{;;;;;;;;;;;;; File manager/dired ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;; File manager/dired ;;;;;;;;;;;;;;;;;;;;
 
 (require 'dired+)
 (require 'dired-details)
+(setq dired-details-hidden-string "- ")
+(dired-details-install)
+(define-key dired-mode-map "(" 'dired-details-toggle)
+(define-key dired-mode-map ")" 'dired-details-toggle)
+
 
 (add-hook 'dired-load-hook
       (lambda () (require 'dired-sort-menu+)))
 
 (toggle-diredp-find-file-reuse-dir 1)
 
-;;{{{;;;;;;;;;;; recent-files ;;;;;;;;;;;;;;;;;;;;;;;;
+;; let end of buffer and start of buffer move to last/first file
+(defun dired-back-to-top ()
+  (interactive)
+  (beginning-of-buffer)
+  (dired-next-line 4))
+(defun dired-jump-to-bottom ()
+  (interactive)
+  (end-of-buffer)
+  (dired-next-line -1))
+
+(define-key dired-mode-map
+  (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
+(define-key dired-mode-map
+  (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
+
+;;;;;;;;;;;;;; recent-files ;;;;;;;;;;;;;;;;;;;;;;;;
 ;(setq recentf-auto-cleanup 'never)
 ;; Save the recentf file list every 10 minutes (= 600 seconds)
 (setq recentf-last-list '())
 (setq recentf-max-saved-items 50)
+
 (defun recentf-save-if-changes ()
   "Test if the recentf-list has changed and saves it in this case"
   (unless (equalp recentf-last-list recentf-list)
@@ -356,35 +355,11 @@ directory. See `byte-recompile-directory'."
     (recentf-save-list)))
 (run-at-time t 600 'recentf-save-if-changes)
 
-
-(defun dek-open-recent-file ()
-  "Goto your favorite place... which are defined in a list in
-~/.emacs.d/favorite-places.el"
-  (interactive)
-  (let (ido-result-string dek-bookmark-list bookmark-prefix-string)
-    (setq bookmark-prefix-string "bmk:")
-    (setq dek-all-bookmark-names (bookmark-all-names))
-    (dolist (tmp-bookmark-name (bookmark-all-names))
-	(setq dek-bookmark-list
-	  (cons (concat bookmark-prefix-string tmp-bookmark-name) dek-bookmark-list)))
-    ;; query ido for recent files and bookmarks
-    (setq ido-result-string
-      (ido-completing-read "open recent or bookmarks:"
-		   (append recentf-list dek-bookmark-list)
-		   nil t))
-    ;; take action according to result being a bookmark or a recent file
-    (if (eql (search bookmark-prefix-string ido-result-string) 0)
-    (bookmark-jump (substring ido-result-string (length bookmark-prefix-string)))
-      (find-file ido-result-string)
-      )
-    )
-  )
-
 (global-set-key "\C-x\C-r" 'helm-recentf)
 
 
 
-;;{{{;;;;;;;;; COMMENTS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;; COMMENTS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun comment-or-uncomment-current-line-or-region ()
   "Comments or uncomments current current line or whole lines in region."
@@ -402,7 +377,7 @@ directory. See `byte-recompile-directory'."
 
 
 
-;;{{{;;;;;;;;;;;;; MUTT EMAIL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;; MUTT EMAIL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun deks-mail-mode-hook ()
   (turn-on-auto-fill) ;;; Auto-Fill is necessary for mails
@@ -427,7 +402,7 @@ directory. See `byte-recompile-directory'."
 
 
 
-;;{{{;;;;;;;;;;;;;;; ISEARCH ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; ISEARCH ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; searching ends at start of string always
 (add-hook 'isearch-mode-end-hook 'my-goto-match-beginning)
@@ -438,64 +413,13 @@ directory. See `byte-recompile-directory'."
   "Go to beginning of match."
   (when isearch-forward (goto-char isearch-other-end)))
 
-;;{{{;;;;;;;; BRACKET COMPLETION AND PAREN MATCHING ;;;;;;;;
-
-;; (setq skeleton-pair t)
-;; (defvar my-skeleton-pair-alist
-;;   '((?\) . ?\()
-;;     (?\] . ?\[)
-;;     (?\} . ?\{)
-;;     (?" . ?")))
-
-;; (defun my-skeleton-pair-end (arg)
-;;   "Skip the char if it is an ending, otherwise insert it."
-;;   (interactive "*p")
-;;   (let ((char last-command-event))
-;;     (if (and (assq char my-skeleton-pair-alist)
-;;       (eq char (following-char)))
-;;	(forward-char)
-;;       (self-insert-command (prefix-numeric-value arg)))))
-
-;; (defadvice backward-delete-char-untabify
-;;   (before my-skeleton-backspace activate)
-;;   "When deleting the beginning of a pair, and the ending is next char, delete it too."
-;;   (let ((pair (assq (following-char) my-skeleton-pair-alist)))
-;;     (and pair
-;;   (eq (preceding-char) (rest pair))
-;;   (delete-char 1))))
-
-;; (dolist (pair my-skeleton-pair-alist)
-;;   ;; Use backward delete function
-;;   ; (global-set-key (char-to-string (first pair))
-;;   ;   'my-skeleton-pair-end)
-;;   ;; If the char for begin and end is the same,
-;;   ;; use the original skeleton
-;;   (global-set-key (char-to-string (rest pair))
-;;        'skeleton-pair-insert-maybe))
-
-
-;; {{{ ;;;;;;;;;;;;;;; SMARTPARENS ;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (require 'smartparens)
-;; (smartparens-global-mode 1)
-;; (show-smartparens-global-mode t)
-;; (setq sp-autoescape-string-quote nil)
-
-;; (sp-with-modes '(TeX-latex-mode)
-;;   ;; math modes, yay.  The :actions are provided automatically if
-;;   ;; these pairs do not have global definition.
-;;   (sp-local-pair "`" "'")
-;;   (sp-local-pair "$" "$")
-;;   (sp-local-pair "\\[" "\\]")
-;;   (sp-local-tag "\\b" "\\begin{_}" "\\end{_}"))
-
-;; (global-rainbow-delimiters-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;; autopair ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'autopair)
 (autopair-global-mode) ;; to enable in all buffers
 
 
-;;{{{;;;;;;;;;;;;; YASNIPPET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;; YASNIPPET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun dek-find-yasnippet-dirname-in-list(filelist)
   "DOCSTRING"
@@ -514,18 +438,13 @@ directory. See `byte-recompile-directory'."
    "/snippets"))
 
 (setq yas-snippet-dirs
-      (list "~/.emacs.d/dek-lisp/yasnippet-snippets"
+      (list (expand-file-name "dek-lisp/yasnippet-snippets" user-emacs-directory)
 	(dek-find-elpa-yasnippet-snippet-dir)))
 
 (yas-global-mode t)
-;; old snippet definitions do not work anymore
-;; (load-library "latex-snippets")
-;; (load "latex-math-snippets")
-;; (load "matlab-snippets")
-;; (load "text-snippets")
-;; (load "elisp-snippets")
 
-;;{{{;;;;;;; AUTO-COMPLETE (AC-) ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;; AUTO-COMPLETE (AC-) ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -552,13 +471,13 @@ directory. See `byte-recompile-directory'."
 (add-to-list 'ac-modes 'conf-space-mode) ; auto-completion
 (add-to-list 'ac-modes 'haskell-mode) ; auto-completion
 
-;;{{{;;;;;;;;;;;; AUTO-INSERT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; AUTO-INSERT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (defun my/autoinsert-yas-expand()
 ;;       "Replace text in yasnippet template."
 ;;       (yas/expand-snippet (buffer-string) (point-min) (point-max)))
 ;; (auto-insert-mode 1)
-;; (setq auto-insert-directory "~/.emacs.d/auto-insert-templates/")
+;; (setq auto-insert-directory (expand-file-name "auto-insert-templates/" user-emacs-directory))
 ;; (setq auto-insert-alist '((("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") . ["insert.h" c++-mode my/autoinsert-yas-expand])
 ;;            (("\\.\\([C]\\|cc\\|cpp\\)\\'" . "C++ source") . ["insert.cc" my/autoinsert-yas-expand])
 ;;            (("\\.sh\\'" . "Shell script") . ["insert.sh" my/autoinsert-yas-expand])
@@ -571,7 +490,7 @@ directory. See `byte-recompile-directory'."
 
 ;; ;;;;;;;;;;;;;;;; JABBER/CHAT STUFF ;;;;;;;;;;
 
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-jabber-0.8.0/")
+;; (add-to-list 'load-path (expand-file-name "site-lisp/emacs-jabber-0.8.0/" user-emacs-directory))
 ;; (load "jabber-autoloads")
 ;; (setq jabber-account-list
 ;;     '(("dk440241@googlemail.com"
@@ -579,8 +498,13 @@ directory. See `byte-recompile-directory'."
 ;;        (:connection-type . ssl))))
 
 
+;;;;;;;;;;;;;; Diminish modeline clutter ;;;;;;;;;;;;;;;;;;
+(require 'diminish)
+(add-hook 'prog-mode-hook (lambda nil (diminish 'guru-mode)) t)
+(diminish 'autopair-mode)
 
-;;{{{;;;;;;;;;;;; ORG MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;; ORG MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq  org-directory  "~/org")
 (setq  org-default-notes-file  (concat  org-directory  "/TODO.org"))
@@ -656,7 +580,7 @@ directory. See `byte-recompile-directory'."
 (setq org-mobile-inbox-for-pull "~/org/inbox.org")
 
 
-;;{{{;;;;;;;;;;; PHP-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; PHP-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (autoload 'php-mode "php-mode.el" "PHP editing mode" t)
 (add-to-list 'auto-mode-alist '("\\.php$" . php-mode))
@@ -671,23 +595,23 @@ directory. See `byte-recompile-directory'."
       (lambda()
 	(define-key html-mode-map [f5] 'php-mode)))
 
-;;{{{;;;;;;;;;;; NXHTML-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; NXHTML-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun nxhtml-mode-loader ()
   "thisandthat."
   (interactive)
   (load "nxhtml/autostart.el"))
 
-;;{{{;;;;;;;;;;; XML-mode/YAML-mode ;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; XML-mode/YAML-mode ;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (require 'yaml-mode)
 ;; (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.yaml$" . yaml-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.xml" . xml-mode))
 
-;;{{{;;;;;;;;;;;;;;;;;; PYTHON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;; PYTHON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/python.el")
+;; (add-to-list 'load-path (expand-file-name "site-lisp/python.el" user-emacs-directory))
 ;; (require 'python)
 ;; (require 'cython-mode)
 ;; (add-to-list 'auto-mode-alist '("\\.pyx$" . cython-mode))
@@ -735,7 +659,7 @@ directory. See `byte-recompile-directory'."
 
 
 
-;;{{{;;;;;;;; LATEX AND AUCTEX  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;; LATEX AND AUCTEX  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-to-list 'auto-mode-alist '("\\.rwthtex$" . TeX-latex-mode))
 (add-to-list 'auto-mode-alist '("\\.tex$" . TeX-latex-mode))
 (setq TeX-auto-save t)
@@ -765,8 +689,8 @@ directory. See `byte-recompile-directory'."
 	 ;; (load-library "latex-commands")
 	 (define-key LaTeX-mode-map (kbd "M-q") 'fill-sentence)
 	 (define-key LaTeX-mode-map (kbd "<tab>") 'LaTeX-indent-line)
-	 ;; (load-library "~/.emacs.d/dek-lisp/latex-snippets")
-	 ;; (load-library "~/.emacs.d/dek-lisp/latex-math-snippets")
+	 ;; (load-library (expand-file-name "dek-lisp/latex-snippets" user-emacs-directory))
+	 ;; (load-library (expand-file-name "dek-lisp/latex-math-snippets" user-emacs-directory))
 	 (key-chord-define LaTeX-mode-map ". "  ".\C-j")
 	 ))
 
@@ -861,7 +785,7 @@ directory. See `byte-recompile-directory'."
 ;;    'th-evince-sync))
 
 
-;;{{{;;;;;;;;;;;; C AND C++ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; C AND C++ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (defun my-turn-on-auto-newline ()
 ;;   (c-toggle-auto-newline 1))
@@ -896,9 +820,9 @@ directory. See `byte-recompile-directory'."
 ;(define-key c++-mode-map (kbd "<f6>") 'gdb)
 ;(define-key c++-mode-map (kbd "<f7>") 'next-error)
 
-;;{{{;;;;;;;;; c# and vb.net (Visual Basic);;;;;;;;;;;;;;;;;
+;;;;;;;;;;;; c# and vb.net (Visual Basic);;;;;;;;;;;;;;;;;
 
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/csharp/")
+;; (add-to-list 'load-path (expand-file-name "site-lisp/csharp/" user-emacs-directory))
 ;; (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
 
 
@@ -923,7 +847,7 @@ directory. See `byte-recompile-directory'."
 ;;   )
 ;; (add-hook 'vbnet-mode-hook 'my-vbnet-mode-fn)
 
-;;{{{;;;;;;;;;;;;;;;; JAVA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; JAVA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (global-set-key (kbd "<f5>") 'compile)
 
@@ -967,13 +891,16 @@ directory. See `byte-recompile-directory'."
 ;;      (c-toggle-auto-newline 1)
 ;;      ))
 
-;;{{{;;;;;;;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-hook 'emacs-lisp-mode 'flycheck-mode)
 
-;;{{{;;;;;;;;; OTHER MODES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;; clojure mode ;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-hook 'clojure-mode-hook 'paredit-mode)
+
+;;;;;;;;;;;; OTHER MODES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;; haskell-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-to-list 'load-path "~/.emacs.d/site-lisp/haskell-mode-2.8.0/")
+(add-to-list 'load-path (expand-file-name "site-lisp/haskell-mode-2.8.0/" user-emacs-directory))
 (load "haskell-site-file")
 (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
@@ -989,7 +916,7 @@ directory. See `byte-recompile-directory'."
 (add-to-list 'auto-mode-alist '("\\.*rc$" . conf-mode))
 
 ;;;;;;;;;;;;;;; instant messanging ;;;;;;;;;;
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/elim/elisp/")
+;; (add-to-list 'load-path (expand-file-name "site-lisp/elim/elisp/" user-emacs-directory))
 ;; (autoload 'garak "garak" nil t)
 
 ;;;;;;;;;;;;;;;;;;;;; csv-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -998,14 +925,14 @@ directory. See `byte-recompile-directory'."
 
 
 
-;;{{{ ;;;;;;;;;;;;;;;;;;;;;;; MATLAB ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;; MATLAB ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Replace path below to be where your matlab.el file is.
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/matlab-emacs")
+;; (add-to-list 'load-path (expand-file-name "site-lisp/matlab-emacs" user-emacs-directory))
 ;; (load-library "matlab-load")
 ;; (message "matlab-load loaded")
 
-(add-to-list 'load-path "~/.emacs.d/site-lisp/matlab")
+(add-to-list 'load-path (expand-file-name "site-lisp/matlab" user-emacs-directory))
 (require 'matlab-load)
 
 (setq matlab-shell-command-switches (quote ("-nodesktop" "-nosplash")))
@@ -1058,6 +985,8 @@ directory. See `byte-recompile-directory'."
 	 (define-key matlab-shell-mode-map (kbd "<f11>") 'dek-matlab-send-dbstep)
 	 ))
 
+(add-hook 'matlab-mode-hook (lambda ()
+			      (run-hooks 'prog-mode-hook)))
 (add-hook 'matlab-mode-hook
 	  '(lambda ()
 	     (auto-complete-mode 1)
@@ -1077,19 +1006,20 @@ directory. See `byte-recompile-directory'."
       (insert " ")
       (replace-rectangle rectstart (point) "")))))
 
+;; (add-to-list 'helm-browse-code-regexp-alist '(matlab-mode . "\\<function\\>\\|\\<class\\>"))
 (message "MATLAB ALL LOADED!!!")
 
 
-;;{{{;;;;;;;;;;;;;;;;;;;;;;;;;; STUMPWM ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; STUMPWM ;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'stumpwm-mode)
 ;; (add-to-list 'auto-mode-alist '("\\.stumpwmrc$" . stumpwm-mode))
 
-;;}}}
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
-;;{{{;;;;;;;;;;;;; FONT AND SETUP ;;;;;;::::::;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;; FONT AND SETUP ;;;;;;::::::;;;;;;;;;;;;;;
 
 (setq
  visible-bell t ;; turn on visual bell
@@ -1155,7 +1085,7 @@ directory. See `byte-recompile-directory'."
 
 
 
-;;{{{;;;;;;;;;;;;;;;;;;; AUTO-RECOMPILE ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;; AUTO-RECOMPILE ;;;;;;;;;;;;;;;;;;;;
 
 ;; (defun byte-compile-user-init-file ()
 ;;       (let ((byte-compile-warnings '(unresolved)))
@@ -1172,14 +1102,14 @@ directory. See `byte-recompile-directory'."
 ;;     (add-hook 'emacs-lisp-mode-hook 'my-emacs-lisp-mode-hook)
 
 
-;;{{{;;;;;;;;;;CUSTOM FUNCTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;CUSTOM FUNCTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun .emacs ()
   "switch to my emacs file"
   (interactive)
-  (if (get-buffer "~/.emacs.d/dek-emacs.el")
-      (switch-to-buffer "~/.emacs.d/dek-emacs.el")
-    (find-file "~/.emacs.d/dek-emacs.el")
+  (if (get-buffer (expand-file-name "dek-emacs.el" user-emacs-directory))
+      (switch-to-buffer (expand-file-name "dek-emacs.el" user-emacs-directory))
+    (find-file (expand-file-name "dek-emacs.el" user-emacs-directory))
     )
   )
 
@@ -1210,7 +1140,7 @@ directory. See `byte-recompile-directory'."
 ;;; FOR WHATEVER PROJECT YOUR WORDKING ON ;;;;;;;;;;;;;;;;
 (setq yas/triggers-in-field t)
 
-(setq tetris-score-file "~/.emacs.d/.tetris-scores")
+(setq tetris-score-file (expand-file-name ".tetris-scores" user-emacs-directory))
 
 (defun dek-set-system-dependant-default-font(fontlist)
   "DOCSTRING"
