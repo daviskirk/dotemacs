@@ -2,17 +2,19 @@
 ;;
 ;; (modify-frame-parameters nil '((wait-for-wm . nil)))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-
 (set-face-attribute 'default nil :height 98 :family "Monaco")
 ;; (setq debug-on-error t)
 (require 'cl)
 (setq warning-suppress-types nil)
 (setq frame-title-format '("" "Emacs - %b - %m"))
 
-(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-	     ("melpa" . "http://melpa.milkbox.net/packages/")))
-(package-initialize)
 (add-to-list 'default-frame-alist '(background-mode . dark))
+
+;;;;;;;;;;;;;;;;;;;;;;;;; LOADPATH ;;;;;;;;;;;;;;;;;;;;;;;
+(add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory ))
+(add-to-list 'load-path (expand-file-name "dek-lisp" user-emacs-directory ))
+;;;;;;;;;;;;;;;;;;;;;;;; PACKAGE ;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'setup-package)
 
 (require 'powerline)
 (powerline-default-theme)
@@ -32,6 +34,10 @@
 (cua-mode t)
 (global-set-key (kbd "C-<tab>") 'other-window)
 
+(setq sublimity-scroll-vdecc 1.4)
+(setq sublimity-scroll-vspeeds '(5000 1000 500 200 100 50 10 5))
+(setq sublimity-auto-hscroll nil)
+(require 'sublimity-scroll)
 
 
 ;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,13 +61,6 @@ directory. See `byte-recompile-directory'."
     (setq byte-compile-verbose nil)
     (byte-recompile-directory directory 0 t))
   )
-
-;;;;;;;;;;;;;;;;;;;;;;;;; LOADPATH ;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Set load path to emacd.d/site-lisp;;;;;;;;
-(setq dek-compile-dest-dir nil) ;dont forget slash
-(add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory ))
-(add-to-list 'load-path (expand-file-name "dek-lisp" user-emacs-directory ))
 
 ;;;;;;;;;;;;;;; BACKUP FILES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -201,6 +200,18 @@ directory. See `byte-recompile-directory'."
 (global-set-key "\M-." 'iy-go-to-char)
 (global-set-key "\M-," 'iy-go-to-char-backward)
 
+(global-set-key (kbd "C-M-SPC") 'er/expand-region)
+
+;; When popping the mark, continue popping until the cursor actually moves
+;; Also, if the last command was a copy - skip past all the expand-region cruft.
+(defadvice pop-to-mark-command (around ensure-new-position activate)
+  (let ((p (point)))
+    (when (eq last-command 'save-region-or-current-line)
+      ad-do-it
+      ad-do-it
+      ad-do-it)
+    (dotimes (i 10)
+      (when (= p (point)) ad-do-it))))
 
 ;;;;;;;;;;;;;;;;; smart operator ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'smart-operator)
@@ -221,8 +232,8 @@ directory. See `byte-recompile-directory'."
 (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
 
 ;;;;;;;;;;;;;;; smooth scrolling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time at first
-(setq smooth-scroll-margin 5)
+;; (setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time at first
+;; (setq smooth-scroll-margin 5)
 
 
 ;;;;;;;;;; Better Start of line ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -261,7 +272,6 @@ directory. See `byte-recompile-directory'."
   (replace-regexp "^C:.*\n" "")
   (beginning-of-buffer)
   (replace-regexp "(:,:,\\([12]\\))" "\\1")
-  (beginning-of-buffer)
   (replace-regexp "\\(.+?,.+?\\),.*" "\\1"))
 
 
@@ -271,15 +281,12 @@ directory. See `byte-recompile-directory'."
 
 (global-set-key "\M-r" 'backward-kill-word)
 (global-set-key "\C-\M-q" 'fill-paragraph)
-;(global-set-key [(control \+)] 'dabbrev-expand)
-
 
 ;;;;;;;;; real copy behavior ;;;;;;;;;;;;;
 (global-set-key "\M-v" 'cua-paste-pop)
-
 (delete-selection-mode 1)
 
-
+(auto-indent-global-mode)
 
 
 
@@ -341,6 +348,10 @@ directory. See `byte-recompile-directory'."
   (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
 (define-key dired-mode-map
   (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
+
+;; Add parts of each file's directory to the buffer name if not unique
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
 
 ;;;;;;;;;;;;;; recent-files ;;;;;;;;;;;;;;;;;;;;;;;;
 ;(setq recentf-auto-cleanup 'never)
@@ -989,11 +1000,11 @@ directory. See `byte-recompile-directory'."
 			      (run-hooks 'prog-mode-hook)))
 (add-hook 'matlab-mode-hook
 	  '(lambda ()
+	     (require 'matlab-expansions)
 	     (auto-complete-mode 1)
 	     (define-key matlab-mode-map (kbd "<f12>") 'dek-matlab-set-breakpoint)
 	     (key-chord-define matlab-mode-map ";;"  "\C-e;")
-	 ))
-
+	     ))
 
 (defun mfindent ()
   (interactive)
@@ -1014,8 +1025,6 @@ directory. See `byte-recompile-directory'."
 ;; (require 'stumpwm-mode)
 ;; (add-to-list 'auto-mode-alist '("\\.stumpwmrc$" . stumpwm-mode))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
@@ -1121,7 +1130,6 @@ directory. See `byte-recompile-directory'."
       (find-file dek-rwth-org-filepath)
       )
   )
-
 
 (defun ld ()
   "load last directory in dired"
