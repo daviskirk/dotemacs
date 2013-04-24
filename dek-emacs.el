@@ -1,14 +1,28 @@
-;; To remove the waiting time at startup...
+;;; .emacs --- Davis Kirkendall
 ;;
-;; (modify-frame-parameters nil '((wait-for-wm . nil)))
+;;; Commentary:
+;; This is the EMACS init file for Davis Kirkendall
+;; Sections are divided by comment bars.
+;;
+;;; Code:
+
+(require 'cl)
+(defun .emacs ()
+  "Switch to my emacs file."
+  (interactive)
+  (if (get-buffer (expand-file-name "dek-emacs.el" user-emacs-directory))
+      (switch-to-buffer (expand-file-name "dek-emacs.el" user-emacs-directory))
+    (find-file (expand-file-name "dek-emacs.el" user-emacs-directory))
+    )
+  )
+
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (set-face-attribute 'default nil :height 98 :family "Monaco")
+
 ;; (setq debug-on-error t)
-(require 'cl)
-(setq warning-suppress-types nil)
 (setq frame-title-format '("" "Emacs - %b - %m"))
 
-(add-to-list 'default-frame-alist '(background-mode . dark))
+;; (add-to-list 'default-frame-alist '(background-mode . dark))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;; LOADPATH ;;;;;;;;;;;;;;;;;;;;;;;
 (add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory ))
@@ -19,26 +33,43 @@
 (require 'powerline)
 (powerline-default-theme)
 (load-theme 'zenburn t)
+
 (global-rainbow-delimiters-mode 1)
 (show-paren-mode 1)
-
-;;;;;;;;;;;;;;;;;;;; PRELUDE ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq prelude-whitespace nil)
-(setq prelude-flyspell t)
-(setq prelude-guru t)
+;; Sentences do not need double spaces to end. Period.
+(set-default 'sentence-end-double-space nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;; CUA-MODE ;;;;;;;;;;;;;;;;;;;;;;
 (setq-default transient-mark-mode t)
 (setq-default cua-mode t)
 (setq-default truncate-lines t)
 (cua-mode t)
-(global-set-key (kbd "C-<tab>") 'other-window)
 
-(setq sublimity-scroll-vdecc 1.4)
+(setq sublimity-scroll-vdecc 1.3)
 (setq sublimity-scroll-vspeeds '(5000 1000 500 200 100 50 10 5))
 (setq sublimity-auto-hscroll nil)
+(setq sublimity-scroll-hdecc 1)
 (require 'sublimity-scroll)
 
+;;;;;;;;;;;;;;;;;; KEY-CHORD ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(key-chord-mode 1)
+(key-chord-define-global "xf" 'helm-for-files)
+(key-chord-define-global "xb" 'helm-for-files)
+
+;; map space chord to ctrl and alt keys
+(setq space-to-ctrl-keys (split-string "k, w, v, \t, a, e, g, o, =" ",? "))
+(dolist (key space-to-ctrl-keys)
+  (key-chord-define-global (concat " " key) (kbd (concat "C-" key))))
+
+;; (setq space-to-meta-keys (split-string "h j k l" ",? "))
+;; (dolist (key space-to-meta-keys)
+;;   (key-chord-define-global (concat " " key) (kbd (concat "M-" key))))
+
+(key-chord-define-global " x" 'cua-cut-region)
+(key-chord-define-global " c" 'cua-copy-region)
+(key-chord-define-global " s" 'ace-jump-mode)
+(key-chord-define-global " m" 'cua-set-mark)
+(setq key-chord-two-keys-delay 0.05)
 
 ;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'multiple-cursors)
@@ -49,6 +80,23 @@
 (global-set-key (kbd "C-M-<return>") 'mc/edit-lines)
 (global-unset-key (kbd "M-<down-mouse-1>"))
 (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
+
+
+;;;;;;;;;;;;;;;;;;;;; WINDOWS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "C-<tab>") 'other-window)
+(global-set-key   (kbd "\C-x w w") 'helm-swap-windows)
+(winner-mode 1)
+(setq winner-mode 1)
+
+(global-set-key (kbd "C-1") 'toggle-delete-other-windows)
+(key-chord-define-global "x2" 'split-window-below)
+(key-chord-define-global "x3" 'split-window-right)
+
+(defun toggle-delete-other-windows ()
+  (interactive)
+  (if (> (length (window-list)) 1)
+      (delete-other-windows)
+    (winner-undo)))
 
 ;;;;;;;;;;;;;;;;;;;;; BYTE COMPILE ;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -77,6 +125,7 @@ directory. See `byte-recompile-directory'."
   (let ((buffer-backed-up nil))
     (backup-buffer)))
 (add-hook 'before-save-hook  'force-backup-of-buffer)
+(global-set-key (kbd "<f9>") 'save-buffer)
 
 ;;;;;;;;;;;;;;;;;;;; save place ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Save point position between sessions
@@ -154,6 +203,21 @@ directory. See `byte-recompile-directory'."
 (setq global-auto-revert-non-file-buffers t)
 (setq auto-revert-verbose nil)
 
+;;;;;;;;;;;;;;;;;;;;;; AUTO-SAVE;;;;;;;;;;;;;;;;;;;;;;;;
+(defun save-buffer-if-visiting-file (&optional args)
+  "Save the current buffer only if it is visiting a file"
+  (interactive)
+  (if (buffer-file-name)
+      (save-buffer args)))
+
+;; This causes files that I'm editing to be saved automatically by the
+;; emacs auto-save functionality.  I'm hoping to break myself of the
+;; c-x c-s twitch.
+(add-hook 'auto-save-hook 'save-buffer-if-visiting-file)
+
+(setq auto-save-timeout 4)
+(auto-save-mode 1)
+
 ;;;;;;;;;;;;;;;;;; VERSION CONTROL / GIT ;;;;;;;;;;;;;;;;
 
 (global-set-key (kbd "C-x V s") 'magit-status)
@@ -170,8 +234,8 @@ directory. See `byte-recompile-directory'."
   (global-set-key (vector (list 'control mouse-wheel-up-event))
 	  'zoom-out))
 
-
 ;;;;;;;;;;;;;;;;; HELM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'helm-themes)
 (global-set-key (kbd "C-x f") 'helm-for-files)
 (global-set-key (kbd "C-x y") 'anything-show-kill-ring)
 
@@ -181,9 +245,6 @@ directory. See `byte-recompile-directory'."
 ;;;;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (load-library "dek-ido")
-
-;;;;;;;;;;;;;;;;;; KEY-CHORD ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(key-chord-mode 1)
 
 ;;;;; NICER MOVEMENT KEYBINDINGS, NAVIGATION ;;;;;;;;;;;;;
 (global-set-key (kbd "RET") 'reindent-then-newline-and-indent)
@@ -201,10 +262,12 @@ directory. See `byte-recompile-directory'."
 (global-set-key "\M-," 'iy-go-to-char-backward)
 
 (global-set-key (kbd "C-M-SPC") 'er/expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
 
-;; When popping the mark, continue popping until the cursor actually moves
-;; Also, if the last command was a copy - skip past all the expand-region cruft.
 (defadvice pop-to-mark-command (around ensure-new-position activate)
+  "Continue popping mark until the cursor moves.
+Also, if the last command was a copy - skip past all the
+expand-region cruft."
   (let ((p (point)))
     (when (eq last-command 'save-region-or-current-line)
       ad-do-it
@@ -227,7 +290,15 @@ directory. See `byte-recompile-directory'."
   (smart-insert-operator-hook)
   (local-unset-key (kbd "."))
   (local-unset-key (kbd ":"))
+  (define-key python-mode-map "="
+    '(lambda ()
+       (interactive)
+       (if (looking-back "([^)]+[^ ]")
+	   (self-insert-command 1)
+	 (smart-insert-operator "="))))
   )
+
+
 (add-hook 'matlab-mode-hook 'my-matlab-mode-smart-operator-hook)
 (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
 
@@ -238,6 +309,7 @@ directory. See `byte-recompile-directory'."
 
 ;;;;;;;;;; Better Start of line ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dek-back-to-indentation-or-beginning ()
+  "Go to indentation or to the beginning of the line."
   (interactive)
   (if (= (point) (save-excursion (back-to-indentation) (point)))
       (beginning-of-line)
@@ -252,7 +324,6 @@ directory. See `byte-recompile-directory'."
 		(interactive)
 		(end-of-line)
 		(newline-and-indent)))
-
 
 
 ;;;;;;;;;;;;;;;;;;;; ALIGN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -282,12 +353,15 @@ directory. See `byte-recompile-directory'."
 (global-set-key "\M-r" 'backward-kill-word)
 (global-set-key "\C-\M-q" 'fill-paragraph)
 
+(key-chord-define-global "kk" 'kill-whole-line)
+
 ;;;;;;;;; real copy behavior ;;;;;;;;;;;;;
 (global-set-key "\M-v" 'cua-paste-pop)
 (delete-selection-mode 1)
 
 (auto-indent-global-mode)
-
+(setq auto-indent-known-indent-level-variables
+      '( c-basic-offset lisp-body-indent sgml-basic-offset))
 
 
 
@@ -317,6 +391,10 @@ directory. See `byte-recompile-directory'."
 
 ;;;;;;;;;;;; FILES AND BUFFERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key "\C-x\C-b" 'buffer-menu)
+
+;; Add parts of each file's directory to the buffer name if not unique
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
 
 
 ;;;;;;;;;;;;;;;; File manager/dired ;;;;;;;;;;;;;;;;;;;;
@@ -349,9 +427,6 @@ directory. See `byte-recompile-directory'."
 (define-key dired-mode-map
   (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
 
-;; Add parts of each file's directory to the buffer name if not unique
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'forward)
 
 ;;;;;;;;;;;;;; recent-files ;;;;;;;;;;;;;;;;;;;;;;;;
 ;(setq recentf-auto-cleanup 'never)
@@ -484,20 +559,23 @@ directory. See `byte-recompile-directory'."
 
 ;;;;;;;;;;;;;;; AUTO-INSERT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defun my/autoinsert-yas-expand()
-;;       "Replace text in yasnippet template."
-;;       (yas/expand-snippet (buffer-string) (point-min) (point-max)))
-;; (auto-insert-mode 1)
-;; (setq auto-insert-directory (expand-file-name "auto-insert-templates/" user-emacs-directory))
-;; (setq auto-insert-alist '((("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") . ["insert.h" c++-mode my/autoinsert-yas-expand])
-;;            (("\\.\\([C]\\|cc\\|cpp\\)\\'" . "C++ source") . ["insert.cc" my/autoinsert-yas-expand])
-;;            (("\\.sh\\'" . "Shell script") . ["insert.sh" my/autoinsert-yas-expand])
-;;            (("\\.el\\'" . "Emacs Lisp") . ["insert.el" my/autoinsert-yas-expand])
-;;            (("\\.pl\\'" . "Perl script") . ["insert.pl" my/autoinsert-yas-expand])
-;;            (("\\.pm\\'" . "Perl module") . ["insert.pm" my/autoinsert-yas-expand])
-;;            (("\\.py\\'" . "Python script") . ["insert.py" my/autoinsert-yas-expand])
-;;            (("[mM]akefile\\'" . "Makefile") . ["Makefile" my/autoinsert-yas-expand])
-;;            (("\\.tex\\'" . "TeX/LaTeX") . ["insert.tex" my/autoinsert-yas-expand])))
+(defun my/autoinsert-yas-expand()
+      "Replace text in yasnippet template."
+      (yas-expand-snippet (buffer-string) (point-min) (point-max)))
+(auto-insert-mode 1)
+(setq auto-insert-directory (expand-file-name "auto-insert-templates/" user-emacs-directory))
+(setq auto-insert-alist
+      '(
+	;; (("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") . ["insert.h" c++-mode my/autoinsert-yas-expand])
+	;; (("\\.\\([C]\\|cc\\|cpp\\)\\'" . "C++ source") . ["insert.cc" my/autoinsert-yas-expand])
+	;; (("\\.sh\\'" . "Shell script") . ["insert.sh" my/autoinsert-yas-expand])
+	;; (("\\.el\\'" . "Emacs Lisp") . ["insert.el" my/autoinsert-yas-expand])
+	;; (("\\.pl\\'" . "Perl script") . ["insert.pl" my/autoinsert-yas-expand])
+	;; (("\\.pm\\'" . "Perl module") . ["insert.pm" my/autoinsert-yas-expand])
+	(("\\.py\\'" . "Python script") . ["insert.py" my/autoinsert-yas-expand])
+	;; (("[mM]akefile\\'" . "Makefile") . ["Makefile" my/autoinsert-yas-expand])
+	;; (("\\.tex\\'" . "TeX/LaTeX") . ["insert.tex" my/autoinsert-yas-expand])
+	))
 
 ;; ;;;;;;;;;;;;;;;; JABBER/CHAT STUFF ;;;;;;;;;;
 
@@ -511,14 +589,13 @@ directory. See `byte-recompile-directory'."
 
 ;;;;;;;;;;;;;; Diminish modeline clutter ;;;;;;;;;;;;;;;;;;
 (require 'diminish)
-(add-hook 'prog-mode-hook (lambda nil (diminish 'guru-mode)) t)
 (diminish 'autopair-mode)
 
 
 ;;;;;;;;;;;;;;; ORG MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq  org-directory  "~/org")
-(setq  org-default-notes-file  (concat  org-directory  "/TODO.org"))
+(setq  org-default-notes-file  (expand-file-name org-directory "TODO.org"))
 ;(add-hook 'org-mode-hook 'turn-on-org-cdlatex)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 ;; Make TAB the yas trigger key in the org-mode-hook
@@ -527,7 +604,6 @@ directory. See `byte-recompile-directory'."
 	  (defvar yas/key-syntaxes (list "!_." "w" "w_.\\" "^ "))
 	  (auto-fill-mode 0)
 	  ))
-
 
 (setq org-odd-levels-only t)
 (setq org-hide-leading-stars t)
@@ -590,7 +666,6 @@ directory. See `byte-recompile-directory'."
 (setq org-mobile-directory "~/Dropbox/MobileOrg")
 (setq org-mobile-inbox-for-pull "~/org/inbox.org")
 
-
 ;;;;;;;;;;;;;; PHP-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (autoload 'php-mode "php-mode.el" "PHP editing mode" t)
@@ -600,11 +675,11 @@ directory. See `byte-recompile-directory'."
 ;; php files, that can been intertwined with HTML code
 
 (add-hook 'php-mode-hook
-      (lambda()
-	(define-key php-mode-map [f5] 'html-mode)))
+          (lambda()
+            (define-key php-mode-map [f5] 'html-mode)))
 (add-hook 'html-mode-hook
-      (lambda()
-	(define-key html-mode-map [f5] 'php-mode)))
+          (lambda()
+            (define-key html-mode-map [f5] 'php-mode)))
 
 ;;;;;;;;;;;;;; NXHTML-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -627,31 +702,25 @@ directory. See `byte-recompile-directory'."
 ;; (require 'cython-mode)
 ;; (add-to-list 'auto-mode-alist '("\\.pyx$" . cython-mode))
 
-(defun dek-python-add-breakpoint ()
+(defun dek-python-crunch ()
+  "Comment region if region is active, have 2 spaces for inline comments."
   (interactive)
-  (let (pdb-regexp)
-    (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
-  (if (string-match pdb-regexp (thing-at-point 'line))
-      (kill-whole-line)
-    (end-of-line)
-    (newline-and-indent)
-    (insert "import ipdb; ipdb.set_trace()")
-    (highlight-lines-matching-regexp pdb-regexp)
-    )))
+  (if (region-active-p)
+      (comment-region (point) (mark))
+    (when (and (looking-at "$") (not (looking-back "^\\|\\([[:space:]]\\{2\\}\\)")))
+      (just-one-space 2))
+    (insert "#")))
 
-
-(defun dek-python-find-all-breakpoints ()
-  (interactive)
-  (let (pdb-regexp point)
-    (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()$")
-    (occur pdb-regexp)
-    ))
-
-(add-hook 'python-mode-hook '(lambda ()
-		   (flycheck-mode 1)
-		   (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
-		   (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
-		   ))
+(add-hook 'python-mode-hook
+	  '(lambda ()
+	     (flycheck-mode 1)
+	     (auto-indent-minor-mode -1)
+             (setq-local auto-indent-kill-line-at-eol nil)
+             (define-key python-mode-map (kbd "RET") 'newline-and-indent)
+             (define-key python-mode-map (kbd "#") 'dek-python-crunch)
+	     (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
+	     (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
+	     ))
 
 (setq
  python-shell-interpreter "ipython"
@@ -755,6 +824,20 @@ directory. See `byte-recompile-directory'."
 ;"WhizzyTeX, a minor-mode WYSIWIG environment for LaTeX" t)
 ;(setq-default whizzy-viewers '(("-pdf" "evince %s" )("-dvi" "evince %s")("-ps" "gv") ))
 
+;;;;;;;;;;;;;;;;;;;;; PROGRAMMING MODES ;;;;;;;;;;;;;;;
+(add-hook 'after-init-hook 'global-flycheck-mode)
+(setq flycheck-flake8rc (expand-file-name ".flake8rc" user-emacs-directory))
+(setq prog-mode-hooks
+      '(matlab-mode
+	python-mode
+	latex-mode
+	TeX-latex-mode
+	emacs-lisp-mode))
+;; add prog-mode-hook to all programming language modes
+(dolist (tmp-prog-mode-hook prog-mode-hooks nil)
+  (add-hook tmp-prog-mode-hook (lambda () (run-hooks 'prog-mode-hook))))
+
+;;;;;;;;;;;;;;;;;;;;;;;; FLYSPELL ;;;;;;;;;;;;;;;;;;;;;;;;;
 ; rechtschreibung spellchecking aspell flyspell
 (setq ispell-program-name "aspell")
 (setq ispell-extra-args '("--sug-mode=ultra"))
@@ -763,6 +846,12 @@ directory. See `byte-recompile-directory'."
 (setq flyspell-default-dictionary "english")
 (setq ispell-enable-tex-parser t)
 (setq flyspell-issue-message-flag nil)
+
+(add-hook 'prog-mode-hook
+	  (lambda ()
+            (flyspell-prog-mode)
+	    (set-face-attribute 'flyspell-incorrect nil :foreground "#ac736f" :weight 'bold)
+	    (set-face-attribute 'flyspell-duplicate nil :foreground "#8c836f" :underline t)))
 
 (defun dek-switch-dictionary()
   (interactive)
@@ -903,7 +992,6 @@ directory. See `byte-recompile-directory'."
 ;;      ))
 
 ;;;;;;;;;;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'emacs-lisp-mode 'flycheck-mode)
 
 ;;;;;;;;;;;;;;;;;;;;; clojure mode ;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-hook 'clojure-mode-hook 'paredit-mode)
@@ -938,11 +1026,6 @@ directory. See `byte-recompile-directory'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; MATLAB ;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Replace path below to be where your matlab.el file is.
-;; (add-to-list 'load-path (expand-file-name "site-lisp/matlab-emacs" user-emacs-directory))
-;; (load-library "matlab-load")
-;; (message "matlab-load loaded")
-
 (add-to-list 'load-path (expand-file-name "site-lisp/matlab" user-emacs-directory))
 (require 'matlab-load)
 
@@ -955,7 +1038,7 @@ directory. See `byte-recompile-directory'."
     (setq matlab-shell-command "/pds/opt/matlab/bin/matlab"))
 
 (defun dek-matlab-set-ssh (host)
-  "Sends dbcont to matlab shell if you're in the matlab shell buffer"
+  "Set matlab binary to matlab binary on HOST over ssh."
   (interactive "sHost: ")
   (shell-command (concat "echo 'ssh -X davis@" host " matlab' > ~/bin/matlab_ssh"))
   (setq matlab-shell-command "~/bin/matlab_ssh")
@@ -963,7 +1046,7 @@ directory. See `byte-recompile-directory'."
   )
 
 (defun dek-matlab-set-breakpoint ()
-  "thisandthat."
+  "Set breakpoint in matlab."
   (interactive)
   (let (line-number m-file-name command-string current-mfile-buffer)
     (setq line-number (number-to-string (line-number-at-pos)))
@@ -977,13 +1060,13 @@ directory. See `byte-recompile-directory'."
   )
 
 (defun dek-matlab-send-dbstep ()
-  "thisandthat."
+  "Send dbstep to matlab buffer."
   (interactive)
   (matlab-shell-send-string "dbstep\n")
   )
 
 (defun dek-matlab-send-dbcont ()
-  "Sends dbcont to matlab shell if you're in the matlab shell buffer"
+  "Sends dbcont to matlab shell if you're in the matlab shell buffer."
   (interactive)
   (matlab-shell-send-string "dbcont\n")
   )
@@ -996,8 +1079,6 @@ directory. See `byte-recompile-directory'."
 	 (define-key matlab-shell-mode-map (kbd "<f11>") 'dek-matlab-send-dbstep)
 	 ))
 
-(add-hook 'matlab-mode-hook (lambda ()
-			      (run-hooks 'prog-mode-hook)))
 (add-hook 'matlab-mode-hook
 	  '(lambda ()
 	     (require 'matlab-expansions)
@@ -1005,6 +1086,34 @@ directory. See `byte-recompile-directory'."
 	     (define-key matlab-mode-map (kbd "<f12>") 'dek-matlab-set-breakpoint)
 	     (key-chord-define matlab-mode-map ";;"  "\C-e;")
 	     ))
+
+;; fast delimiters
+(key-chord-define-global
+ "((" '(lambda ()
+	 (interactive)
+	 (insert "(")
+	 (forward-sexp)
+	 (insert ")")
+	 (forward-char)
+	 ))
+
+(key-chord-define-global
+ "[[" '(lambda ()
+	 (interactive)
+	 (insert "[")
+	 (forward-sexp)
+	 (insert "]")
+	 (forward-char)
+	 ))
+
+(key-chord-define-global
+ "{{" '(lambda ()
+	 (interactive)
+	 (insert "[")
+	 (forward-sexp)
+	 (insert "]")
+	 (forward-char)
+	 ))
 
 (defun mfindent ()
   (interactive)
@@ -1018,14 +1127,12 @@ directory. See `byte-recompile-directory'."
       (replace-rectangle rectstart (point) "")))))
 
 ;; (add-to-list 'helm-browse-code-regexp-alist '(matlab-mode . "\\<function\\>\\|\\<class\\>"))
-(message "MATLAB ALL LOADED!!!")
+;; (message "MATLAB ALL LOADED!!!")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; STUMPWM ;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'stumpwm-mode)
 ;; (add-to-list 'auto-mode-alist '("\\.stumpwmrc$" . stumpwm-mode))
-
-
 
 
 ;;;;;;;;;;;;;;;; FONT AND SETUP ;;;;;;::::::;;;;;;;;;;;;;;
@@ -1070,12 +1177,16 @@ directory. See `byte-recompile-directory'."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-term-color-vector [unspecified "#282a2e" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#81a2be" "#e0e0e0"])
+ '(auto-indent-on-visit-pretend-nothing-changed nil)
+ '(custom-safe-themes (quote ("253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
  '(fci-rule-color "#2b2b2b")
  '(fill-column 79)
  '(flymake-no-changes-timeout 1.5)
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
- '(virtualenv-root "~/.virtualenvs/"))
+ '(virtualenv-root "~/.virtualenvs/")
+ '(warning-suppress-types (quote ((\(undo\ discard-info\))))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -1113,17 +1224,9 @@ directory. See `byte-recompile-directory'."
 
 ;;;;;;;;;;;;;CUSTOM FUNCTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun .emacs ()
-  "switch to my emacs file"
-  (interactive)
-  (if (get-buffer (expand-file-name "dek-emacs.el" user-emacs-directory))
-      (switch-to-buffer (expand-file-name "dek-emacs.el" user-emacs-directory))
-    (find-file (expand-file-name "dek-emacs.el" user-emacs-directory))
-    )
-  )
 
 (defun rwth ()
-  "switch to my rwth org file"
+  "Switch to my rwth org file."
   (interactive)
   (if (get-buffer dek-rwth-org-filename)
       (switch-to-buffer dek-rwth-org-filename)
@@ -1132,13 +1235,13 @@ directory. See `byte-recompile-directory'."
   )
 
 (defun ld ()
-  "load last directory in dired"
+  "Load last directory in dired."
   (interactive)
   (find-file-existing (shell-command-to-string "cat ~/.ld|head -c -1"))
   )
 
 (defun sd ()
-  "switch to current directory by creating new window in tmux"
+  "Switch to current directory by creating new window in tmux."
   (interactive)
   (concat "echo " "'" (file-name-directory (buffer-file-name)) "' > ~/.ld" )
   (shell-command "tmux neww")
@@ -1151,7 +1254,7 @@ directory. See `byte-recompile-directory'."
 (setq tetris-score-file (expand-file-name ".tetris-scores" user-emacs-directory))
 
 (defun dek-set-system-dependant-default-font(fontlist)
-  "DOCSTRING"
+  "Set system dependent font. TODO: implement this correctly."
   (if (>= (length fontlist) 2)
       (let (tmpsystem tmpfont tmpfontheight)
     (setq tmpsystem (car fontlist)
@@ -1162,3 +1265,6 @@ directory. See `byte-recompile-directory'."
       (dek-set-system-dependant-default-font (cddr fontlist)))
     )))
 (put 'upcase-region 'disabled nil)
+
+(provide 'dek-emacs)
+;;; dek-emacs.el ends here

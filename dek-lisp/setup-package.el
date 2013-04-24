@@ -7,8 +7,7 @@
   (package-refresh-contents))
 
 (defvar dek-used-packages
-  '(paredit
-    paredit-menu
+  '(
     clojure-mode
     clojure-snippets
     diminish
@@ -40,14 +39,12 @@
     lua-mode
     magit
     melpa
-    multi-web-mode
     multiple-cursors
     nav-flash
     org-bullets
     org-cua-dwim
     php-mode
     powerline
-    prelude-programming
     guru-mode
     rainbow-delimiters
     slime
@@ -59,7 +56,6 @@
     virtualenv
     web-mode
     websocket
-    boxquote
     yaml-mode
     yasnippet
     zenburn-theme
