@@ -1,0 +1,21 @@
+# -*- mode: snippet -*-
+# name: unittest
+# key: unittestcls
+# --
+import unittest
+
+class Test${1:Class}(unittest.TestCase):
+"""${2:docstring}
+"""
+    def setUp(self):
+        pass
+
+    def test_$1(self):
+    """Testing $1
+    """
+    $0
+    self.assertTrue(1)
+
+
+if __name__ == "__main__":
+    unittest.main()
