@@ -697,6 +697,31 @@ expand-region cruft."
 
 ;;;;;;;;;;;;;;;;;;;;; PYTHON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun dek-python-add-breakpoint ()
+  (interactive)
+  (let (pdb-regexp)
+    (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
+    (if (string-match pdb-regexp (thing-at-point 'line))
+        (kill-whole-line)
+      (end-of-line)
+      (newline-and-indent)
+      (insert "import ipdb; ipdb.set_trace()")
+      (highlight-lines-matching-regexp pdb-regexp)
+      )))
+
+(defun dek-python-find-all-breakpoints ()
+  (interactive)
+  (let (pdb-regexp point)
+    (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()$")
+    (occur pdb-regexp)
+    ))
+
+(add-hook 'python-mode-hook '(lambda ()
+                               (flycheck-mode 1)
+                               (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
+                               (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
+			       ))
+
 ;; (add-to-list 'load-path (expand-file-name "site-lisp/python.el" user-emacs-directory))
 ;; (require 'python)
 ;; (require 'cython-mode)
