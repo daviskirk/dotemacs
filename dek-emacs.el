@@ -307,9 +307,10 @@ expand-region cruft."
 (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
 
 ;;;;;;;;;;;;;;; smooth scrolling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time at first
-;; (setq smooth-scroll-margin 5)
-
+(setq scroll-margin 10
+      scroll-conservatively 0
+      scroll-up-aggressively 0.01
+      scroll-down-aggressively 0.01)
 
 ;;;;;;;;;; Better Start of line ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dek-back-to-indentation-or-beginning ()
