@@ -1216,7 +1216,7 @@ expand-region cruft."
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
  '(virtualenv-root "~/.virtualenvs/")
- '(warning-suppress-types (quote ((\(undo\ discard-info\))))))
+ '(warning-suppress-types (quote ((undo discard-info)))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
