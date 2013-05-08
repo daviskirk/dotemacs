@@ -765,8 +765,7 @@ expand-region cruft."
 
 ;; JINJA2
 (autoload 'jinja2-mode "jinja2-mode")
-
-
+(add-to-list 'auto-mode-alist '("\\.jinja2$" . jinja2-mode))
 
 ;;;;;;;;;;; LATEX AND AUCTEX  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-to-list 'auto-mode-alist '("\\.rwthtex$" . TeX-latex-mode))
