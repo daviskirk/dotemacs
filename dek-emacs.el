@@ -1116,6 +1116,9 @@ expand-region cruft."
 	     (key-chord-define matlab-mode-map ";;"  "\C-e;")
 	     ))
 
+(eval-after-load "helm-regexp"
+  '(add-to-list 'helm-browse-code-regexp-alist '(matlab-mode . "\\<function\\>\\|\\<classdef\\>")))
+
 ;; fast delimiters
 (key-chord-define-global
  "((" '(lambda ()
@@ -1154,8 +1157,6 @@ expand-region cruft."
     (progn
       (insert " ")
       (replace-rectangle rectstart (point) "")))))
-
-;; (add-to-list 'helm-browse-code-regexp-alist '(matlab-mode . "\\<function\\>\\|\\<class\\>"))
 ;; (message "MATLAB ALL LOADED!!!")
 
 
