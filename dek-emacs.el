@@ -720,17 +720,6 @@ expand-region cruft."
     (occur pdb-regexp)
     ))
 
-(add-hook 'python-mode-hook '(lambda ()
-                               (flycheck-mode 1)
-                               (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
-                               (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
-			       ))
-
-;; (add-to-list 'load-path (expand-file-name "site-lisp/python.el" user-emacs-directory))
-;; (require 'python)
-;; (require 'cython-mode)
-;; (add-to-list 'auto-mode-alist '("\\.pyx$" . cython-mode))
-
 (defun dek-python-crunch ()
   "Comment region if region is active, have 2 spaces for inline comments."
   (interactive)
