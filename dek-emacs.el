@@ -699,6 +699,16 @@ expand-region cruft."
 ;; (add-to-list 'auto-mode-alist '("\\.yaml$" . yaml-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.xml" . xml-mode))
 
+;;;;;;;;;;;;;;;;;;;;; RST MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(add-hook 'rst-mode-hook '(lambda ()
+			    (flycheck-mode 1)
+                            (auto-indent-minor-mode -1)
+                            (setq-local auto-indent-kill-line-at-eol nil)
+                            (setq-local auto-indent-on-yank-or-paste nil)
+                            (define-key rst-mode-map (kbd "RET") 'newline-and-indent)
+                            ))
+
 ;;;;;;;;;;;;;;;;;;;;; PYTHON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun dek-python-add-breakpoint ()
