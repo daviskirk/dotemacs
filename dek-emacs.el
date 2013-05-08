@@ -745,6 +745,7 @@ expand-region cruft."
 	     (flycheck-mode 1)
 	     (auto-indent-minor-mode -1)
              (setq-local auto-indent-kill-line-at-eol nil)
+             (setq-local auto-indent-on-yank-or-paste nil)
              (define-key python-mode-map (kbd "RET") 'newline-and-indent)
              (define-key python-mode-map (kbd "#") 'dek-python-crunch)
 	     (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
