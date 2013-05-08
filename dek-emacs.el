@@ -55,20 +55,23 @@
 (key-chord-mode 1)
 (key-chord-define-global "xf" 'helm-for-files)
 (key-chord-define-global "xb" 'helm-for-files)
+(key-chord-define-global "xs" 'save-buffer)
+
+(key-chord-define-global "xx" 'cua-cut-region)
+(key-chord-define-global "cc" 'cua-copy-region)
+(key-chord-define-global "vv" (kbd "C-v"))
+(key-chord-define-global "aa" (kbd "C-a"))
+(key-chord-define-global "ee" (kbd "C-e"))
 
 ;; map space chord to ctrl and alt keys
-(setq space-to-ctrl-keys (split-string "k, w, v, \t, a, e, g, o, =" ",? "))
-(dolist (key space-to-ctrl-keys)
-  (key-chord-define-global (concat " " key) (kbd (concat "C-" key))))
+;; (setq space-to-ctrl-keys (split-string "k, w, v, \t, a, e, g, o, =" ",? "))
+;; (dolist (key space-to-ctrl-keys)
+;;   (key-chord-define-global (concat " " key) (kbd (concat "C-" key))))
 
 ;; (setq space-to-meta-keys (split-string "h j k l" ",? "))
 ;; (dolist (key space-to-meta-keys)
 ;;   (key-chord-define-global (concat " " key) (kbd (concat "M-" key))))
 
-(key-chord-define-global " x" 'cua-cut-region)
-(key-chord-define-global " c" 'cua-copy-region)
-(key-chord-define-global " s" 'ace-jump-mode)
-(key-chord-define-global " m" 'cua-set-mark)
 (setq key-chord-two-keys-delay 0.05)
 
 ;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -260,6 +263,7 @@ directory. See `byte-recompile-directory'."
 (key-chord-define-global "fd"  'iy-go-to-char-backward)
 (global-set-key "\M-." 'iy-go-to-char)
 (global-set-key "\M-," 'iy-go-to-char-backward)
+(key-chord-define-global "fs" 'ace-jump-mode)
 
 (global-set-key (kbd "C-M-SPC") 'er/expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
