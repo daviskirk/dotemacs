@@ -5,7 +5,6 @@
 ;; Sections are divided by comment bars.
 ;;
 ;;; Code:
-
 (require 'cl)
 (defun .emacs ()
   "Switch to my emacs file."
@@ -60,18 +59,6 @@
 (key-chord-define-global "xx" 'cua-cut-region)
 (key-chord-define-global "cc" 'cua-copy-region)
 (key-chord-define-global "vv" (kbd "C-v"))
-(key-chord-define-global "aa" (kbd "C-a"))
-(key-chord-define-global "ee" (kbd "C-e"))
-
-;; map space chord to ctrl and alt keys
-;; (setq space-to-ctrl-keys (split-string "k, w, v, \t, a, e, g, o, =" ",? "))
-;; (dolist (key space-to-ctrl-keys)
-;;   (key-chord-define-global (concat " " key) (kbd (concat "C-" key))))
-
-;; (setq space-to-meta-keys (split-string "h j k l" ",? "))
-;; (dolist (key space-to-meta-keys)
-;;   (key-chord-define-global (concat " " key) (kbd (concat "M-" key))))
-
 (setq key-chord-two-keys-delay 0.05)
 
 ;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -219,12 +206,35 @@ directory. See `byte-recompile-directory'."
 (add-hook 'auto-save-hook 'save-buffer-if-visiting-file)
 
 (setq auto-save-timeout 4)
+(setq auto-save-interval 4000)
 (auto-save-mode 1)
 
 ;;;;;;;;;;;;;;;;;; VERSION CONTROL / GIT ;;;;;;;;;;;;;;;;
 
 (global-set-key (kbd "C-x V s") 'magit-status)
 (global-set-key (kbd "C-x V l") 'magit-log)
+(defun magit-toggle-whitespace ()
+  (interactive)
+  (if (member "-w" magit-diff-options)
+      (magit-dont-ignore-whitespace)
+    (magit-ignore-whitespace)))
+
+(defun magit-ignore-whitespace ()
+  (interactive)
+  (add-to-list 'magit-diff-options "-w")
+  (magit-refresh))
+
+(defun magit-dont-ignore-whitespace ()
+  (interactive)
+  (setq magit-diff-options (remove "-w" magit-diff-options))
+  (magit-refresh))
+
+(defun add-magit-toggle-whitespace-key
+  (interactive)
+  (define-key magit-status-mode-map (kbd "W") 'magit-toggle-whitespace))
+
+(add-hook 'magit-mode 'add-magit-toggle-whitespace-key)
+
 
 ;;;;;;;;;;;;;;; ZOOMING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -242,7 +252,7 @@ directory. See `byte-recompile-directory'."
 (global-set-key (kbd "C-x f") 'helm-for-files)
 (global-set-key (kbd "C-x y") 'anything-show-kill-ring)
 
-(global-set-key (kbd "\C-x i") 'helm-browse-code)
+(global-set-key (kbd "\C-x i") 'helm-imenu)
 
 
 ;;;;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -286,6 +296,7 @@ expand-region cruft."
   (smart-insert-operator-hook)
   (local-unset-key (kbd "."))
   (local-unset-key (kbd ":"))
+  (local-unset-key (kbd ","))
   (local-unset-key (kbd "*"))
   (local-unset-key (kbd "/"))
   (local-unset-key (kbd "%"))
@@ -294,6 +305,8 @@ expand-region cruft."
   (smart-insert-operator-hook)
   (local-unset-key (kbd "."))
   (local-unset-key (kbd ":"))
+  (local-unset-key (kbd "*"))
+  (local-unset-key (kbd "/"))
   (define-key python-mode-map "="
     '(lambda ()
        (interactive)
@@ -305,6 +318,7 @@ expand-region cruft."
 
 (add-hook 'matlab-mode-hook 'my-matlab-mode-smart-operator-hook)
 (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
+
 
 ;;;;;;;;;;;;;;; smooth scrolling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq scroll-margin 10
@@ -512,20 +526,11 @@ expand-region cruft."
 
 ;;;;;;;;;;;;;;;; YASNIPPET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun dek-find-yasnippet-dirname-in-list(filelist)
-  "DOCSTRING"
-  (if (> (length filelist) 0)
-      (if (or (= (length filelist) 1)
-	  (string-match "^yasnippet-[0-9.]+" (car filelist)))
-      (car filelist)
-    (dek-find-yasnippet-dirname-in-list (cdr filelist))
-    )))
-
 (defun dek-find-elpa-yasnippet-snippet-dir ()
   (interactive)
   (concat
    package-user-dir "/"
-   (dek-find-yasnippet-dirname-in-list (directory-files package-user-dir))
+   (car (directory-files package-user-dir nil "^yasnippet-[0-9.]+"))
    "/snippets"))
 
 (setq yas-snippet-dirs
@@ -533,7 +538,6 @@ expand-region cruft."
 	(dek-find-elpa-yasnippet-snippet-dir)))
 
 (yas-global-mode t)
-
 
 ;;;;;;;;;; AUTO-COMPLETE (AC-) ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -599,6 +603,7 @@ expand-region cruft."
 
 ;;;;;;;;;;;;;;; ORG MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(setq org-startup-folded t)
 (setq  org-directory  "~/org")
 (setq  org-default-notes-file  (expand-file-name org-directory "TODO.org"))
 ;(add-hook 'org-mode-hook 'turn-on-org-cdlatex)
@@ -608,9 +613,11 @@ expand-region cruft."
       #'(lambda ()
 	  (defvar yas/key-syntaxes (list "!_." "w" "w_.\\" "^ "))
 	  (auto-fill-mode 0)
+	  (auto-indent-mode -1)
+          (define-key org-mode-map (kbd "C-<tab>") 'other-window)
 	  ))
 
-(setq org-odd-levels-only t)
+(setq org-odd-levels-only nil)
 (setq org-hide-leading-stars t)
 
 
@@ -620,7 +627,15 @@ expand-region cruft."
 ;; (global-set-key "\C-cb" 'org-cycle-agenda-files) ;; redifined for bookmarks
 (setq org-cycle-separator-lines 0)
 (setq org-insert-heading-respect-content t)
-(setq org-todo-keywords '((sequence "TODO" "STARTED" "DELEGATED" "|" "DONE" "DEFERRED" "CANCELLED")))
+(setq org-todo-keywords '((sequence "TODO" "DOING" "BLOCKED" "REVIEW" "|" "DONE" "ARCHIVED")))
+;; Setting Colours (faces) for todo states to give clearer view of work
+(setq org-todo-keyword-faces
+      '(("TODO" . org-warning)
+        ("DOING" . "#F0DFAF") ;; yellow
+        ("BLOCKED" . "#CC9393") ;; red
+        ("REVIEW" . "#8CD0D3") ;; blue
+        ("DONE" . org-done)
+        ("ARCHIVED" . "#8C5353")))
 
 (setq org-tag-alist '(("rwth" . ?r) ("klausur" . ?k) ("organisation" . ?o)("LL" . ?l)("home" . ?h)("emacs" . ?e)("contact" . ?k)("theorie" .?t)("uebung" .?u)("zusammenfassung" .?z)("vorrechen" .?v)("current" . ?C)))
 
@@ -634,8 +649,7 @@ expand-region cruft."
 (setq org-log-note-clock-out t)
 
 ;; ORG-Agenda
-(setq org-agenda-files (file-expand-wildcards "~/org/*.org")) ; setting agenda files
-(add-to-list 'org-agenda-files  "~/Dropbox/AIA/showroom_neu/aia_showroom.org")
+(setq org-agenda-files (file-expand-wildcards "~/Documents/Code/aise/aia.org")) ; setting agenda files
 ;; (if (equal user-login-name "dek")
 ;;     (load-file "~/bin/org-agenda/org-agenda-export.el")
 ;;   (message "dek is not the user ... external mashine ... org-agenda-export not loaded"))
@@ -750,10 +764,12 @@ expand-region cruft."
              (define-key python-mode-map (kbd "#") 'dek-python-crunch)
 	     (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
 	     (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
-	     ))
+             (setq paragraph-start "\\(\\s-*$\\)\\|\\(\\.$)")
+             (setq paragraph-start "\f\\|\\(\s-*$\\)\\|\\([-:] +.+$\\)" paragraph-seperate "$")
+             ))
 
 (setq
- python-shell-interpreter "ipython"
+ python-shell-interpreter "~/anaconda/bin/ipython"
  python-shell-interpreter-args ""
  python-shell-prompt-regexp "In \\[[0-9]+\\]: "
  python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
@@ -1028,8 +1044,6 @@ expand-region cruft."
 ;;;;;;;;;;;; OTHER MODES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;; haskell-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-to-list 'load-path (expand-file-name "site-lisp/haskell-mode-2.8.0/" user-emacs-directory))
-(load "haskell-site-file")
 (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
@@ -1064,7 +1078,8 @@ expand-region cruft."
 ; (matlab-cedet-setup)
 ;; (message "matlab-cedet loaded")
 (if (equal user-login-name "davis")
-    (setq matlab-shell-command "/pds/opt/matlab/bin/matlab"))
+    (setq matlab-shell-command "/pds/opt/matlab/bin/matlab")
+  (setq matlab-shell-command "~/opt/matlab/bin/matlab"))
 
 (defun dek-matlab-set-ssh (host)
   "Set matlab binary to matlab binary on HOST over ssh."
@@ -1080,13 +1095,26 @@ expand-region cruft."
   (let (line-number m-file-name command-string current-mfile-buffer)
     (setq line-number (number-to-string (line-number-at-pos)))
     (setq m-file-name (file-name-sans-extension buffer-file-name))
-    (setq command-string (concat "dbstop in " m-file-name " at " line-number "\n"))
+    (setq command-string (concat "dbstop in '" m-file-name "' at " line-number "\n"))
     (setq current-mfile-buffer (buffer-name))
     (matlab-show-matlab-shell-buffer)
     (matlab-shell-send-string command-string)
     (switch-to-buffer-other-window  current-mfile-buffer)
     )
   )
+
+(defun dek-matlab-goto-error-line ()
+  "Get last error line, switch buffer and go to that line."
+  (interactive)
+  (let (errline original-pos)
+    (setq original-pos (point))
+    (search-backward-regexp "(line [0-9]*)")
+    (search-forward-regexp "[0-9]")
+    (setq errline (thing-at-point 'number))
+    (goto-char original-pos)
+    (other-window 1)
+    (goto-line errline)
+    ))
 
 (defun dek-matlab-send-dbstep ()
   "Send dbstep to matlab buffer."
@@ -1106,6 +1134,8 @@ expand-region cruft."
 	 (define-key matlab-shell-mode-map (kbd "C-<down>") 'windmove-down)
 	 (define-key matlab-shell-mode-map (kbd "<f5>") 'dek-matlab-send-dbcont)
 	 (define-key matlab-shell-mode-map (kbd "<f11>") 'dek-matlab-send-dbstep)
+         (define-key matlab-shell-mode-map (kbd "C-l") 'erase-buffer)
+         (define-key matlab-shell-mode-map (kbd "C-c <tab>") 'dek-matlab-goto-error-line)
 	 ))
 
 (add-hook 'matlab-mode-hook
@@ -1115,9 +1145,6 @@ expand-region cruft."
 	     (define-key matlab-mode-map (kbd "<f12>") 'dek-matlab-set-breakpoint)
 	     (key-chord-define matlab-mode-map ";;"  "\C-e;")
 	     ))
-
-(eval-after-load "helm-regexp"
-  '(add-to-list 'helm-browse-code-regexp-alist '(matlab-mode . "\\<function\\>\\|\\<classdef\\>")))
 
 ;; fast delimiters
 (key-chord-define-global
@@ -1212,6 +1239,8 @@ expand-region cruft."
  '(custom-safe-themes (quote ("253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
  '(fci-rule-color "#2b2b2b")
  '(fill-column 79)
+ '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
+ '(flycheck-idle-change-delay 2)
  '(flymake-no-changes-timeout 1.5)
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
@@ -1224,8 +1253,8 @@ expand-region cruft."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "#3f3f3f" :foreground "#dcdccc" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "Monaco"))))
- '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))) t)
- '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))) t)
+ '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))))
+ '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))))
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
  '(mode-line ((t (:background "#506070" :foreground "#dcdccc" :box (:line-width -1 :style released-button) :family "Ubuntu Condensed"))))
  '(mode-line-inactive ((t (:background "#555555" :foreground "#808080" :box nil :family "Ubuntu Condensed"))))
@@ -1295,6 +1324,7 @@ expand-region cruft."
       (dek-set-system-dependant-default-font (cddr fontlist)))
     )))
 (put 'upcase-region 'disabled nil)
+(put 'erase-buffer 'disabled nil)
 
 (provide 'dek-emacs)
 ;;; dek-emacs.el ends here
