@@ -5,6 +5,7 @@
 ;; Sections are divided by comment bars.
 ;;
 ;;; Code:
+
 (require 'cl)
 (defun .emacs ()
   "Switch to my emacs file."
@@ -34,7 +35,7 @@
 (load-theme 'zenburn t)
 
 (global-rainbow-delimiters-mode 1)
-(show-paren-mode 1)
+;; (show-paren-mode 1)
 ;; Sentences do not need double spaces to end. Period.
 (set-default 'sentence-end-double-space nil)
 
@@ -520,9 +521,13 @@ expand-region cruft."
 
 
 ;;;;;;;;;;;;;;;;;;;;; autopair ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'autopair)
-(autopair-global-mode) ;; to enable in all buffers
+;; (require 'autopair)
+;; (autopair-global-mode -1) ;; to enable in all buffers
 
+;;;;;;;;;;;;;;;;;;;;; smartparens ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'smartparens-config)
+(smartparens-global-mode t)
+(show-smartparens-global-mode t)
 
 ;;;;;;;;;;;;;;;; YASNIPPET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -718,7 +723,7 @@ expand-region cruft."
 
 (add-hook 'rst-mode-hook '(lambda ()
 			    (flycheck-mode 1)
-                            (auto-indent-minor-mode -1)
+                            (auto-indent-mode -1)
                             (setq-local auto-indent-kill-line-at-eol nil)
                             (setq-local auto-indent-on-yank-or-paste nil)
                             (define-key rst-mode-map (kbd "RET") 'newline-and-indent)
@@ -757,7 +762,7 @@ expand-region cruft."
 (add-hook 'python-mode-hook
 	  '(lambda ()
 	     (flycheck-mode 1)
-	     (auto-indent-minor-mode -1)
+	     (auto-indent-mode -1)
              (setq-local auto-indent-kill-line-at-eol nil)
              (setq-local auto-indent-on-yank-or-paste nil)
              (define-key python-mode-map (kbd "RET") 'newline-and-indent)
@@ -767,6 +772,16 @@ expand-region cruft."
              (setq paragraph-start "\\(\\s-*$\\)\\|\\(\\.$)")
              (setq paragraph-start "\f\\|\\(\s-*$\\)\\|\\([-:] +.+$\\)" paragraph-seperate "$")
              ))
+
+;; jedi mode
+(setq jedi:setup-keys t)                      ; optional
+(setq jedi:complete-on-dot t)                 ; optional
+(add-hook 'python-mode-hook 'jedi:setup)
+(add-hook 'jedi-mode-hook
+	  '(lambda ()
+	     (define-key jedi-mode-map (kbd "<C-tab>") nil)
+	     (define-key jedi-mode-map (kbd "<backtab>") 'jedi:complete)))
+
 
 (setq
  python-shell-interpreter "~/anaconda/bin/ipython"
@@ -1244,6 +1259,7 @@ expand-region cruft."
  '(flymake-no-changes-timeout 1.5)
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
+ '(jedi:key-complete [backtab])
  '(virtualenv-root "~/.virtualenvs/")
  '(warning-suppress-types (quote ((undo discard-info)))))
 
@@ -1253,12 +1269,13 @@ expand-region cruft."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "#3f3f3f" :foreground "#dcdccc" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "Monaco"))))
- '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))))
- '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))))
+ '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))) t)
+ '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))) t)
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
  '(mode-line ((t (:background "#506070" :foreground "#dcdccc" :box (:line-width -1 :style released-button) :family "Ubuntu Condensed"))))
  '(mode-line-inactive ((t (:background "#555555" :foreground "#808080" :box nil :family "Ubuntu Condensed"))))
- '(semantic-tag-boundary-face ((t (:overline "#93e0e3"))) t))
+ '(semantic-tag-boundary-face ((t (:overline "#93e0e3"))) t)
+ '(sp-show-pair-match-face ((t (:background "#2F2F2F" :weight bold)))))
 
 
 
