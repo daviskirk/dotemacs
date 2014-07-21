@@ -256,8 +256,14 @@ directory. See `byte-recompile-directory'."
   (global-set-key (vector (list 'control mouse-wheel-up-event))
 	  'zoom-out))
 
+;;;;;;;;;;;;;;;;; PROJECTILE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(projectile-global-mode)
+(setq projectile-enable-caching t)
+
 ;;;;;;;;;;;;;;;;; HELM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'helm-themes)
+(if (not (boundp 'helm-source-projectile-files-list))
+    (setq helm-source-projectile-files-list '()))
 (global-set-key (kbd "C-x f") 'helm-for-files)
 (global-set-key (kbd "C-x y") 'anything-show-kill-ring)
 
