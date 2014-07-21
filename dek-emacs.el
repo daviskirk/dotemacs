@@ -7,6 +7,14 @@
 ;;; Code:
 
 (require 'cl)
+
+(if (equal user-login-name "dek")
+    (setenv "PATH"
+	    (concat
+	     "/usr/local/texlive/2013/bin/x86_64-linux/:"
+	     (expand-file-name "~/anaconda/bin") ":"
+	     (getenv "PATH"))))
+
 (defun .emacs ()
   "Switch to my emacs file."
   (interactive)
