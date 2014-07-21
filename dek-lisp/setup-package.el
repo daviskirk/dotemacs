@@ -10,7 +10,6 @@
   '(
     clojure-mode
     clojure-snippets
-    diminish
     auctex
     auto-complete
     autopair
@@ -33,6 +32,7 @@
     helm
     helm-c-yasnippet
     helm-git
+    helm-swoop
     highlight-parentheses
     iy-go-to-char
     key-chord
