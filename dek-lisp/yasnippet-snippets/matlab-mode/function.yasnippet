@@ -2,8 +2,8 @@
 # name: function
 # key: function
 # --
-function ${1:$(if (and (search "," text) (not (string= (substring text 0 1) "["))) "[")}${1:return_val}${1:$(if (and (search "," text) (not (string= (substring text 0 1) "["))) "]")} = ${2:fname}(${3:args})
-%${2:$(upcase text)} ${4:short summary}
+function ${1:$(if (and (search "," yas/text) (not (string= (substring yas/text 0 1) "["))) "[")}${1:return_val}${1:$(if (and (search "," yas/text) (not (string= (substring yas/text 0 1) "["))) "]")} = ${2:fname}(${3:args})
+%${2:$(upcase yas/text)} ${4:short summary}
 %
-% ${1:$(if (and (search "," text) (not (string= (substring text 0 1) "["))) "[")}$1${1:$(if (and (search "," text) (not (string= (substring text 0 1) "["))) "]")} = $2($3)
+% ${1:$(if (and (search "," yas/text) (not (string= (substring yas/text 0 1) "["))) "[")}$1${1:$(if (and (search "," yas/text) (not (string= (substring yas/text 0 1) "["))) "]")} = $2($3)
 % $0
