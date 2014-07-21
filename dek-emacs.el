@@ -1257,17 +1257,26 @@ expand-region cruft."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(LaTeX-command "latex")
+ '(LaTeX-command-style (quote (("" "%(PDF)%(latex) %S%(PDFout)"))))
  '(ansi-term-color-vector [unspecified "#282a2e" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#81a2be" "#e0e0e0"])
  '(auto-indent-on-visit-pretend-nothing-changed nil)
- '(custom-safe-themes (quote ("253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
+ '(custom-safe-themes (quote ("1cf3f29294c5a3509b7eb3ff9e96f8e8db9d2d08322620a04d862e40dc201fe2" "cd70962b469931807533f5ab78293e901253f5eeb133a46c2965359f23bfb2ea" "769bb56fb9fd7e73459dcdbbfbae1f13e734cdde3cf82f06a067439568cdaa95" "253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
  '(fci-rule-color "#2b2b2b")
  '(fill-column 79)
  '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
  '(flycheck-idle-change-delay 2)
  '(flymake-no-changes-timeout 1.5)
+ '(fortran-do-indent 2)
+ '(fortran-if-indent 2)
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
  '(jedi:key-complete [backtab])
+ '(matlab-case-level (quote (4 . 4)))
+ '(matlab-fill-code nil)
+ '(matlab-shell-command-switches (quote ("-nodesktop" "-nosplash")))
+ '(switch-window-shortcut-style (quote qwerty))
+ '(test-case-python-executable "~/anaconda/bin/python")
  '(virtualenv-root "~/.virtualenvs/")
  '(warning-suppress-types (quote ((undo discard-info)))))
 
