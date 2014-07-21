@@ -1059,6 +1059,21 @@ expand-region cruft."
 ;;      (c-toggle-auto-newline 1)
 ;;      ))
 
+;;;;;;;;;;;;;;;;;;;; FORTRAN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (add-to-list 'auto-mode-alist '("\\.f\\'" . fortran-mode))
+(defun dek-browse-code-fortran ()
+  "This browses code subroutine and call statements."
+  (interactive)
+  (helm-swoop :$query "\\(SUBROUTINE[[:space:]]+\\)\\|\\(CALL[[:space:]]+\\)"))
+
+(defun dek-fortran-hook ()
+  "This is the fortran mode hook for binding keys."
+  (define-key fortran-mode-map (kbd "C-c b") 'dek-browse-code-fortran)
+  )
+
+(add-hook 'fortran-mode 'dek-fortran-hook)
+
+
 ;;;;;;;;;;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;; clojure mode ;;;;;;;;;;;;;;;;;;;;;;;;;
