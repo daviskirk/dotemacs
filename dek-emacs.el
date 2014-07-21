@@ -599,21 +599,6 @@ expand-region cruft."
 	;; (("\\.tex\\'" . "TeX/LaTeX") . ["insert.tex" my/autoinsert-yas-expand])
 	))
 
-;; ;;;;;;;;;;;;;;;; JABBER/CHAT STUFF ;;;;;;;;;;
-
-;; (add-to-list 'load-path (expand-file-name "site-lisp/emacs-jabber-0.8.0/" user-emacs-directory))
-;; (load "jabber-autoloads")
-;; (setq jabber-account-list
-;;     '(("dk440241@googlemail.com"
-;;        (:network-server . "talk.google.com")
-;;        (:connection-type . ssl))))
-
-
-;;;;;;;;;;;;;; Diminish modeline clutter ;;;;;;;;;;;;;;;;;;
-(require 'diminish)
-(diminish 'autopair-mode)
-
-
 ;;;;;;;;;;;;;;; ORG MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq org-startup-folded t)
