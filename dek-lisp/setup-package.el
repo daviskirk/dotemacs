@@ -46,7 +46,6 @@
     powerline
     guru-mode
     rainbow-delimiters
-    slime
     smart-operator
     smartrep
     smex
