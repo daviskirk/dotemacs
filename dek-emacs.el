@@ -1104,6 +1104,13 @@ expand-region cruft."
     (setq matlab-shell-command "/pds/opt/matlab/bin/matlab")
   (setq matlab-shell-command "~/opt/matlab/bin/matlab"))
 
+(defun dek-matlab-switch-to-shell ()
+  "Switch to inferior Python process buffer."
+  (interactive)
+  (if (get-buffer "*MATLAB*")
+      (pop-to-buffer "*MATLAB*" t)
+    (matlab-shell)))
+
 (defun dek-matlab-set-ssh (host)
   "Set matlab binary to matlab binary on HOST over ssh."
   (interactive "sHost: ")
@@ -1153,13 +1160,13 @@ expand-region cruft."
 
 (add-hook 'matlab-shell-mode-hook
       '(lambda ()
-	 (define-key matlab-shell-mode-map (kbd "C-<up>") 'windmove-up)
-	 (define-key matlab-shell-mode-map (kbd "C-<down>") 'windmove-down)
 	 (define-key matlab-shell-mode-map (kbd "<f5>") 'dek-matlab-send-dbcont)
 	 (define-key matlab-shell-mode-map (kbd "<f11>") 'dek-matlab-send-dbstep)
          (define-key matlab-shell-mode-map (kbd "C-l") 'erase-buffer)
          (define-key matlab-shell-mode-map (kbd "C-c <tab>") 'dek-matlab-goto-error-line)
+	 (define-key matlab-shell-mode-map (kbd "<f6>") 'matlab-shell-close-figures)
 	 ))
+
 
 (add-hook 'matlab-mode-hook
 	  '(lambda ()
@@ -1167,7 +1174,12 @@ expand-region cruft."
 	     (auto-complete-mode 1)
 	     (define-key matlab-mode-map (kbd "<f12>") 'dek-matlab-set-breakpoint)
 	     (key-chord-define matlab-mode-map ";;"  "\C-e;")
-	     ))
+	     (setq matlab-imenu-generic-expression
+                   '((nil "^\\s-*\\(function *.*\\)" 1)
+                     (nil "^\\s-*\\(classdef *.*\\)" 1)))
+	     (define-key matlab-mode-map (kbd "<f6>") 'matlab-shell-close-figures)
+	     (define-key matlab-mode-map "\C-c\C-z" 'dek-matlab-switch-to-shell)
+             ))
 
 ;; fast delimiters
 (key-chord-define-global
