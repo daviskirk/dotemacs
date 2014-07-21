@@ -1197,6 +1197,9 @@ expand-region cruft."
 	 (forward-char)
 	 ))
 
+(key-chord-define-global
+ "ww" 'switch-window)
+
 (defun mfindent ()
   (interactive)
   (let (rectstart)
