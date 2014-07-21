@@ -526,7 +526,8 @@ expand-region cruft."
 (defadvice isearch-exit (after my-goto-match-beginning activate)
   "Go to beginning of match."
   (when isearch-forward (goto-char isearch-other-end)))
-
+(global-set-key (kbd "M-i") 'helm-swoop)
+(setq helm-swoop-pre-input-function (lambda () nil))
 
 ;;;;;;;;;;;;;;;;;;;;; autopair ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'autopair)
