@@ -1276,7 +1276,7 @@ expand-region cruft."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "#3f3f3f" :foreground "#dcdccc" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "Monaco"))))
+ '(default ((t (:family "Monaco"))))
  '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))) t)
  '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))) t)
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
