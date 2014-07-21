@@ -546,12 +546,13 @@ expand-region cruft."
    (car (directory-files package-user-dir nil "^yasnippet-[0-9.]+"))
    "/snippets"))
 
+(setq dek-yasnippet-dir (expand-file-name "dek-lisp/yasnippet-snippets" user-emacs-directory))
 (setq yas-snippet-dirs
-      (list (expand-file-name "dek-lisp/yasnippet-snippets" user-emacs-directory)
+      (list dek-yasnippet-dir
 	(dek-find-elpa-yasnippet-snippet-dir)))
 
 (yas-global-mode t)
-
+(yas-load-directory dek-yasnippet-dir)
 ;;;;;;;;;; AUTO-COMPLETE (AC-) ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'auto-complete)
