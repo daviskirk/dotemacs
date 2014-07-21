@@ -48,8 +48,13 @@
     (smex))
   )
 
-(smex-initialize)
-(global-set-key (kbd "M-x") 'my-horizontal-smex)
+(defun dek-init-smex ()
+  (smex-initialize)
+  (global-set-key (kbd "M-x") 'my-horizontal-smex))
+
+  
+(if (equal user-login-name "dek")    
+    (dek-init-smex))
 
 (setq ido-decorations (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]")))
   (defun ido-disable-line-trucation () (set (make-local-variable 'truncate-lines) nil))

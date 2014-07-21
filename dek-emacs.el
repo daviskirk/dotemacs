@@ -1175,9 +1175,9 @@ expand-region cruft."
 ;;;;;;;;;;;; OTHER MODES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;; haskell-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+;; (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;; LUA MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
