@@ -60,6 +60,8 @@
     zoom-frm
     helm-themes
     projectile
+    auto-indent-mode
+    org
     ))
 
 (defun dek-packages-install (packages)
