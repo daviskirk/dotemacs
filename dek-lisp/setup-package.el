@@ -38,7 +38,6 @@
     key-chord
     lua-mode
     magit
-    melpa
     multiple-cursors
     nav-flash
     org-bullets
@@ -48,7 +47,6 @@
     guru-mode
     rainbow-delimiters
     slime
-    smart-mode-line
     smart-operator
     smartrep
     smex
@@ -60,6 +58,8 @@
     yasnippet
     zenburn-theme
     zoom-frm
+    helm-themes
+    projectile
     ))
 
 (defun dek-packages-install (packages)
