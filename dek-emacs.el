@@ -1365,3 +1365,4 @@ expand-region cruft."
 
 (provide 'dek-emacs)
 ;;; dek-emacs.el ends here
+(put 'downcase-region 'disabled nil)
