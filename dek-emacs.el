@@ -1079,6 +1079,22 @@ expand-region cruft."
 ;;;;;;;;;;;;;;;;;;;;; clojure mode ;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-hook 'clojure-mode-hook 'paredit-mode)
 
+(defun my/cider-mode-hooks ()
+  "Clojure specific setup code that should only be run when we
+  have a CIDER REPL connection"
+  (cider-turn-on-eldoc-mode))
+
+(add-hook 'cider-mode-hook
+          'my/cider-mode-hooks)
+
+(defun my/cider-repl-mode-hooks ()
+  (my/turn-on 'paredit
+              'rainbow-delimiters
+              'highlight-parentheses))
+
+(add-hook 'cider-repl-mode-hook
+          'my/cider-repl-mode-hooks)
+
 ;;;;;;;;;;;; OTHER MODES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;; haskell-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
