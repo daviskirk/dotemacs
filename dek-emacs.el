@@ -263,6 +263,29 @@ directory. See `byte-recompile-directory'."
 
 (global-set-key (kbd "\C-x i") 'helm-imenu)
 
+(require 'helm-files)
+(defun dek-helm-for-files ()
+  "Use projectile with Helm instead of ido."
+  (interactive)
+  (helm :sources '(helm-source-projectile-files-list
+		   helm-source-projectile-recentf-list
+		   helm-source-projectile-buffers-list
+		   helm-source-buffers-list
+		   helm-source-recentf
+		   helm-source-locate)))
+
+
+(defun dek-helm-browse-code (regexp)
+  (interactive "s")
+  (setq helm-multi-occur-buffer-list (list (buffer-name (current-buffer))))
+  (helm-occur-init-source)
+  (helm :sources 'helm-source-occur
+	:buffer "*helm occur*"
+	:preselect (and (memq 'helm-source-occur helm-sources-using-default-as-input)
+                        (format "%s:%d:" (buffer-name) (line-number-at-pos (point))))
+	:input regexp
+	:truncate-lines t))
+
 
 ;;;;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
