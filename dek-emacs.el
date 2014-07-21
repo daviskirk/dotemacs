@@ -460,7 +460,7 @@ expand-region cruft."
 ;(setq recentf-auto-cleanup 'never)
 ;; Save the recentf file list every 10 minutes (= 600 seconds)
 (setq recentf-last-list '())
-(setq recentf-max-saved-items 50)
+(setq recentf-max-saved-items 100)
 
 (defun recentf-save-if-changes ()
   "Test if the recentf-list has changed and saves it in this case"
