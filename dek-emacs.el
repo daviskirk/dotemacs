@@ -767,6 +767,11 @@ expand-region cruft."
       (just-one-space 2))
     (insert "#")))
 
+(defun dek-browse-code-python ()
+  "Browse code with helm swoop (classes and functions)"
+  (interactive)
+  (helm-swoop :$query "\\(class[[:space:]].*\\)\\|\\(def[[:space:]].*\\)"))
+
 (add-hook 'python-mode-hook
 	  '(lambda ()
 	     (flycheck-mode 1)
@@ -777,31 +782,69 @@ expand-region cruft."
              (define-key python-mode-map (kbd "#") 'dek-python-crunch)
 	     (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
 	     (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
+	     (define-key python-mode-map (kbd "C-c t r") 'test-case-run-or-run-again)
+	     (define-key python-mode-map (kbd "C-c b") 'dek-browse-code-python)
+	     (define-key python-mode-map (kbd "C-c C-b") 'dek-browse-code-python)
              (setq paragraph-start "\\(\\s-*$\\)\\|\\(\\.$)")
              (setq paragraph-start "\f\\|\\(\s-*$\\)\\|\\([-:] +.+$\\)" paragraph-seperate "$")
              ))
 
+;; faster imenu
+(add-hook 'python-mode-hook
+          (lambda ()
+	    (set (make-local-variable 'imenu-create-index-function)
+                 #'python-imenu-create-index)))
+
 ;; jedi mode
-(setq jedi:setup-keys t)                      ; optional
-(setq jedi:complete-on-dot t)                 ; optional
-(add-hook 'python-mode-hook 'jedi:setup)
-(add-hook 'jedi-mode-hook
-	  '(lambda ()
-	     (define-key jedi-mode-map (kbd "<C-tab>") nil)
-	     (define-key jedi-mode-map (kbd "<backtab>") 'jedi:complete)))
+;; (setq jedi:setup-keys t)                      ; optional
+;; (setq jedi:complete-on-dot t)                 ; optional
+;; (add-hook 'python-mode-hook 'jedi:setup)
+;; (add-hook 'jedi-mode-hook
+;; 	  '(lambda ()
+;; 	     (define-key jedi-mode-map (kbd "<C-tab>") nil)
+;; 	     (define-key jedi-mode-map (kbd "<backtab>") 'jedi:complete)))
 
 
-(setq
- python-shell-interpreter "~/anaconda/bin/ipython"
- python-shell-interpreter-args ""
- python-shell-prompt-regexp "In \\[[0-9]+\\]: "
- python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
- python-shell-completion-setup-code
-   "from IPython.core.completerlib import module_completion"
- python-shell-completion-module-string-code
-   "';'.join(module_completion('''%s'''))\n"
- python-shell-completion-string-code
- "';'.join(get_ipython().Completer.all_completions('''%s'''))")
+;; Use anaconda if available
+(if (file-exists-p "~/anaconda/bin/ipython")
+    (setq
+     python-shell-interpreter "~/anaconda/bin/ipython"
+     python-shell-interpreter-args ""
+     python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+     python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+     python-shell-completion-setup-code
+     "from IPython.core.completerlib import module_completion"
+     python-shell-completion-module-string-code
+     "';'.join(module_completion('''%s'''))\n"
+     python-shell-completion-string-code
+     "';'.join(get_ipython().Completer.all_completions('''%s'''))"
+     test-case-python-executable "~/anaconda/bin/python"
+     ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;; CYTHON MODE ;;;;;;;;;;;;;;;;;;;;;
+(defun dek-cython-compile ()
+  (interactive)
+  (let (current-dir)
+    (setq currect-dir (file-name-directory (buffer-file-name)))
+    (cd (projectile-project-root))
+    (compile (concat (replace-regexp-in-string "ipython" "python" python-shell-interpreter)
+		     " "
+		     (expand-file-name "setup.py" (projectile-project-root))
+		     " build_ext --inplace"))
+    (cd current-dir)))
+
+(defun dek-cython-std-compile ()
+  (interactive)
+  (compile
+   (format cython-default-compile-format
+	   (shell-quote-argument buffer-file-name))))
+
+(add-hook 'cython-mode-hook
+          '(lambda ()
+             (define-key cython-mode-map (kbd "C-c C-s") 'dek-cython-compile)
+	     (define-key cython-mode-map (kbd "C-c C-c") 'dek-cython-std-compile)
+             ))
+
 
 ;; JINJA2
 (autoload 'jinja2-mode "jinja2-mode")
