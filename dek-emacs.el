@@ -35,6 +35,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;; LOADPATH ;;;;;;;;;;;;;;;;;;;;;;;
 (add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory ))
 (add-to-list 'load-path (expand-file-name "dek-lisp" user-emacs-directory ))
+
 ;;;;;;;;;;;;;;;;;;;;;;;; PACKAGE ;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'setup-package)
 
@@ -84,12 +85,23 @@
 ;;;;;;;;;;;;;;;;;;;;; WINDOWS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "C-<tab>") 'other-window)
 (global-set-key   (kbd "\C-x w w") 'helm-swap-windows)
+(global-set-key (kbd "C-x o") 'switch-window)
 (winner-mode 1)
 (setq winner-mode 1)
 
 (global-set-key (kbd "C-1") 'toggle-delete-other-windows)
 (key-chord-define-global "x2" 'split-window-below)
 (key-chord-define-global "x3" 'split-window-right)
+
+(global-set-key (kbd "\C-x w <M-up>") 'buf-move-up)
+(global-set-key (kbd "\C-x w <M-down>") 'buf-move-down)
+(global-set-key (kbd "\C-x w <M-left>") 'buf-move-left)
+(global-set-key (kbd "\C-x w <M-right>") 'buf-move-right)
+
+(global-set-key (kbd "\C-x w <up>") 'windmove-up)
+(global-set-key (kbd "\C-x w <down>") 'windmove-down)
+(global-set-key (kbd "\C-x w <left>") 'windmove-left)
+(global-set-key (kbd "\C-x w <right>") 'windmove-right)
 
 (defun toggle-delete-other-windows ()
   (interactive)
