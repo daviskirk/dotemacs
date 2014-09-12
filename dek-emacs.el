@@ -25,6 +25,7 @@
   )
 
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(menu-bar-mode 0)
 (set-face-attribute 'default nil :height 98 :family "Monaco")
 
 ;; (setq debug-on-error t)
@@ -236,18 +237,18 @@ directory. See `byte-recompile-directory'."
 (global-set-key (kbd "C-x V l") 'magit-log)
 (defun magit-toggle-whitespace ()
   (interactive)
-  (if (member "-w" magit-diff-options)
+  (if (member "--ignore-space-change" magit-diff-options)
       (magit-dont-ignore-whitespace)
     (magit-ignore-whitespace)))
 
 (defun magit-ignore-whitespace ()
   (interactive)
-  (add-to-list 'magit-diff-options "-w")
+  (add-to-list 'magit-diff-options "--ignore-space-change")
   (magit-refresh))
 
 (defun magit-dont-ignore-whitespace ()
   (interactive)
-  (setq magit-diff-options (remove "-w" magit-diff-options))
+  (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
   (magit-refresh))
 
 (defun add-magit-toggle-whitespace-key
@@ -810,7 +811,7 @@ expand-region cruft."
 	  '(lambda ()
 	     (flycheck-mode 1)
 	     (auto-indent-mode -1)
-             (setq-local auto-indent-kill-line-at-eol nil)
+		 (setq-local auto-indent-kill-line-at-eol nil)
              (setq-local auto-indent-on-yank-or-paste nil)
              (define-key python-mode-map (kbd "RET") 'newline-and-indent)
              (define-key python-mode-map (kbd "#") 'dek-python-crunch)
@@ -1032,37 +1033,43 @@ expand-region cruft."
 
 ;;;;;;;;;;;;;;; C AND C++ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defun my-turn-on-auto-newline ()
-;;   (c-toggle-auto-newline 1))
-;; (add-hook 'c-mode-common-hook 'my-turn-on-auto-newline)
+(defun my-turn-on-auto-newline ()
+  (c-toggle-auto-newline 1))
+(add-hook 'c-mode-common-hook 'my-turn-on-auto-newline)
 
-(setq c-default-style "linux"
-       c-basic-offset 4)
-
+(setq c-default-style "linux")
+(setq-default c-basic-offset 4)
+(setq c-indent-level 4)
+(setq indent-tabs-mode nil)
 
 (add-hook 'c++-mode-hook
       (lambda ()
 	(unless (or (file-exists-p "makefile")
-	    (file-exists-p "Makefile"))
+				(file-exists-p "Makefile"))
 	  (set (make-local-variable 'compile-command)
-	   (concat "make -k "
-	       (file-name-sans-extension buffer-file-name))))))
+		   (concat "make -k "
+				   (file-name-sans-extension buffer-file-name))))))
 (add-hook 'c++-mode-hook
-      '(lambda ()
-	 ;(local-set-key "." 'semantic-complete-self-insert)
-	 (setq compilation-finish-function
-	   (lambda (buf str)
-	     (if (string-match "exited abnormally" str)
-	     ;;there were errors
-	     (message "compilation errors, press C-x ` to visit")
-	       ;;no errors:
-	       ;; make the compilation window go away in 0.5 seconds
-	       (run-at-time 1.0 nil 'delete-windows-on buf)
-	       (message "NO COMPILATION ERRORS!")
-	       (setq compilation-window-height 8))))))
+		  '(lambda ()
+             (setq c-default-style "linux")
+             (setq c-basic-offset 4)
+             (setq c-indent-level 4)
+             (setq indent-tabs-mode nil)
+			 (auto-indent-mode -1)
+			;(local-set-key "." 'semantic-complete-self-insert)
+			 (setq compilation-finish-function
+				   (lambda (buf str)
+					 (if (string-match "exited abnormally" str)
+						 ;;there were errors
+						 (message "compilation errors, press C-x ` to visit")
+					   ;;no errors:
+					   ;; make the compilation window go away in 0.5 seconds
+					   (run-at-time 1.0 nil 'delete-windows-on buf)
+					   (message "NO COMPILATION ERRORS!")
+					   (setq compilation-window-height 8))))))
 
-;(define-key c++-mode-map "<f5>" 'compile)
-;(define-key c++-mode-map (kbd "<f6>") 'gdb)
+										;(define-key c++-mode-map "<f5>" 'compile)
+										;(define-key c++-mode-map (kbd "<f6>") 'gdb)
 ;(define-key c++-mode-map (kbd "<f7>") 'next-error)
 
 ;;;;;;;;;;;; c# and vb.net (Visual Basic);;;;;;;;;;;;;;;;;
@@ -1266,6 +1273,19 @@ expand-region cruft."
   (matlab-shell-send-string "dbcont\n")
   )
 
+(defun dek-clear-all-matlab ()
+  "Browse code with helm swoop (classes and functions)"
+  (interactive)
+  (matlab-shell-send-string "close all\nclear all\nclear classes\n")
+  )
+
+(defun dek-browse-code-matlab ()
+  "Browse code with helm swoop (classes and functions)"
+  (interactive)
+  ;; (helm-swoop :$query "\\(function[[:space:]]+[^=]*=[[:space:]]*\\)\\|\\(classdef[[:space:]]+\\)")
+  (helm-imenu))
+
+
 (add-hook 'matlab-shell-mode-hook
       '(lambda ()
 	 (define-key matlab-shell-mode-map (kbd "<f5>") 'dek-matlab-send-dbcont)
@@ -1273,6 +1293,7 @@ expand-region cruft."
          (define-key matlab-shell-mode-map (kbd "C-l") 'erase-buffer)
          (define-key matlab-shell-mode-map (kbd "C-c <tab>") 'dek-matlab-goto-error-line)
 	 (define-key matlab-shell-mode-map (kbd "<f6>") 'matlab-shell-close-figures)
+	 (define-key matlab-shell-mode-map (kbd "<f7>") 'dek-clear-all-matlab)
 	 ))
 
 
@@ -1287,6 +1308,9 @@ expand-region cruft."
                      (nil "^\\s-*\\(classdef *.*\\)" 1)))
 	     (define-key matlab-mode-map (kbd "<f6>") 'matlab-shell-close-figures)
 	     (define-key matlab-mode-map "\C-c\C-z" 'dek-matlab-switch-to-shell)
+	     (define-key matlab-mode-map (kbd "C-c b") 'dek-browse-code-matlab)
+	     (define-key matlab-mode-map (kbd "<f7>") 'dek-clear-all-matlab)
+	     (pretty-symbols-mode 1)
              ))
 
 ;; fast delimiters
@@ -1375,6 +1399,13 @@ expand-region cruft."
 
 (require 'virtualenv)
 
+;; ;;;;;;;;;;;;;;;;;;;;;;; XIKI ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; Load el4r, which loads Xiki
+;; (add-to-list 'load-path "~/.gem/ruby/2.1.0/gems/trogdoro-el4r-1.0.10/data/emacs/site-lisp/")
+;; (require 'el4r)
+;; (el4r-boot)
+;; (el4r-troubleshooting-keys)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -1382,7 +1413,7 @@ expand-region cruft."
  ;; If there is more than one, they won't work right.
  '(LaTeX-command "latex")
  '(LaTeX-command-style (quote (("" "%(PDF)%(latex) %S%(PDFout)"))))
- '(ansi-term-color-vector [unspecified "#282a2e" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#81a2be" "#e0e0e0"])
+ '(ansi-term-color-vector [unspecified "#282a2e" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#81a2be" "#e0e0e0"] t)
  '(auto-indent-on-visit-pretend-nothing-changed nil)
  '(custom-safe-themes (quote ("1cf3f29294c5a3509b7eb3ff9e96f8e8db9d2d08322620a04d862e40dc201fe2" "cd70962b469931807533f5ab78293e901253f5eeb133a46c2965359f23bfb2ea" "769bb56fb9fd7e73459dcdbbfbae1f13e734cdde3cf82f06a067439568cdaa95" "253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
  '(fci-rule-color "#2b2b2b")
@@ -1395,9 +1426,12 @@ expand-region cruft."
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
  '(jedi:key-complete [backtab])
+ '(magit-diff-options (quote ("--ignore-space-change")))
  '(matlab-case-level (quote (4 . 4)))
  '(matlab-fill-code nil)
  '(matlab-shell-command-switches (quote ("-nodesktop" "-nosplash")))
+ '(pretty-symbol-categories (lambda relational))
+ '(pretty-symbol-patterns (quote ((8230 lambda "\\.\\.\\." (matlab-mode)) (955 lambda "\\<lambda\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode python-mode inferior-python-mode)) (402 lambda "\\<function\\>" (js-mode)) (8800 relational "!=" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode)) (8800 relational "~=" (matlab-mode)) (8800 relational "/=" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)) (8805 relational ">=" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode)) (8804 relational "<=" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode)) (8743 logical "&&" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode)) (8743 logical "\\<and\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)) (8744 logical "||" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode matlab-mode)) (8744 logical "\\<or\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)) (172 logical "\\<not\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)) (8709 nil "\\<nil\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
  '(switch-window-shortcut-style (quote qwerty))
  '(test-case-python-executable "~/anaconda/bin/python")
  '(virtualenv-root "~/.virtualenvs/")
@@ -1409,8 +1443,8 @@ expand-region cruft."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:family "Monaco"))))
- '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))) t)
- '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))) t)
+ '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))))
+ '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))))
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
  '(mode-line ((t (:background "#506070" :foreground "#dcdccc" :box (:line-width -1 :style released-button) :family "Ubuntu Condensed"))))
  '(mode-line-inactive ((t (:background "#555555" :foreground "#808080" :box nil :family "Ubuntu Condensed"))))
