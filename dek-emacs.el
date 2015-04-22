@@ -38,13 +38,21 @@
 (add-to-list 'load-path (expand-file-name "dek-lisp" user-emacs-directory ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;; PACKAGE ;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'setup-package)
+(defun package-desc-vers (a)
+  nil)
+
+;; (setq package-enable-at-startup nil)
+
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+        ("org" . "http://orgmode.org/elpa/")
+        ("MELPA" . "http://melpa.org/packages/")))
+(package-initialize)
 
 (require 'powerline)
 (powerline-default-theme)
 (load-theme 'zenburn t)
 
-(global-rainbow-delimiters-mode 1)
 ;; (show-paren-mode 1)
 ;; Sentences do not need double spaces to end. Period.
 (set-default 'sentence-end-double-space nil)
@@ -55,22 +63,25 @@
 (setq-default truncate-lines t)
 (cua-mode t)
 
-(setq sublimity-scroll-vdecc 1.3)
-(setq sublimity-scroll-vspeeds '(5000 1000 500 200 100 50 10 5))
-(setq sublimity-auto-hscroll nil)
-(setq sublimity-scroll-hdecc 1)
-(require 'sublimity-scroll)
+;; (setq sublimity-scroll-vdecc 1.3)
+;; (setq sublimity-scroll-vspeeds '(5000 1000 500 200 100 50 10 5))
+;; (setq sublimity-auto-hscroll nil)
+;; (setq sublimity-scroll-hdecc 1)
+;; (require 'sublimity-scroll)
 
 ;;;;;;;;;;;;;;;;;; KEY-CHORD ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (key-chord-mode 1)
 (key-chord-define-global "xf" 'helm-for-files)
-(key-chord-define-global "xb" 'helm-for-files)
+(key-chord-define-global "xb" 'ido-switch-buffer)
 (key-chord-define-global "xs" 'save-buffer)
 
 (key-chord-define-global "xx" 'cua-cut-region)
 (key-chord-define-global "cc" 'cua-copy-region)
 (key-chord-define-global "vv" (kbd "C-v"))
-(setq key-chord-two-keys-delay 0.05)
+(key-chord-define-global "aa" (kbd "C-a"))
+(key-chord-define-global "ee" 'move-end-of-line)
+(setq key-chord-two-keys-delay 0.001)
+(setq key-chord-one-key-delay 0.15)
 
 ;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'multiple-cursors)
@@ -91,6 +102,7 @@
 (setq winner-mode 1)
 
 (global-set-key (kbd "C-1") 'toggle-delete-other-windows)
+(key-chord-define-global "x1" 'toggle-delete-other-windows)
 (key-chord-define-global "x2" 'split-window-below)
 (key-chord-define-global "x3" 'split-window-right)
 
@@ -109,6 +121,8 @@
   (if (> (length (window-list)) 1)
       (delete-other-windows)
     (winner-undo)))
+;;;;;;;;;;;;;;;;;;;;;; COMPILING ;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "<f5>") 'compile)
 
 ;;;;;;;;;;;;;;;;;;;;; BYTE COMPILE ;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -244,11 +258,13 @@ directory. See `byte-recompile-directory'."
 (defun magit-ignore-whitespace ()
   (interactive)
   (add-to-list 'magit-diff-options "--ignore-space-change")
+  (message "ignoring whitespace")
   (magit-refresh))
 
 (defun magit-dont-ignore-whitespace ()
   (interactive)
   (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
+  (message "paying attention to whitespace")
   (magit-refresh))
 
 (defun add-magit-toggle-whitespace-key
@@ -305,7 +321,6 @@ directory. See `byte-recompile-directory'."
 	:input regexp
 	:truncate-lines t))
 
-
 ;;;;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (load-library "dek-ido")
@@ -328,6 +343,7 @@ directory. See `byte-recompile-directory'."
 
 (global-set-key (kbd "C-M-SPC") 'er/expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
+(global-set-key (kbd "M-SPC") 'cycle-spacing)
 
 (defadvice pop-to-mark-command (around ensure-new-position activate)
   "Continue popping mark until the cursor moves.
@@ -366,16 +382,22 @@ expand-region cruft."
 	 (smart-insert-operator "="))))
   )
 
+(defun my-set-python-compile-command ()
+  "Set python compile command."
+  (set (make-local-variable 'compile-command)
+	 (concat "python " (file-name-base buffer-file-name) ".py")))
 
 (add-hook 'matlab-mode-hook 'my-matlab-mode-smart-operator-hook)
 (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
+(add-hook 'python-mode-hook 'my-set-python-compile-command)
 
 
-;;;;;;;;;;;;;;; smooth scrolling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq scroll-margin 10
-      scroll-conservatively 0
-      scroll-up-aggressively 0.01
-      scroll-down-aggressively 0.01)
+;; ;; smooth scrolling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq scroll-margin 500
+;;       scroll-conservatively 1000
+;;       scroll-up-aggressively 0.0
+;;       scroll-down-aggressively 0.0
+;;       auto-window-vscroll nil)
 
 ;;;;;;;;;; Better Start of line ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dek-back-to-indentation-or-beginning ()
@@ -667,7 +689,7 @@ expand-region cruft."
 
 (setq org-odd-levels-only nil)
 (setq org-hide-leading-stars t)
-
+;; (setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css\"><script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js\"></script><body style=\"margin-left:15%;margin-right:15%;\">")
 
 (setq org-clock-persist 'history)
 (org-clock-persistence-insinuate)
@@ -724,14 +746,57 @@ expand-region cruft."
 (global-set-key "\C-c\C-l" 'org-insert-link-global)
 (global-set-key "\C-co" 'org-open-at-point-global)
 
-; org -latex
-(setq org-highlight-latex-fragments-and-specials t)
+;; Include the latex-exporter
+(require 'ox-latex)
+;; Add minted to the defaults packages to include when exporting.
+(add-to-list 'org-latex-packages-alist '("" "minted"))
+;; Tell the latex export to use the minted package for source
+;; code coloration.
+(setq org-latex-listings 'minted)
 
 ;; No ORG MODE STUFF after this
 
 ;; Orgmobile
 (setq org-mobile-directory "~/Dropbox/MobileOrg")
 (setq org-mobile-inbox-for-pull "~/org/inbox.org")
+
+;;;;;;;;;;;;;;; ORG BABEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(org-babel-do-load-languages
+ 'org-babel-do-load-languages
+ '(
+   (sh . t)
+   (python . t)
+   ))
+
+;;;;;;;;;;;;;;;;; ORG publish ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq org-publish-project-alist
+      '(
+
+        ("org-daviskirk"
+         ;; Path to your org files.
+         :base-directory "~/Documents/Code/daviskirk.github.io/org/"
+         :base-extension "org"
+
+         ;; Path to your Jekyll project.
+         :publishing-directory "~/Documents/Code/daviskirk.github.io/"
+         :recursive t
+         :publishing-function org-html-publish-to-html
+         :headline-levels 4
+         :html-extension "html"
+         :body-only t ;; Only export section between <body> </body>
+         )
+
+
+        ("org-static-daviskirk"
+         :base-directory "~/Documents/Code/daviskirk.github.io/org/"
+         :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|php"
+         :publishing-directory "~/Documents/Code/daviskirk.github.io/"
+         :recursive t
+         :publishing-function org-publish-attachment)
+
+        ("daviskirk" :components ("org-daviskirk" "org-static-daviskirk"))
+
+        ))
 
 ;;;;;;;;;;;;;; PHP-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -820,8 +885,12 @@ expand-region cruft."
 	     (define-key python-mode-map (kbd "C-c t r") 'test-case-run-or-run-again)
 	     (define-key python-mode-map (kbd "C-c b") 'dek-browse-code-python)
 	     (define-key python-mode-map (kbd "C-c C-b") 'dek-browse-code-python)
-             (setq paragraph-start "\\(\\s-*$\\)\\|\\(\\.$)")
-             (setq paragraph-start "\f\\|\\(\s-*$\\)\\|\\([-:] +.+$\\)" paragraph-seperate "$")
+	     (magit-dont-ignore-whitespace)
+             ;; (setq paragraph-start "\\(\\s-*$\\)\\|\\(\\.$)")
+             ;; (setq paragraph-start "\f\\|\\(\s-*$\\)\\|\\([-:] +.+$\\)" paragraph-seperate "$")
+	     (rainbow-delimiters-mode 1)
+	     ;; Do this for numpy style docstring filling
+             (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
              ))
 
 ;; faster imenu
@@ -830,30 +899,41 @@ expand-region cruft."
 	    (set (make-local-variable 'imenu-create-index-function)
                  #'python-imenu-create-index)))
 
+
+
 ;; jedi mode
 ;; (setq jedi:setup-keys t)                      ; optional
 ;; (setq jedi:complete-on-dot t)                 ; optional
-;; (add-hook 'python-mode-hook 'jedi:setup)
-;; (add-hook 'jedi-mode-hook
-;; 	  '(lambda ()
-;; 	     (define-key jedi-mode-map (kbd "<C-tab>") nil)
-;; 	     (define-key jedi-mode-map (kbd "<backtab>") 'jedi:complete)))
+(add-hook 'python-mode-hook 'jedi:setup)
+(add-hook 'jedi-mode-hook
+	  '(lambda ()
+	     (define-key jedi-mode-map (kbd "<C-tab>") nil)
+	     (define-key jedi-mode-map (kbd "<backtab>") 'jedi:complete)))
 
 
 ;; Use anaconda if available
 (if (file-exists-p "~/anaconda/bin/ipython")
     (setq
      python-shell-interpreter "~/anaconda/bin/ipython"
-     python-shell-interpreter-args ""
-     python-shell-prompt-regexp "In \\[[0-9]+\\]: "
-     python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-     python-shell-completion-setup-code
-     "from IPython.core.completerlib import module_completion"
-     python-shell-completion-module-string-code
-     "';'.join(module_completion('''%s'''))\n"
-     python-shell-completion-string-code
-     "';'.join(get_ipython().Completer.all_completions('''%s'''))"
+     ;; python-shell-interpreter-args ""
+     ;; python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+     ;; python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+     ;; python-shell-completion-setup-code
+     ;; "from IPython.core.completerlib import module_completion"
+     ;; python-shell-completion-module-string-code
+     ;; "';'.join(module_completion('''%s'''))\n"
+     ;; python-shell-completion-string-code
+     ;; "';'.join(get_ipython().Completer.all_completions('''%s'''))"
      test-case-python-executable "~/anaconda/bin/python"
+
+     ; from https://github.com/gabrielelanaro/emacs-for-python/blob/master/epy-python.el
+     python-shell-interpreter "ipython"
+     python-shell-interpreter-args ""
+     python-shell-prompt-regexp "In \[[0-9]+\]: "
+     python-shell-prompt-output-regexp "Out\[[0-9]+\]: "
+     python-shell-completion-setup-code ""
+     python-shell-completion-string-code "';'.join(get_ipython().complete('''%s''')[1])\n"
+
      ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; CYTHON MODE ;;;;;;;;;;;;;;;;;;;;;
@@ -878,21 +958,24 @@ expand-region cruft."
           '(lambda ()
              (define-key cython-mode-map (kbd "C-c C-s") 'dek-cython-compile)
 	     (define-key cython-mode-map (kbd "C-c C-c") 'dek-cython-std-compile)
+	     (rainbow-delimiters-mode)
              ))
 
+(require 'dek-edit-python-docstring)
 
 ;; JINJA2
 (autoload 'jinja2-mode "jinja2-mode")
 (add-to-list 'auto-mode-alist '("\\.jinja2$" . jinja2-mode))
 
 ;;;;;;;;;;; LATEX AND AUCTEX  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-to-list 'auto-mode-alist '("\\.rwthtex$" . TeX-latex-mode))
-(add-to-list 'auto-mode-alist '("\\.tex$" . TeX-latex-mode))
-(setq TeX-auto-save t)
-(setq TeX-parse-self t)
-(setq-default TeX-master nil)
-(setq preview-auto-cache-preamble t)
-(setq reftex-plug-into-AUCTeX t)
+;; (add-to-list 'auto-mode-alist '("\\.rwthtex$" . TeX-latex-mode))
+;; (add-to-list 'auto-mode-alist '("\\.tex\\'" . TeX-latex-mode))
+;; (add-to-list 'auto-mode-alist '("\\.sty\\'" . TeX-latex-mode))
+;; (setq TeX-auto-save t)
+;; (setq TeX-parse-self t)
+;; (setq-default TeX-master nil)
+;; (setq preview-auto-cache-preamble t)
+;; (setq reftex-plug-into-AUCTeX t)
 
 (defun flymake-get-tex-args (file-name)
   (list "pdflatex" (list "-file-line-error" "-draftmode" "-interaction=nonstopmode" file-name)))
@@ -918,20 +1001,21 @@ expand-region cruft."
 	 ;; (load-library (expand-file-name "dek-lisp/latex-snippets" user-emacs-directory))
 	 ;; (load-library (expand-file-name "dek-lisp/latex-math-snippets" user-emacs-directory))
 	 (key-chord-define LaTeX-mode-map ". "  ".\C-j")
+	 (rainbow-delimiters-mode 1)
 	 ))
 
-(add-hook 'TeX-mode-hook
-      '(lambda ()
-	(define-key TeX-mode-map (kbd "\C-c\C-c")
-	  (lambda ()
-	(interactive)
-	(save-buffer)
-	(TeX-command-menu "LaTeX")))
-	(define-key TeX-mode-map (kbd "<f12>")
-	  (lambda ()
-	(interactive)
-	(TeX-view)
-	[return]))))
+;; (add-hook 'TeX-mode-hook
+;;       '(lambda ()
+;; 	(define-key TeX-mode-map (kbd "\C-c\C-c")
+;; 	  (lambda ()
+;; 	(interactive)
+;; 	(save-buffer)
+;; 	(TeX-command-menu "LaTeX")))
+;; 	(define-key TeX-mode-map (kbd "<f12>")
+;; 	  (lambda ()
+;; 	(interactive)
+;; 	(TeX-view)
+;; 	[return]))))
 
 (defun fill-sentence ()
   (interactive)
@@ -996,6 +1080,7 @@ expand-region cruft."
 (add-hook 'prog-mode-hook
 	  (lambda ()
             (flyspell-prog-mode)
+	    (rainbow-delimiters-mode 1)
 	    (set-face-attribute 'flyspell-incorrect nil :foreground "#ac736f" :weight 'bold)
 	    (set-face-attribute 'flyspell-duplicate nil :foreground "#8c836f" :underline t)))
 
@@ -1045,10 +1130,9 @@ expand-region cruft."
 (add-hook 'c++-mode-hook
       (lambda ()
 	(unless (or (file-exists-p "makefile")
-				(file-exists-p "Makefile"))
+		    (file-exists-p "Makefile"))
 	  (set (make-local-variable 'compile-command)
-		   (concat "make -k "
-				   (file-name-sans-extension buffer-file-name))))))
+	       (concat "make -k "(file-name-sans-extension buffer-file-name))))))
 (add-hook 'c++-mode-hook
 		  '(lambda ()
              (setq c-default-style "linux")
@@ -1100,8 +1184,6 @@ expand-region cruft."
 ;; (add-hook 'vbnet-mode-hook 'my-vbnet-mode-fn)
 
 ;;;;;;;;;;;;;;;;;;; JAVA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (global-set-key (kbd "<f5>") 'compile)
 
 ;; (defun java-run ()
 ;;   "thisandthat."
@@ -1294,6 +1376,7 @@ expand-region cruft."
          (define-key matlab-shell-mode-map (kbd "C-c <tab>") 'dek-matlab-goto-error-line)
 	 (define-key matlab-shell-mode-map (kbd "<f6>") 'matlab-shell-close-figures)
 	 (define-key matlab-shell-mode-map (kbd "<f7>") 'dek-clear-all-matlab)
+	 (setq-local comint-input-ring-file-name "~/.matlab/R2014a/history.m")
 	 ))
 
 
@@ -1361,7 +1444,6 @@ expand-region cruft."
 ;; (require 'stumpwm-mode)
 ;; (add-to-list 'auto-mode-alist '("\\.stumpwmrc$" . stumpwm-mode))
 
-
 ;;;;;;;;;;;;;;;; FONT AND SETUP ;;;;;;::::::;;;;;;;;;;;;;;
 
 (setq
@@ -1406,16 +1488,25 @@ expand-region cruft."
 ;; (el4r-boot)
 ;; (el4r-troubleshooting-keys)
 
+;; '(LaTeX-command "latex")
+;; '(LaTeX-command-style (quote (("" "%(PDF)%(latex) -shell-escape %S%(PDFout)"))))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(LaTeX-command "latex")
- '(LaTeX-command-style (quote (("" "%(PDF)%(latex) %S%(PDFout)"))))
- '(ansi-term-color-vector [unspecified "#282a2e" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#81a2be" "#e0e0e0"] t)
+ '(LaTeX-command-style
+   (quote
+    (("" "%(PDF)%(latex) -shell-escape %(extraopts) %S%(PDFout)"))))
+ '(TeX-engine (quote luatex))
+ '(ansi-term-color-vector
+   [unspecified "#282a2e" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#81a2be" "#e0e0e0"] t)
  '(auto-indent-on-visit-pretend-nothing-changed nil)
- '(custom-safe-themes (quote ("1cf3f29294c5a3509b7eb3ff9e96f8e8db9d2d08322620a04d862e40dc201fe2" "cd70962b469931807533f5ab78293e901253f5eeb133a46c2965359f23bfb2ea" "769bb56fb9fd7e73459dcdbbfbae1f13e734cdde3cf82f06a067439568cdaa95" "253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
+ '(custom-safe-themes
+   (quote
+    ("1cf3f29294c5a3509b7eb3ff9e96f8e8db9d2d08322620a04d862e40dc201fe2" "cd70962b469931807533f5ab78293e901253f5eeb133a46c2965359f23bfb2ea" "769bb56fb9fd7e73459dcdbbfbae1f13e734cdde3cf82f06a067439568cdaa95" "253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
+ '(dired-dwim-target t)
  '(fci-rule-color "#2b2b2b")
  '(fill-column 79)
  '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
@@ -1429,9 +1520,61 @@ expand-region cruft."
  '(magit-diff-options (quote ("--ignore-space-change")))
  '(matlab-case-level (quote (4 . 4)))
  '(matlab-fill-code nil)
- '(matlab-shell-command-switches (quote ("-nodesktop" "-nosplash")))
+ '(matlab-shell-command-switches (quote ("-nodesktop" "-nosplash")) t)
+ '(org-babel-python-command "python")
+ '(org-confirm-babel-evaluate nil)
+ '(org-export-babel-evaluate t)
  '(pretty-symbol-categories (lambda relational))
- '(pretty-symbol-patterns (quote ((8230 lambda "\\.\\.\\." (matlab-mode)) (955 lambda "\\<lambda\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode python-mode inferior-python-mode)) (402 lambda "\\<function\\>" (js-mode)) (8800 relational "!=" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode)) (8800 relational "~=" (matlab-mode)) (8800 relational "/=" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)) (8805 relational ">=" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode)) (8804 relational "<=" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode)) (8743 logical "&&" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode)) (8743 logical "\\<and\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)) (8744 logical "||" (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode matlab-mode)) (8744 logical "\\<or\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)) (172 logical "\\<not\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)) (8709 nil "\\<nil\\>" (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
+ '(pretty-symbol-patterns
+   (quote
+    ((8230 lambda "\\.\\.\\."
+	   (matlab-mode))
+     (955 lambda "\\<lambda\\>"
+	  (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode python-mode inferior-python-mode))
+     (402 lambda "\\<function\\>"
+	  (js-mode))
+     (8800 relational "!="
+	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode))
+     (8800 relational "~="
+	   (matlab-mode))
+     (8800 relational "/="
+	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
+     (8805 relational ">="
+	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode))
+     (8804 relational "<="
+	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode))
+     (8743 logical "&&"
+	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode))
+     (8743 logical "\\<and\\>"
+	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
+     (8744 logical "||"
+	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode matlab-mode))
+     (8744 logical "\\<or\\>"
+	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
+     (172 logical "\\<not\\>"
+	  (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
+     (8709 nil "\\<nil\\>"
+	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
+ '(reftex-ref-style-alist
+   (quote
+    (("Default" t
+      (("\\cref" 13)
+       ("\\cpageref" 112)))
+     ("Varioref" "varioref"
+      (("\\vref" 118)
+       ("\\vpageref" 103)
+       ("\\Vref" 86)
+       ("\\Ref" 82)))
+     ("Fancyref" "fancyref"
+      (("\\fref" 102)
+       ("\\Fref" 70)))
+     ("Hyperref" "hyperref"
+      (("\\autoref" 97)
+       ("\\autopageref" 117))))))
+ '(reftex-ref-style-default-list (quote ("Default")))
+ '(rst-indent-field 4)
+ '(rst-indent-width 4)
+ '(safe-local-variable-values (quote ((TeX-master . "thesis-master") (TeX-master . t))))
  '(switch-window-shortcut-style (quote qwerty))
  '(test-case-python-executable "~/anaconda/bin/python")
  '(virtualenv-root "~/.virtualenvs/")
