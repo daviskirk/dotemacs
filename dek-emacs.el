@@ -27,7 +27,6 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (menu-bar-mode 0)
 (set-face-attribute 'default nil :height 98 :family "Monaco")
-
 ;; (setq debug-on-error t)
 (setq frame-title-format '("" "Emacs - %b - %m"))
 
@@ -49,8 +48,14 @@
         ("MELPA" . "http://melpa.org/packages/")))
 (package-initialize)
 
-(require 'powerline)
-(powerline-default-theme)
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)                ;; if you use :diminish
+(require 'bind-key)
+
+(use-package powerline
+ :config (powerline-default-theme))
+
 (load-theme 'zenburn t)
 
 ;; (show-paren-mode 1)
@@ -70,7 +75,11 @@
 ;; (require 'sublimity-scroll)
 
 ;;;;;;;;;;;;;;;;;; KEY-CHORD ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package key-chord-mode)
 (key-chord-mode 1)
+(setq key-chord-two-keys-delay 0.001)
+(setq key-chord-one-key-delay 0.15)
+
 (key-chord-define-global "xf" 'helm-for-files)
 (key-chord-define-global "xb" 'ido-switch-buffer)
 (key-chord-define-global "xs" 'save-buffer)
@@ -80,8 +89,37 @@
 (key-chord-define-global "vv" (kbd "C-v"))
 (key-chord-define-global "aa" (kbd "C-a"))
 (key-chord-define-global "ee" 'move-end-of-line)
-(setq key-chord-two-keys-delay 0.001)
-(setq key-chord-one-key-delay 0.15)
+
+;; fast delimiters
+(key-chord-define-global
+ "((" '(lambda ()
+         (interactive)
+         (insert "(")
+         (forward-sexp)
+         (insert ")")
+         (forward-char)
+         ))
+
+(key-chord-define-global
+ "[[" '(lambda ()
+         (interactive)
+         (insert "[")
+         (forward-sexp)
+         (insert "]")
+         (forward-char)
+         ))
+
+(key-chord-define-global
+ "{{" '(lambda ()
+         (interactive)
+         (insert "[")
+         (forward-sexp)
+         (insert "]")
+         (forward-char)
+         ))
+
+(key-chord-define-global
+ "ww" 'switch-window)
 
 ;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'multiple-cursors)
@@ -96,7 +134,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;; WINDOWS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "C-<tab>") 'other-window)
-(global-set-key   (kbd "\C-x w w") 'helm-swap-windows)
 (global-set-key (kbd "C-x o") 'switch-window)
 (winner-mode 1)
 (setq winner-mode 1)
@@ -106,21 +143,24 @@
 (key-chord-define-global "x2" 'split-window-below)
 (key-chord-define-global "x3" 'split-window-right)
 
-(global-set-key (kbd "\C-x w <M-up>") 'buf-move-up)
-(global-set-key (kbd "\C-x w <M-down>") 'buf-move-down)
-(global-set-key (kbd "\C-x w <M-left>") 'buf-move-left)
-(global-set-key (kbd "\C-x w <M-right>") 'buf-move-right)
+(use-package buffer-move
+  :bind (("C-x w <M-up>" . buf-move-up)
+         ("C-x w <M-down>" . buf-move-down)
+         ("C-x w <M-left>" . buf-move-left)
+         ("C-x w <M-right>" . buf-move-right)))
 
-(global-set-key (kbd "\C-x w <up>") 'windmove-up)
-(global-set-key (kbd "\C-x w <down>") 'windmove-down)
-(global-set-key (kbd "\C-x w <left>") 'windmove-left)
-(global-set-key (kbd "\C-x w <right>") 'windmove-right)
+(use-package windmove
+  :bind (("\C-x w <up>" . windmove-up)
+         ("\C-x w <down>" . windmove-down)
+         ("\C-x w <left>" . windmove-left)
+         ("\C-x w <right>" . windmove-right)))
 
 (defun toggle-delete-other-windows ()
   (interactive)
   (if (> (length (window-list)) 1)
       (delete-other-windows)
     (winner-undo)))
+
 ;;;;;;;;;;;;;;;;;;;;;; COMPILING ;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "<f5>") 'compile)
 
@@ -246,80 +286,90 @@ directory. See `byte-recompile-directory'."
 (auto-save-mode 1)
 
 ;;;;;;;;;;;;;;;;;; VERSION CONTROL / GIT ;;;;;;;;;;;;;;;;
+(use-package magit
+  :commands (magit-status magit-log)
+  :bind (("C-x V s" . magit-status)
+	 ("C-x V l" . magit-log))
+  :config
+  (defun magit-toggle-whitespace ()
+    (interactive)
+    (if (member "--ignore-space-change" magit-diff-options)
+        (magit-dont-ignore-whitespace)
+      (magit-ignore-whitespace)))
 
-(global-set-key (kbd "C-x V s") 'magit-status)
-(global-set-key (kbd "C-x V l") 'magit-log)
-(defun magit-toggle-whitespace ()
-  (interactive)
-  (if (member "--ignore-space-change" magit-diff-options)
-      (magit-dont-ignore-whitespace)
-    (magit-ignore-whitespace)))
+  (defun magit-ignore-whitespace ()
+    (interactive)
+    (add-to-list 'magit-diff-options "--ignore-space-change")
+    (message "ignoring whitespace")
+    (magit-refresh))
 
-(defun magit-ignore-whitespace ()
-  (interactive)
-  (add-to-list 'magit-diff-options "--ignore-space-change")
-  (message "ignoring whitespace")
-  (magit-refresh))
-
-(defun magit-dont-ignore-whitespace ()
-  (interactive)
-  (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
-  (message "paying attention to whitespace")
-  (magit-refresh))
-
-(defun add-magit-toggle-whitespace-key
-  (interactive)
+  (defun magit-dont-ignore-whitespace ()
+    (interactive)
+    (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
+    (message "paying attention to whitespace")
+    (magit-refresh))
   (define-key magit-status-mode-map (kbd "W") 'magit-toggle-whitespace))
-
-(add-hook 'magit-mode 'add-magit-toggle-whitespace-key)
-
 
 ;;;;;;;;;;;;;;; ZOOMING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'zoom-frm) ; ZOOMING
-(global-set-key (if (boundp 'mouse-wheel-down-event) ; Emacs 22+
-	    (vector (list 'control mouse-wheel-down-event))
-	  [C-mouse-wheel])    ; Emacs 20, 21
-	'zoom-in)
-(when (boundp 'mouse-wheel-up-event) ; Emacs 22+
-  (global-set-key (vector (list 'control mouse-wheel-up-event))
-	  'zoom-out))
+(use-package zoom-frm
+  :commands (zoom-in zoom-out)
+  :config
+  (global-set-key (if (boundp 'mouse-wheel-down-event) ; Emacs 22+
+                      (vector (list 'control mouse-wheel-down-event))
+                    [C-mouse-wheel])    ; Emacs 20, 21
+                  'zoom-in)
+  (when (boundp 'mouse-wheel-up-event) ; Emacs 22+
+    (global-set-key (vector (list 'control mouse-wheel-up-event))
+                    'zoom-out))
+  )
 
 ;;;;;;;;;;;;;;;;; PROJECTILE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(projectile-global-mode)
-(setq projectile-enable-caching t)
+(use-package projectile
+  :config
+  (projectile-global-mode)
+  (setq projectile-enable-caching t))
 
 ;;;;;;;;;;;;;;;;; HELM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'helm-themes)
-(if (not (boundp 'helm-source-projectile-files-list))
-    (setq helm-source-projectile-files-list '()))
-(global-set-key (kbd "C-x f") 'helm-for-files)
-(global-set-key (kbd "C-x y") 'anything-show-kill-ring)
+(use-package helm
+  :bind (("C-x w w" . helm-swap-windows)
+         ("C-x f" . helm-for-files)
+         ("C-x y" . helm-show-kill-ring)
+         ("C-x i" . helm-imenu))
+  :config
+  (if (not (boundp 'helm-source-projectile-files-list))
+      (setq helm-source-projectile-files-list '()))
 
-(global-set-key (kbd "\C-x i") 'helm-imenu)
+  (defun dek-helm-for-files ()
+    "Use projectile with Helm instead of ido."
+    (interactive)
+    (helm :sources '(helm-source-projectile-files-list
+                     helm-source-projectile-recentf-list
+                     helm-source-projectile-buffers-list
+                     helm-source-buffers-list
+                     helm-source-recentf
+                     helm-source-locate)))
 
-(require 'helm-files)
-(defun dek-helm-for-files ()
-  "Use projectile with Helm instead of ido."
-  (interactive)
-  (helm :sources '(helm-source-projectile-files-list
-		   helm-source-projectile-recentf-list
-		   helm-source-projectile-buffers-list
-		   helm-source-buffers-list
-		   helm-source-recentf
-		   helm-source-locate)))
+  (defun dek-helm-browse-code (regexp)
+    (interactive "s")
+    (setq helm-multi-occur-buffer-list (list (buffer-name (current-buffer))))
+    (helm-occur-init-source)
+    (helm :sources 'helm-source-occur
+          :buffer "*helm occur*"
+          :preselect (and (memq 'helm-source-occur helm-sources-using-default-as-input)
+                          (format "%s:%d:" (buffer-name) (line-number-at-pos (point))))
+          :input regexp
+          :truncate-lines t))
+  )
 
+(use-package helm-themes)
+(use-package helm-files)
+(use-package helm-swoop
+  :bind ("M-i" . helm-swoop)
+  :config
+  (setq helm-swoop-pre-input-function (lambda () nil))
+  )
 
-(defun dek-helm-browse-code (regexp)
-  (interactive "s")
-  (setq helm-multi-occur-buffer-list (list (buffer-name (current-buffer))))
-  (helm-occur-init-source)
-  (helm :sources 'helm-source-occur
-	:buffer "*helm occur*"
-	:preselect (and (memq 'helm-source-occur helm-sources-using-default-as-input)
-                        (format "%s:%d:" (buffer-name) (line-number-at-pos (point))))
-	:input regexp
-	:truncate-lines t))
 
 ;;;;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -340,10 +390,16 @@ directory. See `byte-recompile-directory'."
 (global-set-key "\M-." 'iy-go-to-char)
 (global-set-key "\M-," 'iy-go-to-char-backward)
 (key-chord-define-global "fs" 'ace-jump-mode)
-
-(global-set-key (kbd "C-M-SPC") 'er/expand-region)
-(global-set-key (kbd "C-=") 'er/expand-region)
+(key-chord-define-global "kk" 'kill-whole-line)
 (global-set-key (kbd "M-SPC") 'cycle-spacing)
+
+;;;;;;;;;;;;;;;;;;; expand region
+(use-package expand-region
+  :bind (("C-M-SPC" . er/expand-region)
+	 ("C-=" . er/expand-region)))
+
+;; (global-set-key (kbd "C-M-SPC") 'er/expand-region)
+;; (global-set-key (kbd "C-=") 'er/expand-region)
 
 (defadvice pop-to-mark-command (around ensure-new-position activate)
   "Continue popping mark until the cursor moves.
@@ -358,7 +414,10 @@ expand-region cruft."
       (when (= p (point)) ad-do-it))))
 
 ;;;;;;;;;;;;;;;;; smart operator ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package smart-operator
+  :ensure t)
 (require 'smart-operator)
+
 (defun my-matlab-mode-smart-operator-hook()
   (smart-insert-operator-hook)
   (local-unset-key (kbd "."))
@@ -382,14 +441,8 @@ expand-region cruft."
 	 (smart-insert-operator "="))))
   )
 
-(defun my-set-python-compile-command ()
-  "Set python compile command."
-  (set (make-local-variable 'compile-command)
-	 (concat "python " (file-name-base buffer-file-name) ".py")))
-
 (add-hook 'matlab-mode-hook 'my-matlab-mode-smart-operator-hook)
 (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
-(add-hook 'python-mode-hook 'my-set-python-compile-command)
 
 
 ;; ;; smooth scrolling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -451,28 +504,15 @@ expand-region cruft."
 (global-set-key "\M-r" 'backward-kill-word)
 (global-set-key "\C-\M-q" 'fill-paragraph)
 
-(key-chord-define-global "kk" 'kill-whole-line)
-
 ;;;;;;;;; real copy behavior ;;;;;;;;;;;;;
 (global-set-key "\M-v" 'cua-paste-pop)
 (delete-selection-mode 1)
 
-(auto-indent-global-mode)
-(setq auto-indent-known-indent-level-variables
-      '( c-basic-offset lisp-body-indent sgml-basic-offset))
-
-
-
-;;;;;;; AUTO-MARK, MARKS, BREADCRUMBS, BOOKMARKS ;;;;;;;;;
-
-;; BREADCRUMBS
-;; (add-to-list 'load-path "~/.emacs.d/site-lisp/breadcrumbs")
-;; (require 'dek-breadcrumbs)
-
-(setq bookmark-default-file (expand-file-name ".emacs.bmk" user-emacs-directory))
-(setq bookmark-file (expand-file-name ".emacs.bmk" user-emacs-directory))
-(bookmark-load bookmark-default-file t)
-
+(use-package auto-indent-global-mode
+  :config
+  (auto-indent-global-mode)
+  (setq auto-indent-known-indent-level-variables
+        '( c-basic-offset lisp-body-indent sgml-basic-offset)))
 
 ;;;;;;;;;;;; LINUM GOTO LINE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun goto-line-with-feedback ()
@@ -483,7 +523,6 @@ expand-region cruft."
 	(linum-mode 1)
 	(goto-line (read-number "Goto line: ")))
     (linum-mode -1)))
-
 (global-set-key (kbd "M-g") 'goto-line-with-feedback)
 
 
@@ -491,18 +530,22 @@ expand-region cruft."
 (global-set-key "\C-x\C-b" 'buffer-menu)
 
 ;; Add parts of each file's directory to the buffer name if not unique
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'forward)
-
+(use-package uniquify
+  :config (setq uniquify-buffer-name-style 'forward))
 
 ;;;;;;;;;;;;;;;; File manager/dired ;;;;;;;;;;;;;;;;;;;;
 
+(use-package dired+)
+(use-package dired-details
+  :config
+  (setq dired-details-hidden-string "- ")
+  (dired-details-install)
+  (define-key dired-mode-map "(" 'dired-details-toggle)
+  (define-key dired-mode-map ")" 'dired-details-toggle)
+
+  )
 (require 'dired+)
 (require 'dired-details)
-(setq dired-details-hidden-string "- ")
-(dired-details-install)
-(define-key dired-mode-map "(" 'dired-details-toggle)
-(define-key dired-mode-map ")" 'dired-details-toggle)
 
 
 (add-hook 'dired-load-hook
@@ -596,8 +639,6 @@ expand-region cruft."
 (defadvice isearch-exit (after my-goto-match-beginning activate)
   "Go to beginning of match."
   (when isearch-forward (goto-char isearch-other-end)))
-(global-set-key (kbd "M-i") 'helm-swoop)
-(setq helm-swoop-pre-input-function (lambda () nil))
 
 ;;;;;;;;;;;;;;;;;;;;; autopair ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'autopair)
@@ -839,6 +880,11 @@ expand-region cruft."
 
 ;;;;;;;;;;;;;;;;;;;;; PYTHON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun my-set-python-compile-command ()
+  "Set python compile command."
+  (set (make-local-variable 'compile-command)
+       (concat "python " (file-name-base buffer-file-name) ".py")))
+
 (defun dek-python-add-breakpoint ()
   (interactive)
   (let (pdb-regexp)
@@ -892,6 +938,7 @@ expand-region cruft."
 	     ;; Do this for numpy style docstring filling
              (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
              ))
+(add-hook 'python-mode-hook 'my-set-python-compile-command)
 
 ;; faster imenu
 (add-hook 'python-mode-hook
@@ -937,6 +984,7 @@ expand-region cruft."
      ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; CYTHON MODE ;;;;;;;;;;;;;;;;;;;;;
+(use-package cython-mode)
 (defun dek-cython-compile ()
   (interactive)
   (let (current-dir)
@@ -964,8 +1012,9 @@ expand-region cruft."
 (require 'dek-edit-python-docstring)
 
 ;; JINJA2
-(autoload 'jinja2-mode "jinja2-mode")
-(add-to-list 'auto-mode-alist '("\\.jinja2$" . jinja2-mode))
+(use-package jinja2-mode
+  :commands jinja2-mode
+  :mode ("\\.jinja2$" . jinja2-mode))
 
 ;;;;;;;;;;; LATEX AND AUCTEX  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (add-to-list 'auto-mode-alist '("\\.rwthtex$" . TeX-latex-mode))
@@ -977,77 +1026,81 @@ expand-region cruft."
 ;; (setq preview-auto-cache-preamble t)
 ;; (setq reftex-plug-into-AUCTeX t)
 
-(defun flymake-get-tex-args (file-name)
-  (list "pdflatex" (list "-file-line-error" "-draftmode" "-interaction=nonstopmode" file-name)))
+(use-package auctex
+  :commands (LaTeX-mode TeX-latex-mode)
+  :config
+  (defun flymake-get-tex-args (file-name)
+    (list "pdflatex" (list "-file-line-error" "-draftmode" "-interaction=nonstopmode" file-name)))
 
-;(add-hook 'LaTeX-mode-hook 'auto-fill-mode)
-(add-hook 'LaTeX-mode-hook 'flyspell-mode)
-;(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-(add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-(add-hook 'LaTeX-mode-hook
-      '(lambda ()
-	 (modify-syntax-entry ?\$ "$")
-	 (tex-pdf-mode 1)
-	 (auto-fill-mode t)
-	 (setq TeX-auto-save t)
-	 (setq TeX-parse-self t)
-	 (setq ispell-enable-tex-parser t)
-	 (flyspell-mode 1)
-	 (LaTeX-math-mode t)
-	 (local-set-key [tab] 'yas/expand)
-	 ;; (load-library "latex-commands")
-	 (define-key LaTeX-mode-map (kbd "M-q") 'fill-sentence)
-	 (define-key LaTeX-mode-map (kbd "<tab>") 'LaTeX-indent-line)
-	 ;; (load-library (expand-file-name "dek-lisp/latex-snippets" user-emacs-directory))
-	 ;; (load-library (expand-file-name "dek-lisp/latex-math-snippets" user-emacs-directory))
-	 (key-chord-define LaTeX-mode-map ". "  ".\C-j")
-	 (rainbow-delimiters-mode 1)
-	 ))
+                                        ;(add-hook 'LaTeX-mode-hook 'auto-fill-mode)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+                                        ;(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (add-hook 'LaTeX-mode-hook
+            '(lambda ()
+               (modify-syntax-entry ?\$ "$")
+               (tex-pdf-mode 1)
+               (auto-fill-mode t)
+               (setq TeX-auto-save t)
+               (setq TeX-parse-self t)
+               (setq ispell-enable-tex-parser t)
+               (flyspell-mode 1)
+               (LaTeX-math-mode t)
+               (local-set-key [tab] 'yas/expand)
+               ;; (load-library "latex-commands")
+               (define-key LaTeX-mode-map (kbd "M-q") 'fill-sentence)
+               (define-key LaTeX-mode-map (kbd "<tab>") 'LaTeX-indent-line)
+               ;; (load-library (expand-file-name "dek-lisp/latex-snippets" user-emacs-directory))
+               ;; (load-library (expand-file-name "dek-lisp/latex-math-snippets" user-emacs-directory))
+               (key-chord-define LaTeX-mode-map ". "  ".\C-j")
+               (rainbow-delimiters-mode 1)
+               ))
 
-;; (add-hook 'TeX-mode-hook
-;;       '(lambda ()
-;; 	(define-key TeX-mode-map (kbd "\C-c\C-c")
-;; 	  (lambda ()
-;; 	(interactive)
-;; 	(save-buffer)
-;; 	(TeX-command-menu "LaTeX")))
-;; 	(define-key TeX-mode-map (kbd "<f12>")
-;; 	  (lambda ()
-;; 	(interactive)
-;; 	(TeX-view)
-;; 	[return]))))
+  ;; (add-hook 'TeX-mode-hook
+  ;;       '(lambda ()
+  ;;    (define-key TeX-mode-map (kbd "\C-c\C-c")
+  ;;      (lambda ()
+  ;;    (interactive)
+  ;;    (save-buffer)
+  ;;    (TeX-command-menu "LaTeX")))
+  ;;    (define-key TeX-mode-map (kbd "<f12>")
+  ;;      (lambda ()
+  ;;    (interactive)
+  ;;    (TeX-view)
+  ;;    [return]))))
 
-(defun fill-sentence ()
-  (interactive)
-  (save-excursion
-    (or (eq (point) (point-max)) (forward-char))
-    (forward-sentence -1)
-    (indent-relative t)
-    (let ((beg (point))
-      (ix (string-match "LaTeX" mode-name)))
-      (forward-sentence)
-      (if (and ix (equal "LaTeX" (substring mode-name ix)))
-      (LaTeX-fill-region-as-paragraph beg (point))
-      (fill-region-as-paragraph beg (point))))))
+  (defun fill-sentence ()
+    (interactive)
+    (save-excursion
+      (or (eq (point) (point-max)) (forward-char))
+      (forward-sentence -1)
+      (indent-relative t)
+      (let ((beg (point))
+            (ix (string-match "LaTeX" mode-name)))
+        (forward-sentence)
+        (if (and ix (equal "LaTeX" (substring mode-name ix)))
+            (LaTeX-fill-region-as-paragraph beg (point))
+          (fill-region-as-paragraph beg (point))))))
 
-(defun end-fill-and-start-new-sentence ()
-  (interactive)
-  (fill-sentence)
-  (insert ".")
-  (reindent-then-newline-and-indent)
+  (defun end-fill-and-start-new-sentence ()
+    (interactive)
+    (fill-sentence)
+    (insert ".")
+    (reindent-then-newline-and-indent)
+    )
+
+  (setq LaTeX-math-abbrev-prefix "`")
+  (setq TeX-electric-escape nil)
+                                        ;(setq TeX-fold-auto t)
+  (setq TeX-newline-function (quote reindent-then-newline-and-indent))
+  (setq TeX-fold-env-spec-list
+	(quote
+	 (
+	  (2 ("frame")
+	     ("[comment]" ("comment"))
+	     ))))
+
   )
-
-
-(setq LaTeX-math-abbrev-prefix "`")
-(setq TeX-electric-escape nil)
-;(setq TeX-fold-auto t)
-(setq TeX-newline-function (quote reindent-then-newline-and-indent))
-(setq TeX-fold-env-spec-list
-       (quote
-    (
-     (2 ("frame")
-     ("[comment]" ("comment"))
-     ))))
 
 
 ;(autoload 'whizzytex-mode "whizzytex"
@@ -1095,27 +1148,6 @@ expand-region cruft."
 (global-set-key (kbd "<f8>") 'dek-switch-dictionary)
 
 
-;; (require 'dbus)
-;; (defun th-evince-sync (file linecol)
-;;    (let ((buf (get-buffer file))
-;;          (line (car linecol))
-;;          (col (cadr linecol)))
-;;      (if (null buf)
-;;          (message "Sorry, %s is not opened..." file)
-;;        (switch-to-buffer buf)
-;;        (goto-line (car linecol))
-;;        (unless (= col -1)
-;;          (move-to-column col)))))
-
-;; (when (and
-;;        (eq window-system 'x)
-;;        (fboundp 'dbus-register-signal))
-;;   (dbus-register-signal
-;;    :session nil "/org/gnome/evince/Window/0"
-;;    "org.gnome.evince.Window" "SyncSource"
-;;    'th-evince-sync))
-
-
 ;;;;;;;;;;;;;;; C AND C++ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun my-turn-on-auto-newline ()
@@ -1156,32 +1188,6 @@ expand-region cruft."
 										;(define-key c++-mode-map (kbd "<f6>") 'gdb)
 ;(define-key c++-mode-map (kbd "<f7>") 'next-error)
 
-;;;;;;;;;;;; c# and vb.net (Visual Basic);;;;;;;;;;;;;;;;;
-
-;; (add-to-list 'load-path (expand-file-name "site-lisp/csharp/" user-emacs-directory))
-;; (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
-
-
-;; (setq auto-mode-alist
-;;       (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
-
-;; (autoload 'vbnet-mode "vbnet-mode" "Mode for editing VB.NET code." t)
-;; (setq auto-mode-alist (append '(("\\.\\(frm\\|bas\\|cls\\|vb\\)$" .
-;;                                  vbnet-mode)) auto-mode-alist))
-
-;; (defun my-vbnet-mode-fn ()
-;;   "My hook for VB.NET mode"
-;;   (interactive)
-;;   ;; This is an example only.
-;;   ;; These statements are not required to use VB.NET, but
-;;   ;; you might like them.
-;;   (turn-on-font-lock)
-;;   (turn-on-auto-revert-mode)
-;;   (setq indent-tabs-mode nil)
-;;   (require 'flymake)
-;;   (flymake-mode 1)
-;;   )
-;; (add-hook 'vbnet-mode-hook 'my-vbnet-mode-fn)
 
 ;;;;;;;;;;;;;;;;;;; JAVA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1243,23 +1249,30 @@ expand-region cruft."
 ;;;;;;;;;;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;; clojure mode ;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'clojure-mode-hook 'paredit-mode)
-
-(defun my/cider-mode-hooks ()
-  "Clojure specific setup code that should only be run when we
+(use-package clojure-mode
+  :commands clojure-mode
+  :config
+  (add-hook 'clojure-mode-hook 'paredit-mode)
+  (use-package cider
+    :config
+    (defun my/cider-mode-hooks ()
+      "Clojure specific setup code that should only be run when we
   have a CIDER REPL connection"
-  (cider-turn-on-eldoc-mode))
+      (cider-turn-on-eldoc-mode))
 
-(add-hook 'cider-mode-hook
-          'my/cider-mode-hooks)
+    (add-hook 'cider-mode-hook
+              'my/cider-mode-hooks)
 
-(defun my/cider-repl-mode-hooks ()
-  (my/turn-on 'paredit
-              'rainbow-delimiters
-              'highlight-parentheses))
+    (defun my/cider-repl-mode-hooks ()
+      (my/turn-on 'paredit
+                  'rainbow-delimiters
+                  'highlight-parentheses))
 
-(add-hook 'cider-repl-mode-hook
-          'my/cider-repl-mode-hooks)
+    (add-hook 'cider-repl-mode-hook
+              'my/cider-repl-mode-hooks)
+
+    )
+  )
 
 ;;;;;;;;;;;; OTHER MODES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1396,37 +1409,6 @@ expand-region cruft."
 	     (pretty-symbols-mode 1)
              ))
 
-;; fast delimiters
-(key-chord-define-global
- "((" '(lambda ()
-	 (interactive)
-	 (insert "(")
-	 (forward-sexp)
-	 (insert ")")
-	 (forward-char)
-	 ))
-
-(key-chord-define-global
- "[[" '(lambda ()
-	 (interactive)
-	 (insert "[")
-	 (forward-sexp)
-	 (insert "]")
-	 (forward-char)
-	 ))
-
-(key-chord-define-global
- "{{" '(lambda ()
-	 (interactive)
-	 (insert "[")
-	 (forward-sexp)
-	 (insert "]")
-	 (forward-char)
-	 ))
-
-(key-chord-define-global
- "ww" 'switch-window)
-
 (defun mfindent ()
   (interactive)
   (let (rectstart)
@@ -1478,8 +1460,7 @@ expand-region cruft."
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-
-(require 'virtualenv)
+(use-package virtualenv)
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;; XIKI ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ;; Load el4r, which loads Xiki
