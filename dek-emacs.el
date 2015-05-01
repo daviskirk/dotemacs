@@ -75,11 +75,13 @@
 ;; (require 'sublimity-scroll)
 
 ;;;;;;;;;;;;;;;;;; KEY-CHORD ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package key-chord-mode)
+(use-package key-chord-mode
+  :commands (key-chord-define-global key-chord-mode)
+  :init
+  (setq key-chord-two-keys-delay 0.001)
+  (setq key-chord-one-key-delay 0.15)
+  )
 (key-chord-mode 1)
-(setq key-chord-two-keys-delay 0.001)
-(setq key-chord-one-key-delay 0.15)
-
 (key-chord-define-global "xf" 'helm-for-files)
 (key-chord-define-global "xb" 'ido-switch-buffer)
 (key-chord-define-global "xs" 'save-buffer)
@@ -124,21 +126,21 @@
 ;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'multiple-cursors)
 ;; (global-unset-key (kbd "C-m"))
-(global-set-key (kbd "M-m") 'mc/mark-next-like-this)
-(global-set-key (kbd "M-S-m") 'mc/mark-all-like-this)
-(global-set-key (kbd "C-M-m") 'mc/mark-all-in-region)
-(global-set-key (kbd "C-M-<return>") 'mc/edit-lines)
-(global-unset-key (kbd "M-<down-mouse-1>"))
-(global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
+(bind-key "M-m" 'mc/mark-next-like-this)
+(bind-key "M-S-m" 'mc/mark-all-like-this)
+(bind-key "C-M-m" 'mc/mark-all-in-region)
+(bind-key "C-M-<return>" 'mc/edit-lines)
+(unbind-key "M-<down-mouse-1>")
+(bind-key "M-<mouse-1>" 'mc/add-cursor-on-click)
 
 
 ;;;;;;;;;;;;;;;;;;;;; WINDOWS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "C-<tab>") 'other-window)
-(global-set-key (kbd "C-x o") 'switch-window)
+(bind-key "C-<tab>" 'other-window)
+(bind-key "C-x o" 'switch-window)
 (winner-mode 1)
 (setq winner-mode 1)
 
-(global-set-key (kbd "C-1") 'toggle-delete-other-windows)
+(bind-key "C-1" 'toggle-delete-other-windows)
 (key-chord-define-global "x1" 'toggle-delete-other-windows)
 (key-chord-define-global "x2" 'split-window-below)
 (key-chord-define-global "x3" 'split-window-right)
@@ -162,7 +164,7 @@
     (winner-undo)))
 
 ;;;;;;;;;;;;;;;;;;;;;; COMPILING ;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "<f5>") 'compile)
+(bind-key "<f5>" 'compile)
 
 ;;;;;;;;;;;;;;;;;;;;; BYTE COMPILE ;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -191,7 +193,7 @@ directory. See `byte-recompile-directory'."
   (let ((buffer-backed-up nil))
     (backup-buffer)))
 (add-hook 'before-save-hook  'force-backup-of-buffer)
-(global-set-key (kbd "<f9>") 'save-buffer)
+(bind-key "<f9>" 'save-buffer)
 
 ;;;;;;;;;;;;;;;;;;;; save place ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Save point position between sessions
@@ -290,6 +292,7 @@ directory. See `byte-recompile-directory'."
   :commands (magit-status magit-log)
   :bind (("C-x V s" . magit-status)
 	 ("C-x V l" . magit-log))
+  :defer t
   :config
   (defun magit-toggle-whitespace ()
     (interactive)
@@ -308,7 +311,7 @@ directory. See `byte-recompile-directory'."
     (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
     (message "paying attention to whitespace")
     (magit-refresh))
-  (define-key magit-status-mode-map (kbd "W") 'magit-toggle-whitespace))
+  (bind-key "W" 'magit-toggle-whitespace magit-status-mode-map))
 
 ;;;;;;;;;;;;;;; ZOOMING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -376,7 +379,7 @@ directory. See `byte-recompile-directory'."
 (load-library "dek-ido")
 
 ;;;;; NICER MOVEMENT KEYBINDINGS, NAVIGATION ;;;;;;;;;;;;;
-(global-set-key (kbd "RET") 'reindent-then-newline-and-indent)
+(bind-key "RET" 'reindent-then-newline-and-indent)
 
 (define-key key-translation-map [?\M-h] [?\C-b])
 (define-key key-translation-map [?\M-l] [?\C-f])
@@ -387,11 +390,11 @@ directory. See `byte-recompile-directory'."
 (define-key key-translation-map (kbd "C-M-h") (kbd "C-M-b"))
 (key-chord-define-global "fg"  'iy-go-to-char)
 (key-chord-define-global "fd"  'iy-go-to-char-backward)
-(global-set-key "\M-." 'iy-go-to-char)
-(global-set-key "\M-," 'iy-go-to-char-backward)
+(bind-key "M-." 'iy-go-to-char)
+(bind-key "M-," 'iy-go-to-char-backward)
 (key-chord-define-global "fs" 'ace-jump-mode)
 (key-chord-define-global "kk" 'kill-whole-line)
-(global-set-key (kbd "M-SPC") 'cycle-spacing)
+(bind-key "M-SPC" 'cycle-spacing)
 
 ;;;;;;;;;;;;;;;;;;; expand region
 (use-package expand-region
@@ -460,15 +463,15 @@ expand-region cruft."
       (beginning-of-line)
     (back-to-indentation)))
 
-(global-set-key (kbd "\C-a") 'dek-back-to-indentation-or-beginning)
+(bind-key "C-a" 'dek-back-to-indentation-or-beginning)
 
 
 
 ;;;;;;;;;; Insert Line like vim ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "\C-o") '(lambda ()
-		(interactive)
-		(end-of-line)
-		(newline-and-indent)))
+(bind-key "C-o" '(lambda ()
+		   (interactive)
+		   (end-of-line)
+		   (newline-and-indent)))
 
 
 ;;;;;;;;;;;;;;;;;;;; ALIGN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -501,11 +504,11 @@ expand-region cruft."
 
 ;;;;;;;;;; COPYING AND KILLING ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(global-set-key "\M-r" 'backward-kill-word)
-(global-set-key "\C-\M-q" 'fill-paragraph)
+(bind-key "M-r" 'backward-kill-word)
+(bind-key "C-M-q" 'fill-paragraph)
 
 ;;;;;;;;; real copy behavior ;;;;;;;;;;;;;
-(global-set-key "\M-v" 'cua-paste-pop)
+(bind-key "M-v" 'cua-paste-pop)
 (delete-selection-mode 1)
 
 (use-package auto-indent-global-mode
@@ -523,11 +526,11 @@ expand-region cruft."
 	(linum-mode 1)
 	(goto-line (read-number "Goto line: ")))
     (linum-mode -1)))
-(global-set-key (kbd "M-g") 'goto-line-with-feedback)
+(bind-key "M-g" 'goto-line-with-feedback)
 
 
 ;;;;;;;;;;;; FILES AND BUFFERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key "\C-x\C-b" 'buffer-menu)
+(bind-key "C-x C-b" 'buffer-menu)
 
 ;; Add parts of each file's directory to the buffer name if not unique
 (use-package uniquify
@@ -582,7 +585,7 @@ expand-region cruft."
     (recentf-save-list)))
 (run-at-time t 600 'recentf-save-if-changes)
 
-(global-set-key "\C-x\C-r" 'helm-recentf)
+(bind-key "C-x C-r" 'helm-recentf)
 
 
 
@@ -600,7 +603,7 @@ expand-region cruft."
        (progn (goto-char min) (line-beginning-position))
        (progn (goto-char max) (line-end-position))))))
 
-(global-set-key (kbd "C-7") 'comment-or-uncomment-current-line-or-region)
+(bind-key "C-7" 'comment-or-uncomment-current-line-or-region)
 
 
 
@@ -665,32 +668,140 @@ expand-region cruft."
 
 (yas-global-mode t)
 (yas-load-directory dek-yasnippet-dir)
+
 ;;;;;;;;;; AUTO-COMPLETE (AC-) ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'auto-complete)
-(require 'auto-complete-config)
-(ac-config-default)
+;; (require 'auto-complete)
+;; (require 'auto-complete-config)
+;; (ac-config-default)
 
-;; (setq-default ac-sources '(ac-source-yasnippet
-;;             ac-source-abbrev
-;;             ac-source-dictionary
-;;             ac-source-words-in-same-mode-buffers))
-;; ;(define-key ac-menu-map (kbd "<f7>") 'ac-next)
-;; (ac-set-trigger-key "TAB")
-;; (global-set-key [(control \#)] 'auto-complete)
-;; (define-key ac-completing-map (kbd "<RET>") 'ac-complete)
-;; (define-key ac-completing-map (kbd "M-j") 'ac-next)
-;; (define-key ac-completing-map (kbd "M-k") 'ac-previous)
-;; (define-key ac-completing-map (kbd "C-n") 'ac-next)
-;; (define-key ac-completing-map (kbd "C-p") 'ac-previous)
-;; ;; (define-key ac-completing-map (kbd "<tab>") 'ac-next)
-;; ;; (define-key ac-completing-map (kbd "<backtab>") 'ac-previous)
+;; ;; (setq-default ac-sources '(ac-source-yasnippet
+;; ;;             ac-source-abbrev
+;; ;;             ac-source-dictionary
+;; ;;             ac-source-words-in-same-mode-buffers))
+;; ;; ;(define-key ac-menu-map (kbd "<f7>") 'ac-next)
+;; ;; (ac-set-trigger-key "TAB")
+;; ;; (bind-key "C-#" 'auto-complete)
+;; ;; (define-key ac-completing-map (kbd "<RET>") 'ac-complete)
+;; ;; (define-key ac-completing-map (kbd "M-j") 'ac-next)
+;; ;; (define-key ac-completing-map (kbd "M-k") 'ac-previous)
+;; ;; (define-key ac-completing-map (kbd "C-n") 'ac-next)
+;; ;; (define-key ac-completing-map (kbd "C-p") 'ac-previous)
+;; ;; ;; (define-key ac-completing-map (kbd "<tab>") 'ac-next)
+;; ;; ;; (define-key ac-completing-map (kbd "<backtab>") 'ac-previous)
 
-(add-to-list 'ac-modes 'latex-mode) ; auto-completion
-(add-to-list 'ac-modes 'lua-mode) ; auto-completion
-(add-to-list 'ac-modes 'matlab-mode) ; auto-completion
-(add-to-list 'ac-modes 'conf-space-mode) ; auto-completion
-(add-to-list 'ac-modes 'haskell-mode) ; auto-completion
+;; (add-to-list 'ac-modes 'latex-mode) ; auto-completion
+;; (add-to-list 'ac-modes 'lua-mode) ; auto-completion
+;; (add-to-list 'ac-modes 'matlab-mode) ; auto-completion
+;; (add-to-list 'ac-modes 'conf-space-mode) ; auto-completion
+;; (add-to-list 'ac-modes 'haskell-mode) ; auto-completion
+
+;;;;;;;;;;;;;;;; COMPANY-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package company
+  :commands company-complete
+  :init
+  (defun indent-or-complete ()
+    (interactive)
+    (if (looking-at "\\_>")
+	(condition-case nil
+	    (company-complete-common)
+	  (error (indent-according-to-mode)))
+      (indent-according-to-mode)))
+
+  (defun company-complete-common-or-previous-cycle ()
+  "Insert the common part of all candidates, or select the next one."
+  (interactive)
+  (when (company-manual-begin)
+    (let ((tick (buffer-chars-modified-tick)))
+      (call-interactively 'company-complete-common)
+      (when (eq tick (buffer-chars-modified-tick))
+        (let ((company-selection-wrap-around t))
+          (call-interactively 'company-select-previous))))))
+  :ensure t
+  :defer t
+  :config
+  (global-company-mode)
+  (bind-key "C-n" 'company-select-next-or-abort company-active-map)
+  (bind-key "C-p" 'company-select-previous-or-abort company-active-map)
+
+  (defun check-expansion ()
+    (save-excursion
+      (if (looking-at "\\_>") t
+	(backward-char 1)
+	(if (looking-at "\\.") t
+	  (backward-char 1)
+	  (if (looking-at "->") t nil)))))
+
+  (defun do-yas-expand ()
+    (let ((yas/fallback-behavior 'return-nil))
+      (yas/expand)))
+
+  (defun tab-indent-or-complete ()
+    (interactive)
+    (cond
+     ((minibufferp)
+      (minibuffer-complete))
+     (t
+      (indent-for-tab-command)
+      (if (or (not yas/minor-mode)
+	      (null (do-yas-expand)))
+	  (if (check-expansion)
+	      (progn
+		(company-manual-begin)
+		(if (null company-candidates)
+		    (progn
+		      (company-abort)
+		      (indent-for-tab-command)))))))))
+
+  (defun tab-complete-or-next-field ()
+    (interactive)
+    (if (or (not yas/minor-mode)
+	    (null (do-yas-expand)))
+	(if company-candidates
+	    (company-complete-selection)
+	  (if (check-expansion)
+	      (progn
+		(company-manual-begin)
+		(if (null company-candidates)
+		    (progn
+		      (company-abort)
+		      (yas-next-field))))
+	    (yas-next-field)))))
+
+  (defun expand-snippet-or-complete-selection ()
+    (interactive)
+    (if (or (not yas/minor-mode)
+	    (null (do-yas-expand))
+	    (company-abort))
+	(company-complete-common-or-cycle)))
+
+  (defun abort-company-or-yas ()
+    (interactive)
+    (if (null company-candidates)
+	(yas-abort-snippet)
+      (company-abort)))
+
+  ;; (bind-key [tab] 'tab-indent-or-complete)
+  (bind-key "<tab>" 'tab-indent-or-complete)
+  ;; (bind-key [(control return)] 'company-complete-common)
+
+  (bind-key "<tab>" 'expand-snippet-or-complete-selection company-active-map)
+  (bind-key "<backtab>" 'company-complete-common-or-previous-cycle company-active-map)
+
+  (unbind-key "<tab>" yas-minor-mode-map)
+  (bind-key "<tab>" 'tab-complete-or-next-field yas-keymap)
+  (bind-key "C-<tab>" 'yas-next-field yas-keymap)
+  (bind-key "C-g" 'abort-company-or-yas yas-keymap)
+  )
+
+(use-package company-jedi
+  :config
+  (defun dek-python-company-mode-hook ()
+    (add-to-list 'company-backends 'company-jedi))
+  (add-hook 'python-mode-hook 'dek-company-mode-hook)
+  )
+
+
 
 ;;;;;;;;;;;;;;; AUTO-INSERT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -734,8 +845,8 @@ expand-region cruft."
 
 (setq org-clock-persist 'history)
 (org-clock-persistence-insinuate)
-(define-key global-map "\C-ca" 'org-agenda)
-;; (global-set-key "\C-cb" 'org-cycle-agenda-files) ;; redifined for bookmarks
+(bind-key "C-c a" 'org-agenda)
+;; (bind-key "C-c b" 'org-cycle-agenda-files) ;; redifined for bookmarks
 (setq org-cycle-separator-lines 0)
 (setq org-insert-heading-respect-content t)
 (setq org-todo-keywords '((sequence "TODO" "DOING" "BLOCKED" "REVIEW" "|" "DONE" "ARCHIVED")))
@@ -771,7 +882,7 @@ expand-region cruft."
 (setq remember-annotation-functions '(org-remember-annotation))
 (setq remember-handler-functions '(org-remember-handler))
 (add-hook 'remember-mode-hook 'org-remember-apply-template)
-(define-key  global-map  "\C-cr"  'org-remember)
+(bind-key  "C-c r"  'org-remember)
 (defvar dek-rwth-org-filename "rwth.org" "filename of rwth-org-file")
 (defvar dek-rwth-org-filepath (concat "~/org/" dek-rwth-org-filename) "filepath to rwth-org-file")
 
@@ -783,9 +894,9 @@ expand-region cruft."
 
 ;; ORG links:
 (setq org-return-follows-link t)
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-c\C-l" 'org-insert-link-global)
-(global-set-key "\C-co" 'org-open-at-point-global)
+(bind-key "C-c l" 'org-store-link)
+(bind-key "C-c C-l" 'org-insert-link-global)
+(bind-key "C-c o" 'org-open-at-point-global)
 
 ;; Include the latex-exporter
 (require 'ox-latex)
@@ -838,6 +949,15 @@ expand-region cruft."
         ("daviskirk" :components ("org-daviskirk" "org-static-daviskirk"))
 
         ))
+
+
+;;;;;;;;;;;;;;;;; MARKDOWN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package markdown-mode)
+(use-package gh-md
+  :defer t
+  :config
+  (bind-key "C-c C-c c" 'gh-md-render-buffer markdown-mode-map)
+  (bind-key "<f5>" 'gh-md-render-buffer markdown-mode-map))
 
 ;;;;;;;;;;;;;; PHP-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1121,6 +1241,7 @@ expand-region cruft."
   (add-hook tmp-prog-mode-hook (lambda () (run-hooks 'prog-mode-hook))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;; FLYSPELL ;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; DICTIONARY  AND SPELL CHECKING ;;;;;;;;;;;;;;;;;
 ; rechtschreibung spellchecking aspell flyspell
 (setq ispell-program-name "aspell")
 (setq ispell-extra-args '("--sug-mode=ultra"))
@@ -1144,8 +1265,7 @@ expand-region cruft."
     (ispell-change-dictionary change)
     (message "Dictionary switched from %s to %s" dic change)
     ))
-
-(global-set-key (kbd "<f8>") 'dek-switch-dictionary)
+(bind-key "<f8>" 'dek-switch-dictionary)
 
 
 ;;;;;;;;;;;;;;; C AND C++ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
