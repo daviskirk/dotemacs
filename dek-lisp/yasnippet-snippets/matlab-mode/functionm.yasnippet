@@ -1,9 +1,0 @@
-# -*- mode: snippet -*-
-# name: functionm
-# key: functionm
-# --
-function ${1:$(if (and (search "," text) (not (string= (substring text 0 1) "["))) "[")}${1:return_val}${1:$(if (and (search "," text) (not (string= (substring text 0 1) "["))) "]")} = ${2:fname}(obj, ${3:args})
-%${2:$(upcase text)} ${4:short summary}
-%
-% ${1:$(if (and (search "," text) (not (string= (substring text 0 1) "["))) "[")}$1${1:$(if (and (search "," text) (not (string= (substring text 0 1) "["))) "]")} = $2(obj, $3)
-% $0
