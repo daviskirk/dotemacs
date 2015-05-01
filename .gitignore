@@ -11,3 +11,4 @@ tramp
 url/
 org-clock-save.el
 .places
+yasnippet-snippets/*
