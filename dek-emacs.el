@@ -48,7 +48,8 @@
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("org" . "http://orgmode.org/elpa/")
-        ("MELPA" . "http://melpa.org/packages/")))
+        ("MELPA" . "http://melpa.org/packages/")
+	("org" . "http://orgmode.org/elpa/")))
 (package-initialize)
 
 (eval-when-compile
@@ -126,6 +127,9 @@
 (key-chord-define-global
  "ww" 'switch-window)
 
+(key-chord-define-global
+ "w2" 'dek-current-buffer-to-other-window)
+
 ;;;;;;;;;;;;;;;;;; MULTIPLE-CURSORS ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (require 'multiple-cursors)
 ;; (global-unset-key (kbd "C-m"))
@@ -165,6 +169,15 @@
   (if (> (length (window-list)) 1)
       (delete-other-windows)
     (winner-undo)))
+
+(defun dek-current-buffer-to-other-window ()
+  (interactive)
+  (let (buf)
+    (setq buf (current-buffer))
+    (other-window 1)
+    (switch-to-buffer buf)
+    (other-window -1))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;; COMPILING ;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-key "<f5>" 'compile)
@@ -292,11 +305,11 @@ directory. See `byte-recompile-directory'."
 
 ;;;;;;;;;;;;;;;;;; VERSION CONTROL / GIT ;;;;;;;;;;;;;;;;
 (use-package magit
-  :commands (magit-status magit-log)
+  :commands (magit-status magit-log magit-dont-ignore-whitespace)
   :bind (("C-x V s" . magit-status)
 	 ("C-x V l" . magit-log))
   :defer t
-  :config
+  :init
   (defun magit-toggle-whitespace ()
     (interactive)
     (if (member "--ignore-space-change" magit-diff-options)
@@ -314,13 +327,14 @@ directory. See `byte-recompile-directory'."
     (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
     (message "paying attention to whitespace")
     (magit-refresh))
+  :config
   (bind-key "W" 'magit-toggle-whitespace magit-status-mode-map))
 
 ;;;;;;;;;;;;;;; ZOOMING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-package zoom-frm
   :commands (zoom-in zoom-out)
-  :config
+  :init
   (global-set-key (if (boundp 'mouse-wheel-down-event) ; Emacs 22+
                       (vector (list 'control mouse-wheel-down-event))
                     [C-mouse-wheel])    ; Emacs 20, 21
@@ -380,6 +394,48 @@ directory. See `byte-recompile-directory'."
 ;;;;;;;;;;;;; IDO-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (load-library "dek-ido")
+
+;; (defun ivy-alt (&optional arg)
+;;   "Exit the minibuffer with the selected candidate.
+;; When ARG is t, exit with current text, ignoring the candidates."
+;;   (interactive "P")
+;;   (let (dir)
+;;     (cond ((and ivy--directory
+;; 		(or
+;; 		 (and
+;; 		  (not (string= ivy--current "./"))
+;; 		  (cl-plusp ivy--length)
+;; 		  (file-directory-p
+;; 		   (setq dir (expand-file-name
+;; 			      ivy--current ivy--directory))))))
+;; 	   (ivy--cd dir)
+;; 	   (ivy--exhibit))
+;; 	  ((string-match "^/\\([^/]+?\\):\\(?:\\(.*\\)@\\)?" ivy-text)
+;; 	   (let ((method (match-string 1 ivy-text))
+;; 		 (user (match-string 2 ivy-text))
+;; 		 res)
+;; 	     (dolist (x (tramp-get-completion-function method))
+;; 	       (setq res (append res (funcall (car x) (cadr x)))))
+;; 	     (setq res (delq nil res))
+;; 	     (when user
+;; 	       (dolist (x res)
+;; 		 (setcar x user)))
+;; 	     (setq res (cl-delete-duplicates res :test 'equal))
+;; 	     (let ((host (ivy-read "Find File: "
+;; 				   (mapcar #'ivy-build-tramp-name res))))
+;; 	       (when host
+;; 		 (setq ivy--directory "/")
+;; 		 (ivy--cd (concat "/" method ":" host ":"))))))
+;; 	  (t
+;; 	   (ivy-next-line)))))
+
+;; (require 'smex)
+;; (use-package swiper
+;;   :config
+;;   (ivy-mode t)
+;;   (setq smex-completion-method 'ivy)
+;;   ;; (bind-key "TAB" 'ivy-partial ivy-minibuffer-map)
+;;   (bind-key "TAB" 'ivy-alt ivy-minibuffer-map))
 
 ;;;;; NICER MOVEMENT KEYBINDINGS, NAVIGATION ;;;;;;;;;;;;;
 (bind-key "RET" 'reindent-then-newline-and-indent)
@@ -655,25 +711,9 @@ expand-region cruft."
 (smartparens-global-mode t)
 (show-smartparens-global-mode t)
 
-;;;;;;;;;;;;;;;; YASNIPPET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun dek-find-elpa-yasnippet-snippet-dir ()
-  (interactive)
-  (concat
-   package-user-dir "/"
-   (car (directory-files package-user-dir nil "^yasnippet-[0-9.]+"))
-   "/snippets"))
-
-(setq dek-yasnippet-dir (expand-file-name "dek-lisp/yasnippet-snippets" user-emacs-directory))
-(setq yas-snippet-dirs
-      (list dek-yasnippet-dir
-	(dek-find-elpa-yasnippet-snippet-dir)))
-
-(yas-global-mode t)
-(yas-load-directory dek-yasnippet-dir)
 
 ;;;;;;;;;; AUTO-COMPLETE (AC-) ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(setq ac-modes '())
 ;; (require 'auto-complete)
 ;; (require 'auto-complete-config)
 ;; (ac-config-default)
@@ -698,10 +738,31 @@ expand-region cruft."
 ;; (add-to-list 'ac-modes 'matlab-mode) ; auto-completion
 ;; (add-to-list 'ac-modes 'conf-space-mode) ; auto-completion
 ;; (add-to-list 'ac-modes 'haskell-mode) ; auto-completion
+;;;;;;;;;;;;;;;; YASNIPPET ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package yasnippet
+  :commands (yas-global-mode yas-minor-mode)
+  :ensure t
+  :diminish yas-minor-mode
+  :init
+  (defun dek-find-elpa-yasnippet-snippet-dir ()
+    (interactive)
+    (concat
+     package-user-dir "/"
+     (car (directory-files package-user-dir nil "^yasnippet-[0-9.]+"))
+     "/snippets"))
+  (defvar dek-yasnippet-dir
+    (expand-file-name "dek-lisp/yasnippet-snippets" user-emacs-directory))
+  (setq yas-snippet-dirs
+	(list dek-yasnippet-dir
+	      (dek-find-elpa-yasnippet-snippet-dir)))
+  (yas-global-mode 1)
+  )
+
 
 ;;;;;;;;;;;;;;;; COMPANY-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package company
-  :commands company-complete
+  :commands (company-complete tab-indent-or-complete company-manual-begin)
   :init
   (defun indent-or-complete ()
     (interactive)
@@ -720,14 +781,8 @@ expand-region cruft."
       (when (eq tick (buffer-chars-modified-tick))
         (let ((company-selection-wrap-around t))
           (call-interactively 'company-select-previous))))))
-  :ensure t
-  :defer t
-  :config
-  (global-company-mode)
-  (bind-key "C-n" 'company-select-next-or-abort company-active-map)
-  (bind-key "C-p" 'company-select-previous-or-abort company-active-map)
 
-  (defun check-expansion ()
+    (defun check-expansion ()
     (save-excursion
       (if (looking-at "\\_>") t
 	(backward-char 1)
@@ -746,7 +801,7 @@ expand-region cruft."
       (minibuffer-complete))
      (t
       (indent-for-tab-command)
-      (if (or (not yas/minor-mode)
+      (if (or (not yas-minor-mode)
 	      (null (do-yas-expand)))
 	  (if (check-expansion)
 	      (progn
@@ -756,9 +811,20 @@ expand-region cruft."
 		      (company-abort)
 		      (indent-for-tab-command)))))))))
 
+  ;; (bind-key [tab] 'tab-indent-or-complete)
+  (bind-key "<tab>" 'tab-indent-or-complete prog-mode-map)
+  ;; (bind-key [(control return)] 'company-complete-common)
+
+  :ensure t
+  :config
+  (global-company-mode)
+  (bind-key "C-n" 'company-select-next-or-abort company-active-map)
+  (bind-key "C-p" 'company-select-previous-or-abort company-active-map)
+  (add-to-list 'company-backends 'company-anaconda)
+
   (defun tab-complete-or-next-field ()
     (interactive)
-    (if (or (not yas/minor-mode)
+    (if (or (not yas-minor-mode)
 	    (null (do-yas-expand)))
 	(if company-candidates
 	    (company-complete-selection)
@@ -773,7 +839,7 @@ expand-region cruft."
 
   (defun expand-snippet-or-complete-selection ()
     (interactive)
-    (if (or (not yas/minor-mode)
+    (if (or (not yas-minor-mode)
 	    (null (do-yas-expand))
 	    (company-abort))
 	(company-complete-common-or-cycle)))
@@ -784,10 +850,6 @@ expand-region cruft."
 	(yas-abort-snippet)
       (company-abort)))
 
-  ;; (bind-key [tab] 'tab-indent-or-complete)
-  (bind-key "<tab>" 'tab-indent-or-complete)
-  ;; (bind-key [(control return)] 'company-complete-common)
-
   (bind-key "<tab>" 'expand-snippet-or-complete-selection company-active-map)
   (bind-key "<backtab>" 'company-complete-common-or-previous-cycle company-active-map)
 
@@ -797,12 +859,12 @@ expand-region cruft."
   (bind-key "C-g" 'abort-company-or-yas yas-keymap)
   )
 
-(use-package company-jedi
-  :config
-  (defun dek-python-company-mode-hook ()
-    (add-to-list 'company-backends 'company-jedi))
-  (add-hook 'python-mode-hook 'dek-company-mode-hook)
-  )
+;; (use-package company-jedi
+;;   :config
+;;   (defun dek-python-company-mode-hook ()
+;;     (add-to-list 'company-backends 'company-jedi))
+;;   (add-hook 'python-mode-hook 'dek-company-mode-hook)
+;;   )
 
 
 
@@ -844,7 +906,7 @@ expand-region cruft."
 
 (setq org-odd-levels-only nil)
 (setq org-hide-leading-stars t)
-;; (setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css\"><script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js\"></script><body style=\"margin-left:15%;margin-right:15%;\">")
+(setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css\"><script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js\"></script><body style=\"margin-left:15%;margin-right:15%;\">")
 
 (setq org-clock-persist 'history)
 (org-clock-persistence-insinuate)
@@ -917,11 +979,8 @@ expand-region cruft."
 
 ;;;;;;;;;;;;;;; ORG BABEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (org-babel-do-load-languages
- 'org-babel-do-load-languages
- '(
-   (sh . t)
-   (python . t)
-   ))
+ 'org-babel-load-languages
+ '((python . t) (sh . t)))
 
 ;;;;;;;;;;;;;;;;; ORG publish ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq org-publish-project-alist
@@ -1047,21 +1106,29 @@ expand-region cruft."
 	     (auto-indent-mode -1)
 		 (setq-local auto-indent-kill-line-at-eol nil)
              (setq-local auto-indent-on-yank-or-paste nil)
-             (define-key python-mode-map (kbd "RET") 'newline-and-indent)
-             (define-key python-mode-map (kbd "#") 'dek-python-crunch)
-	     (define-key python-mode-map (kbd "<f12>") 'dek-python-add-breakpoint)
-	     (define-key python-mode-map (kbd "S-<f12>") 'dek-python-find-all-breakpoints)
-	     (define-key python-mode-map (kbd "C-c t r") 'test-case-run-or-run-again)
-	     (define-key python-mode-map (kbd "C-c b") 'dek-browse-code-python)
-	     (define-key python-mode-map (kbd "C-c C-b") 'dek-browse-code-python)
+             (bind-key "RET" 'newline-and-indent python-mode-map)
+             (bind-key "#" 'dek-python-crunch python-mode-map)
+	     (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
+	     (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
+	     (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
+	     (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
+	     (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
 	     (magit-dont-ignore-whitespace)
              ;; (setq paragraph-start "\\(\\s-*$\\)\\|\\(\\.$)")
              ;; (setq paragraph-start "\f\\|\\(\s-*$\\)\\|\\([-:] +.+$\\)" paragraph-seperate "$")
 	     (rainbow-delimiters-mode 1)
 	     ;; Do this for numpy style docstring filling
              (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
+	     (auto-complete-mode 0)
              ))
-(add-hook 'python-mode-hook 'my-set-python-compile-command)
+
+(use-package anaconda-mode
+  :init
+  (add-hook 'python-mode-hook 'anaconda-mode)
+  (add-hook 'python-mode-hook 'my-set-python-compile-command)
+  :config
+  (unbind-key "M-r" anaconda-mode-map)
+  )
 
 ;; faster imenu
 (add-hook 'python-mode-hook
@@ -1069,16 +1136,10 @@ expand-region cruft."
 	    (set (make-local-variable 'imenu-create-index-function)
                  #'python-imenu-create-index)))
 
-
-
-;; jedi mode
-;; (setq jedi:setup-keys t)                      ; optional
-;; (setq jedi:complete-on-dot t)                 ; optional
-(add-hook 'python-mode-hook 'jedi:setup)
-(add-hook 'jedi-mode-hook
-	  '(lambda ()
-	     (define-key jedi-mode-map (kbd "<C-tab>") nil)
-	     (define-key jedi-mode-map (kbd "<backtab>") 'jedi:complete)))
+;; ;; jedi mode
+;; ;; (setq jedi:setup-keys t)                      ; optional
+;; ;; (setq jedi:complete-on-dot t)                 ; optional
+;; (add-hook 'python-mode-hook 'jedi:setup)
 
 
 ;; Use anaconda if available
@@ -1103,7 +1164,6 @@ expand-region cruft."
      python-shell-prompt-output-regexp "Out\[[0-9]+\]: "
      python-shell-completion-setup-code ""
      python-shell-completion-string-code "';'.join(get_ipython().complete('''%s''')[1])\n"
-
      ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; CYTHON MODE ;;;;;;;;;;;;;;;;;;;;;
@@ -1519,7 +1579,7 @@ expand-region cruft."
 (add-hook 'matlab-mode-hook
 	  '(lambda ()
 	     (require 'matlab-expansions)
-	     (auto-complete-mode 1)
+	     ;; (auto-complete-mode 1)
 	     (define-key matlab-mode-map (kbd "<f12>") 'dek-matlab-set-breakpoint)
 	     (key-chord-define matlab-mode-map ";;"  "\C-e;")
 	     (setq matlab-imenu-generic-expression
@@ -1529,7 +1589,6 @@ expand-region cruft."
 	     (define-key matlab-mode-map "\C-c\C-z" 'dek-matlab-switch-to-shell)
 	     (define-key matlab-mode-map (kbd "C-c b") 'dek-browse-code-matlab)
 	     (define-key matlab-mode-map (kbd "<f7>") 'dek-clear-all-matlab)
-	     (pretty-symbols-mode 1)
              ))
 
 (defun mfindent ()
@@ -1543,6 +1602,14 @@ expand-region cruft."
       (insert " ")
       (replace-rectangle rectstart (point) "")))))
 ;; (message "MATLAB ALL LOADED!!!")
+
+
+;;;;;;;;;;;; PRETTY SYMBOLS / UNICODE SYMBOLS ;;;;;;;;;;;;;;
+(use-package pretty-symbols
+  :config
+  (add-hook 'matlab-mode-hook 'pretty-symbols-mode)
+  (add-hook 'python-mode-hook 'pretty-symbols-mode)
+  (add-hook 'emacs-lisp-mode-hook 'pretty-symbols-mode))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; STUMPWM ;;;;;;;;;;;;;;;;;;;;;;;
@@ -1559,6 +1626,7 @@ expand-region cruft."
  require-final-newline t ; make newline at end of file)
  ;; vc-handled-backends nil
  )
+
 
 ;; (define-globalized-minor-mode global-fci-mode fci-mode (lambda () (fci-mode 1)))
 ;; (global-fci-mode 1)
@@ -1603,7 +1671,6 @@ expand-region cruft."
  '(LaTeX-command-style
    (quote
     (("" "%(PDF)%(latex) -shell-escape %(extraopts) %S%(PDFout)"))))
- '(TeX-engine (quote luatex))
  '(ansi-term-color-vector
    [unspecified "#282a2e" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#81a2be" "#e0e0e0"] t)
  '(auto-indent-on-visit-pretend-nothing-changed nil)
@@ -1620,21 +1687,25 @@ expand-region cruft."
  '(fortran-if-indent 2)
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
+ '(global-semantic-stickyfunc-mode nil)
  '(jedi:key-complete [backtab])
  '(magit-diff-options (quote ("--ignore-space-change")))
  '(matlab-case-level (quote (4 . 4)))
  '(matlab-fill-code nil)
  '(matlab-shell-command-switches (quote ("-nodesktop" "-nosplash")) t)
+ '(minimap-dedicated-window t)
+ '(minimap-display-semantic-overlays t)
+ '(minimap-update-delay 0.25)
+ '(minimap-width-fraction 0.1)
  '(org-babel-python-command "python")
  '(org-confirm-babel-evaluate nil)
  '(org-export-babel-evaluate t)
+ '(org-export-backends (quote (ascii html icalendar latex md odt)))
  '(pretty-symbol-categories (lambda relational))
  '(pretty-symbol-patterns
    (quote
     ((8230 lambda "\\.\\.\\."
 	   (matlab-mode))
-     (955 lambda "\\<lambda\\>"
-	  (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode python-mode inferior-python-mode))
      (402 lambda "\\<function\\>"
 	  (js-mode))
      (8800 relational "!="
@@ -1655,8 +1726,6 @@ expand-region cruft."
 	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode matlab-mode))
      (8744 logical "\\<or\\>"
 	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
-     (172 logical "\\<not\\>"
-	  (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
      (8709 nil "\\<nil\\>"
 	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
  '(reftex-ref-style-alist
@@ -1679,10 +1748,16 @@ expand-region cruft."
  '(rst-indent-field 4)
  '(rst-indent-width 4)
  '(safe-local-variable-values (quote ((TeX-master . "thesis-master") (TeX-master . t))))
+ '(semantic-default-submodes
+   (quote
+    (global-semantic-decoration-mode global-semantic-stickyfunc-mode global-semantic-idle-scheduler-mode global-semanticdb-minor-mode)))
+ '(semantic-mode t)
  '(switch-window-shortcut-style (quote qwerty))
  '(test-case-python-executable "~/anaconda/bin/python")
- '(virtualenv-root "~/.virtualenvs/")
- '(warning-suppress-types (quote ((undo discard-info)))))
+ '(virtualenv-root "~/anaconda/envs/")
+ '(warning-suppress-types (quote ((undo discard-info))))
+ '(web-mode-script-padding 0)
+ '(web-mode-style-padding 0))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -1693,9 +1768,11 @@ expand-region cruft."
  '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))))
  '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))))
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
+ '(ivy-current-match ((t (:inherit default :background "dim gray" :weight bold))))
+ '(minimap-font-face ((t (:height 30 :family "DejaVu Sans Mono"))))
  '(mode-line ((t (:background "#506070" :foreground "#dcdccc" :box (:line-width -1 :style released-button) :family "Ubuntu Condensed"))))
  '(mode-line-inactive ((t (:background "#555555" :foreground "#808080" :box nil :family "Ubuntu Condensed"))))
- '(semantic-tag-boundary-face ((t (:overline "#93e0e3"))) t)
+ '(semantic-tag-boundary-face ((t (:overline "SeaGreen4"))))
  '(sp-show-pair-match-face ((t (:background "#2F2F2F" :weight bold)))))
 
 
@@ -1740,7 +1817,8 @@ expand-region cruft."
 (defun sd ()
   "Switch to current directory by creating new window in tmux."
   (interactive)
-  (concat "echo " "'" (file-name-directory (buffer-file-name)) "' > ~/.ld" )
+  ;; (concat "echo " "'" (file-name-directory (buffer-file-name)) "' > ~/.ld" )
+  (concat "echo " "'" default-directory "' > ~/.ld" )
   (shell-command "tmux neww")
   )
 

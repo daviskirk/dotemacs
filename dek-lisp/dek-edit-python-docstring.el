@@ -90,5 +90,8 @@ Copy and current docstring to DEK-PYTHON-DOCSTRING-BUFFER for editing in `rst-mo
     (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
     ))
 
+(add-hook 'python-mode-hook
+	  '(lambda ()
+	     (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")))
 (provide 'dek-edit-python-docstring)
 ;;; dek-edit-python-docstring.el ends here
