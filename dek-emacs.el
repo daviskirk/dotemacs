@@ -7,6 +7,9 @@
 ;;; Code:
 
 (require 'cl)
+(require 'epa-file)
+(epa-file-enable)
+(setenv "GPG_AGENT_INFO" nil)
 
 (if (equal user-login-name "dek")
     (setenv "PATH"
