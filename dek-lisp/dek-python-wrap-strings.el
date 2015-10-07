@@ -1,0 +1,6 @@
+(defun dek-python-wrap-strings ()
+  (interactive "P")
+  (search-backward-regexp "^ *[^\"']")
+  (search-forward-regexp "[^\"']")
+  )
+(provide 'dek-python-wrap-strings)

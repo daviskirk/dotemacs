@@ -489,22 +489,22 @@ expand-region cruft."
   (local-unset-key (kbd "/"))
   (local-unset-key (kbd "%"))
   )
-(defun my-python-mode-smart-operator-hook()
-  (smart-insert-operator-hook)
-  (local-unset-key (kbd "."))
-  (local-unset-key (kbd ":"))
-  (local-unset-key (kbd "*"))
-  (local-unset-key (kbd "/"))
-  (define-key python-mode-map "="
-    '(lambda ()
-       (interactive)
-       (if (looking-back "([^)]+[^ ]")
-	   (self-insert-command 1)
-	 (smart-insert-operator "="))))
-  )
+;; (defun my-python-mode-smart-operator-hook()
+;;   (smart-insert-operator-hook)
+;;   (local-unset-key (kbd "."))
+;;   (local-unset-key (kbd ":"))
+;;   (local-unset-key (kbd "*"))
+;;   (local-unset-key (kbd "/"))
+;;   (define-key python-mode-map "="
+;;     '(lambda ()
+;;        (interactive)
+;;        (if (looking-back "([^)]+[^ ]")
+;; 	   (self-insert-command 1)
+;; 	 (smart-insert-operator "="))))
+;;   )
 
 (add-hook 'matlab-mode-hook 'my-matlab-mode-smart-operator-hook)
-(add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
+;; (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
 
 
 ;; ;; smooth scrolling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -602,9 +602,8 @@ expand-region cruft."
   :config
   (setq dired-details-hidden-string "- ")
   (dired-details-install)
-  (define-key dired-mode-map "(" 'dired-details-toggle)
-  (define-key dired-mode-map ")" 'dired-details-toggle)
-
+  ;; (define-key dired-mode-map "(" 'dired-details-toggle)
+  ;; (define-key dired-mode-map ")" 'dired-details-toggle)
   )
 (require 'dired+)
 (require 'dired-details)
@@ -1061,6 +1060,7 @@ expand-region cruft."
                             ))
 
 ;;;;;;;;;;;;;;;;;;;;; PYTHON ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(elpy-enable)
 
 (defun my-set-python-compile-command ()
   "Set python compile command."
@@ -1102,7 +1102,8 @@ expand-region cruft."
 
 (add-hook 'python-mode-hook
 	  '(lambda ()
-	     (flycheck-mode 1)
+	     ;; (flycheck-mode 1)
+	     (elpy-mode 1)
 	     (auto-indent-mode -1)
 		 (setq-local auto-indent-kill-line-at-eol nil)
              (setq-local auto-indent-on-yank-or-paste nil)
@@ -1122,13 +1123,13 @@ expand-region cruft."
 	     (auto-complete-mode 0)
              ))
 
-(use-package anaconda-mode
-  :init
-  (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'my-set-python-compile-command)
-  :config
-  (unbind-key "M-r" anaconda-mode-map)
-  )
+;; (use-package anaconda-mode
+;;   :init
+;;   (add-hook 'python-mode-hook 'anaconda-mode)
+;;   (add-hook 'python-mode-hook 'my-set-python-compile-command)
+;;   :config
+;;   (unbind-key "M-r" anaconda-mode-map)
+;;   )
 
 ;; faster imenu
 (add-hook 'python-mode-hook
@@ -1142,29 +1143,29 @@ expand-region cruft."
 ;; (add-hook 'python-mode-hook 'jedi:setup)
 
 
-;; Use anaconda if available
-(if (file-exists-p "~/anaconda/bin/ipython")
-    (setq
-     python-shell-interpreter "~/anaconda/bin/ipython"
-     ;; python-shell-interpreter-args ""
-     ;; python-shell-prompt-regexp "In \\[[0-9]+\\]: "
-     ;; python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-     ;; python-shell-completion-setup-code
-     ;; "from IPython.core.completerlib import module_completion"
-     ;; python-shell-completion-module-string-code
-     ;; "';'.join(module_completion('''%s'''))\n"
-     ;; python-shell-completion-string-code
-     ;; "';'.join(get_ipython().Completer.all_completions('''%s'''))"
-     test-case-python-executable "~/anaconda/bin/python"
+;; ;; Use anaconda if available
+;; (if (file-exists-p "~/anaconda/bin/ipython")
+;;     (setq
+;;      python-shell-interpreter "~/anaconda/bin/ipython"
+;;      ;; python-shell-interpreter-args ""
+;;      ;; python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+;;      ;; python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+;;      ;; python-shell-completion-setup-code
+;;      ;; "from IPython.core.completerlib import module_completion"
+;;      ;; python-shell-completion-module-string-code
+;;      ;; "';'.join(module_completion('''%s'''))\n"
+;;      ;; python-shell-completion-string-code
+;;      ;; "';'.join(get_ipython().Completer.all_completions('''%s'''))"
+;;      test-case-python-executable "~/anaconda/bin/python"
 
-     ; from https://github.com/gabrielelanaro/emacs-for-python/blob/master/epy-python.el
-     python-shell-interpreter "ipython"
-     python-shell-interpreter-args ""
-     python-shell-prompt-regexp "In \[[0-9]+\]: "
-     python-shell-prompt-output-regexp "Out\[[0-9]+\]: "
-     python-shell-completion-setup-code ""
-     python-shell-completion-string-code "';'.join(get_ipython().complete('''%s''')[1])\n"
-     ))
+;;      ; from https://github.com/gabrielelanaro/emacs-for-python/blob/master/epy-python.el
+;;      python-shell-interpreter "ipython"
+;;      python-shell-interpreter-args ""
+;;      python-shell-prompt-regexp "In \[[0-9]+\]: "
+;;      python-shell-prompt-output-regexp "Out\[[0-9]+\]: "
+;;      python-shell-completion-setup-code ""
+;;      python-shell-completion-string-code "';'.join(get_ipython().complete('''%s''')[1])\n"
+;;      ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; CYTHON MODE ;;;;;;;;;;;;;;;;;;;;;
 (use-package cython-mode)
@@ -1291,17 +1292,18 @@ expand-region cruft."
 ;(setq-default whizzy-viewers '(("-pdf" "evince %s" )("-dvi" "evince %s")("-ps" "gv") ))
 
 ;;;;;;;;;;;;;;;;;;;;; PROGRAMMING MODES ;;;;;;;;;;;;;;;
-(add-hook 'after-init-hook 'global-flycheck-mode)
-(setq flycheck-flake8rc (expand-file-name ".flake8rc" user-emacs-directory))
-(setq prog-mode-hooks
-      '(matlab-mode
-	python-mode
-	latex-mode
-	TeX-latex-mode
-	emacs-lisp-mode))
-;; add prog-mode-hook to all programming language modes
-(dolist (tmp-prog-mode-hook prog-mode-hooks nil)
-  (add-hook tmp-prog-mode-hook (lambda () (run-hooks 'prog-mode-hook))))
+;; (add-hook 'after-init-hook 'global-flycheck-mode)
+;; (setq flycheck-flake8rc (expand-file-name ".flake8rc" user-emacs-directory))
+;; (setq prog-mode-hooks
+;;       '(matlab-mode
+;; 	python-mode
+;; 	latex-mode
+;; 	TeX-latex-mode
+;; 	emacs-lisp-mode))
+
+;; ;; add prog-mode-hook to all programming language modes
+;; (dolist (tmp-prog-mode-hook prog-mode-hooks nil)
+;;   (add-hook tmp-prog-mode-hook (lambda () (run-hooks 'prog-mode-hook))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;; FLYSPELL ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;; DICTIONARY  AND SPELL CHECKING ;;;;;;;;;;;;;;;;;
@@ -1481,6 +1483,10 @@ expand-region cruft."
 
 (autoload 'csv-mode "csv-mode" nil t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;; MODELICA ;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-to-list 'load-path (expand-file-name "site-lisp/modelica" user-emacs-directory))
+(autoload 'modelica-mode "modelica-mode" "Modelica Editing Mode" t)
+(setq auto-mode-alist (cons '("\.mop?$" . modelica-mode) auto-mode-alist))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; MATLAB ;;;;;;;;;;;;;;;;;;;;;;;
@@ -1678,6 +1684,12 @@ expand-region cruft."
    (quote
     ("1cf3f29294c5a3509b7eb3ff9e96f8e8db9d2d08322620a04d862e40dc201fe2" "cd70962b469931807533f5ab78293e901253f5eeb133a46c2965359f23bfb2ea" "769bb56fb9fd7e73459dcdbbfbae1f13e734cdde3cf82f06a067439568cdaa95" "253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
  '(dired-dwim-target t)
+ '(elpy-mode-hook nil)
+ '(elpy-modules
+   (quote
+    (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-pyvenv elpy-module-yasnippet elpy-module-sane-defaults)))
+ '(elpy-rpc-python-command "~/anaconda/bin/python")
+ '(elpy-test-runner (quote elpy-test-pytest-runner))
  '(fci-rule-color "#2b2b2b")
  '(fill-column 79)
  '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
@@ -1728,6 +1740,7 @@ expand-region cruft."
 	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
      (8709 nil "\\<nil\\>"
 	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
+ '(pyvenv-virtualenvwrapper-python "~/anaconda/bin/python")
  '(reftex-ref-style-alist
    (quote
     (("Default" t
@@ -1765,8 +1778,8 @@ expand-region cruft."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:family "Monaco"))))
- '(flymake-errline ((t (:inherit nil :background "#483131" :foreground "*" :underline nil :weight bold))))
- '(flymake-warnline ((t (:background "#366060" :foreground "#e0cf9f" :underline nil :weight bold))))
+ '(flymake-errline ((t (:background "#383131" :underline nil))))
+ '(flymake-warnline ((t (:background "#366060" :underline nil))))
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))
  '(ivy-current-match ((t (:inherit default :background "dim gray" :weight bold))))
  '(minimap-font-face ((t (:height 30 :family "DejaVu Sans Mono"))))
