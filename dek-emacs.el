@@ -1322,6 +1322,10 @@ expand-region cruft."
 	    (rainbow-delimiters-mode 1)
 	    (set-face-attribute 'flyspell-incorrect nil :foreground "#ac736f" :weight 'bold)
 	    (set-face-attribute 'flyspell-duplicate nil :foreground "#8c836f" :underline t)))
+(add-hook 'prog-mode-hook 'hs-minor-mode)
+(bind-key "C-c h" 'hs-toggle-hiding prog-mode-map)
+(bind-key "C-c <f7>" 'hs-hide-all prog-mode-map)
+(bind-key "C-c <f8>" 'hs-show-all prog-mode-map)
 
 (defun dek-switch-dictionary()
   (interactive)
@@ -1342,7 +1346,9 @@ expand-region cruft."
 (setq c-default-style "linux")
 (setq-default c-basic-offset 4)
 (setq c-indent-level 4)
+(setq-default indent-tabs-mode nil)
 (setq indent-tabs-mode nil)
+
 
 (add-hook 'c++-mode-hook
       (lambda ()
@@ -1717,29 +1723,29 @@ expand-region cruft."
  '(pretty-symbol-patterns
    (quote
     ((8230 lambda "\\.\\.\\."
-	   (matlab-mode))
+           (matlab-mode))
      (402 lambda "\\<function\\>"
-	  (js-mode))
+          (js-mode))
      (8800 relational "!="
-	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode))
+           (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode))
      (8800 relational "~="
-	   (matlab-mode))
+           (matlab-mode))
      (8800 relational "/="
-	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
+           (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
      (8805 relational ">="
-	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode))
+           (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode))
      (8804 relational "<="
-	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode))
+           (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode matlab-mode))
      (8743 logical "&&"
-	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode))
+           (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode))
      (8743 logical "\\<and\\>"
-	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
+           (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
      (8744 logical "||"
-	   (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode matlab-mode))
+           (c-mode c++-mode go-mode java-mode js-mode perl-mode cperl-mode ruby-mode python-mode inferior-python-mode matlab-mode))
      (8744 logical "\\<or\\>"
-	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
+           (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
      (8709 nil "\\<nil\\>"
-	   (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
+           (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
  '(pyvenv-virtualenvwrapper-python "~/anaconda/bin/python")
  '(reftex-ref-style-alist
    (quote
@@ -1768,9 +1774,7 @@ expand-region cruft."
  '(switch-window-shortcut-style (quote qwerty))
  '(test-case-python-executable "~/anaconda/bin/python")
  '(virtualenv-root "~/anaconda/envs/")
- '(warning-suppress-types (quote ((undo discard-info))))
- '(web-mode-script-padding 0)
- '(web-mode-style-padding 0))
+ '(warning-suppress-types (quote ((undo discard-info)))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
