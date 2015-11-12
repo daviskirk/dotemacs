@@ -46,10 +46,9 @@
 ;; (setq package-enable-at-startup nil)
 
 (setq package-archives
-      '(("gnu" . "http://elpa.gnu.org/packages/")
-        ("org" . "http://orgmode.org/elpa/")
-        ("MELPA" . "http://melpa.org/packages/")
-	("org" . "http://orgmode.org/elpa/")))
+      '(("gnu" . "https://elpa.gnu.org/packages/")
+        ("MELPA" . "https://melpa.org/packages/")
+	("org" . "https://orgmode.org/elpa/")))
 (package-initialize)
 
 (eval-when-compile
