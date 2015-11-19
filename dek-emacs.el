@@ -1019,34 +1019,41 @@ expand-region cruft."
   (bind-key "C-c C-c c" 'gh-md-render-buffer markdown-mode-map)
   (bind-key "<f5>" 'gh-md-render-buffer markdown-mode-map))
 
-;;;;;;;;;;;;;; PHP-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(autoload 'php-mode "php-mode.el" "PHP editing mode" t)
-(add-to-list 'auto-mode-alist '("\\.php$" . php-mode))
+;;;;;;;;;;;;;;;;;;;;; WEB-MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
+(setq web-mode-content-types-alist '(("jsx"  . "\\.js[x]?\\'")))
 
-;; Toggle between PHP & HTML Helper mode.  Useful when working on
-;; php files, that can been intertwined with HTML code
+(defun dek-web-mode-hook ()
+  ;; indentation
+  ;; HTML offset indentation
+  (setq web-mode-markup-indent-offset 2)
+  ;; CSS offset indentation
+  (setq web-mode-code-indent-offset 4)
+  ;; Script offset indentation (for JavaScript, Java, PHP, etc.)
+  (setq web-mode-css-indent-offset 2)
+  ;; HTML content indentation
+  (setq web-mode-indent-style 2)
 
-(add-hook 'php-mode-hook
-          (lambda()
-            (define-key php-mode-map [f5] 'html-mode)))
-(add-hook 'html-mode-hook
-          (lambda()
-            (define-key html-mode-map [f5] 'php-mode)))
+  ;; padding
+  ;; For <style> parts
+  (setq web-mode-style-padding 2)
+  ;; For <script> parts
+  (setq web-mode-script-padding 2)
+  ;; For multi-line blocks
+  (setq web-mode-block-padding 0))
 
-;;;;;;;;;;;;;; NXHTML-mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-hook 'web-mode-hook 'dek-web-mode-hook)
 
-(defun nxhtml-mode-loader ()
-  "thisandthat."
-  (interactive)
-  (load "nxhtml/autostart.el"))
-
-;;;;;;;;;;;;;; XML-mode/YAML-mode ;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (require 'yaml-mode)
-;; (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
-;; (add-to-list 'auto-mode-alist '("\\.yaml$" . yaml-mode))
-;; (add-to-list 'auto-mode-alist '("\\.xml" . xml-mode))
 
 ;;;;;;;;;;;;;;;;;;;;; RST MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
