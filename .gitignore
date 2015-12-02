@@ -12,3 +12,4 @@ url/
 org-clock-save.el
 .places
 yasnippet-snippets/*
+dek-emacs.el
