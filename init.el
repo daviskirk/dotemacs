@@ -33,6 +33,9 @@
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
  '(global-semantic-stickyfunc-mode nil)
+ '(ivy-height 15)
+ '(ivy-mode t)
+ '(ivy-wrap t)
  '(jedi:key-complete [backtab])
  '(magit-diff-options (quote ("--ignore-space-change")))
  '(matlab-case-level (quote (4 . 4)))
@@ -98,6 +101,8 @@
    (quote
     (global-semantic-decoration-mode global-semantic-stickyfunc-mode global-semantic-idle-scheduler-mode global-semanticdb-minor-mode)))
  '(semantic-mode t)
+ '(smex-completion-method (quote ivy))
+ '(smex-save-file "~/.emacs.d/.smex-items")
  '(switch-window-shortcut-style (quote qwerty))
  '(test-case-python-executable "~/anaconda/bin/python")
  '(virtualenv-root "~/anaconda/envs/")
@@ -109,6 +114,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:family "Monaco"))))
+ '(avy-background-face ((t (:foreground "#656555" :inverse-video nil))))
+ '(avy-lead-face ((t (:background "#0F0F0F" :foreground "#9FF59F" :inverse-video nil))))
  '(flymake-errline ((t (:background "#383131" :underline nil))))
  '(flymake-warnline ((t (:background "#366060" :underline nil))))
  '(fringe ((t (:background "#4f4f4f" :foreground "#dcdccc" :weight normal :height 0.3 :width condensed))))

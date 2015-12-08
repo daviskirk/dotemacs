@@ -26,9 +26,9 @@ when we open emacs and there is an error later on in the configuration file.
   (defun .emacs ()
     "Switch to my emacs file."
     (interactive)
-    (if (get-buffer (expand-file-name "dek-emacs.el" user-emacs-directory))
+    (if (get-buffer (expand-file-name "dek-emacs.org" user-emacs-directory))
         (switch-to-buffer (expand-file-name "dek-emacs.el" user-emacs-directory))
-      (find-file (expand-file-name "dek-emacs.el" user-emacs-directory))
+      (find-file (expand-file-name "dek-emacs.org" user-emacs-directory))
       )
     )
 #+END_SRC
@@ -172,9 +172,6 @@ emacs doesn't look to weird when starting.
            ))
 
   (key-chord-define-global
-   "ww" 'switch-window)
-
-  (key-chord-define-global
    "w2" 'dek-current-buffer-to-other-window)
   )
 #+END_SRC
@@ -232,6 +229,22 @@ emacs doesn't look to weird when starting.
       (switch-to-buffer buf)
       (other-window -1))
     )
+
+  (use-package ace-window
+    :init
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+    :config
+    (key-chord-define-global "ww" 'ace-window)
+    )
+
+#+END_SRC
+** Menu bar
+Grasping for the mouse is stupid... use lacarte instead
+#+BEGIN_SRC emacs-lisp
+  (use-package lacarte
+    :bind ("<f10>" . lacarte-execute-menu-command))
+
+  (bind-key "C-<f10>" 'menu-bar-open)
 #+END_SRC
 
 ** Compiling
@@ -400,31 +413,35 @@ Set english and german as main languages
 ** Git
 Magit is awesome...
 #+BEGIN_SRC emacs-lisp
-(use-package magit
-  :commands (magit-status magit-log magit-dont-ignore-whitespace)
-  :bind (("C-x V s" . magit-status)
-	 ("C-x V l" . magit-log))
-  :defer t
-  :init
-  (defun magit-toggle-whitespace ()
-    (interactive)
-    (if (member "--ignore-space-change" magit-diff-options)
-        (magit-dont-ignore-whitespace)
-      (magit-ignore-whitespace)))
+  (use-package magit
+    :commands (magit-status magit-log magit-dont-ignore-whitespace)
+    :bind (
+           ("C-x V s" . magit-status)
+           ("C-x V l" . magit-log)
+           )
+    :defer t
+    :init
+    (defun magit-toggle-whitespace ()
+      (interactive)
+      (if (member "--ignore-space-change" magit-diff-options)
+          (magit-dont-ignore-whitespace)
+        (magit-ignore-whitespace)))
 
-  (defun magit-ignore-whitespace ()
-    (interactive)
-    (add-to-list 'magit-diff-options "--ignore-space-change")
-    (message "ignoring whitespace")
-    (magit-refresh))
+    (defun magit-ignore-whitespace ()
+      (interactive)
+      (add-to-list 'magit-diff-options "--ignore-space-change")
+      (message "ignoring whitespace")
+      (magit-refresh))
 
-  (defun magit-dont-ignore-whitespace ()
-    (interactive)
-    (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
-    (message "paying attention to whitespace")
-    (magit-refresh))
-  :config
-  (bind-key "W" 'magit-toggle-whitespace magit-status-mode-map))
+    (defun magit-dont-ignore-whitespace ()
+      (interactive)
+      (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
+      (message "paying attention to whitespace")
+      (magit-refresh))
+    :config
+    (bind-key "W" 'magit-toggle-whitespace magit-status-mode-map)
+    (bind-key "C-<tab>" 'other-window magit-mode-map)
+    )
 #+END_SRC
 
 * Project Management
@@ -481,7 +498,60 @@ Magit is awesome...
 ** IDO mode
 There is a bunch of custom code in this file dealing with IDO and smex.
 #+BEGIN_SRC emacs-lisp
-(load-library "dek-ido")
+;; (load-library "dek-ido")
+#+END_SRC
+
+** Ivy-Mode (swiper)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package swiper
+    :bind (("C-s" . swiper)
+           ("<f6>" . ivy-resume))
+    :config
+    (defun dek-ivy-partial ()
+      "Complete the minibuffer text as much as possible.This is a
+  modified version of `ivy-partial' which triggers `ivy-next-line'
+  when a completions does not change anything"
+      (interactive)
+      (let* ((parts (or (split-string ivy-text " " t) (list "")))
+             (postfix (car (last parts)))
+             (completion-ignore-case t)
+             (startp (string-match "^\\^" postfix))
+             (new (try-completion (if startp
+                                      (substring postfix 1)
+                                    postfix)
+                                  (mapcar (lambda (str)
+                                            (let ((i (string-match postfix str)))
+                                              (when i
+                                                (substring str i))))
+                                          ivy--old-cands))))
+        (cond ((eq new t) nil)
+              ((string= new ivy-text) (ivy-next-line))
+              (new
+               (delete-region (minibuffer-prompt-end) (point-max))
+               (setcar (last parts)
+                       (if startp
+                           (concat "^" new)
+                         new))
+               (insert (mapconcat #'identity parts " ")
+                       (if ivy-tab-space " " ""))
+               t)
+              )))
+    (bind-key "TAB" 'dek-ivy-partial ivy-minibuffer-map)
+    (bind-key "C-m" 'ivy-alt-done ivy-minibuffer-map)
+    (ivy-mode 1)
+    (setq ivy-use-virtual-buffers t)
+    )
+#+END_SRC
+
+** Smex
+#+BEGIN_SRC emacs-lisp
+  (require 'smex)
+  (smex-initialize)
+  (bind-key "M-x" 'smex)
+  (bind-key "M-X" 'smex-major-mode-commands)
+  ;; This is your old M-x.
+  (bind-key "C-c C-c M-x" 'execute-extended-command)
 #+END_SRC
 
 * Navigation and Keybinding for miving around buffer
@@ -496,13 +566,23 @@ There is a bunch of custom code in this file dealing with IDO and smex.
 
   (define-key key-translation-map (kbd "C-M-l") (kbd "C-M-f"))
   (define-key key-translation-map (kbd "C-M-h") (kbd "C-M-b"))
-  (key-chord-define-global "fg"  'iy-go-to-char)
-  (key-chord-define-global "fd"  'iy-go-to-char-backward)
-  (bind-key "M-." 'iy-go-to-char)
-  (bind-key "M-," 'iy-go-to-char-backward)
-  (key-chord-define-global "fs" 'ace-jump-mode)
+
   (key-chord-define-global "kk" 'kill-whole-line)
   (bind-key "M-SPC" 'cycle-spacing)
+
+  (use-package iy-go-to-char
+    :config
+    (key-chord-define-global "fg"  'iy-go-to-char)
+    (key-chord-define-global "fd"  'iy-go-to-char-backward)
+    )
+
+  (use-package avy
+    :bind (("M-," . avy-goto-char)
+           ("M-." . avy-goto-word-1))
+    :config
+    (key-chord-define-global "fs" 'avy-goto-char)
+    (key-chord-define-global "fw" 'avy-goto-word-1)
+    )
 #+END_SRC
 
 ** Region
@@ -833,6 +913,7 @@ Use mutt email client
   (setq yas-snippet-dirs
 	(list dek-yasnippet-dir
 	      (dek-find-elpa-yasnippet-snippet-dir)))
+
   (yas-global-mode 1)
   )
 #+END_SRC
@@ -1134,6 +1215,12 @@ Setup a whole bunch of stuff for org mode
           ))
 #+END_SRC
 
+Fix weird error which will probably be fixed in next release
+#+BEGIN_SRC emacs-lisp
+  (setq org-planning-line-re "")
+  (setq org-clock-line-re "")
+#+END_SRC
+
 *** markdown
 
 #+BEGIN_SRC emacs-lisp
@@ -1161,6 +1248,14 @@ Setup a whole bunch of stuff for org mode
 Parsing, checking and understanding javascript.
 #+BEGIN_SRC emacs-lisp
   (message "loading javascript mode functionality")
+  (use-package tern
+    :commands tern-mode)
+
+  (use-package company-tern
+    :config
+    (add-to-list 'company-backends 'company-tern))
+
+  (defun dek-tern-mode-hook () (tern-mode t))
   (use-package js2-mode
     :config
     (defun dek-js-mode-hook ()
@@ -1171,16 +1266,16 @@ Parsing, checking and understanding javascript.
     (add-hook 'js-mode-hook 'js2-minor-mode)
     (add-hook 'js2-mode-hook 'ac-js2-mode)
     (add-hook 'js-mode-hook 'dek-js-mode-hook)
+    (defun dek-tern-mode-hook () (tern-mode t))
+    (add-hook 'js-mode-hook 'dek-tern-mode-hook)
     )
 #+END_SRC
 
 ** Web Mode
-
 #+BEGIN_SRC emacs-lisp
   (use-package web-mode
-    :command web-mode
-
-    :bind (("C-c C-v" . 'browse-url-of-file))
+    :commands web-mode
+    :bind ("C-c C-v" . browse-url-of-file)
     :init
     (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
     (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
@@ -1223,7 +1318,7 @@ Load elpy python programming environment
   (message "loading python environment (elpy)...")
   (use-package elpy
     :commands elpy-enable
-    :init (elpy-enable)
+    :init (elpy-enable))
 #+END_SRC
 
 Load custom commands for python buffers
