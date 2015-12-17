@@ -12,3 +12,6 @@ url/
 org-clock-save.el
 .places
 yasnippet-snippets/*
+.mc-lists.el
+semanticdb/*
+smex-items
