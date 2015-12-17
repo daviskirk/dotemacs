@@ -50,23 +50,23 @@ emacs doesn't look to weird when starting.
 #+END_SRC
 * Package Manager
 #+BEGIN_SRC emacs-lisp
-(defun package-desc-vers (a) nil)
+  (defun package-desc-vers (a) nil)
 
-;; (setq package-enable-at-startup nil)
+  ;; (setq package-enable-at-startup nil)
 
-(setq package-archives
-      '(("gnu" . "https://elpa.gnu.org/packages/")
-        ("MELPA" . "https://melpa.org/packages/")
-	))
-(package-initialize)
+  (setq package-archives
+        '(("gnu" . "https://elpa.gnu.org/packages/")
+          ("MELPA" . "https://melpa.org/packages/")
+          ("org" . "http://orgmode.org/elpa/")
+          ))
+  (package-initialize)
 
-(eval-when-compile
-  (require 'use-package))
-(require 'diminish)                ;; if you use :diminish
-(require 'bind-key)
+  (eval-when-compile
+    (require 'use-package))
+  (require 'diminish)                ;; if you use :diminish
+  (require 'bind-key)
 
-(setq use-package-always-ensure t)
-
+  (setq use-package-always-ensure t)
 #+END_SRC
 
 * Setup Look and Feel
@@ -77,7 +77,9 @@ emacs doesn't look to weird when starting.
     :config (powerline-default-theme))
   (use-package zenburn-theme
     :config
-    (load-theme 'zenburn t))
+    (load-theme 'dek-arc t)
+    ;(load-theme 'zenburn t)
+  )
 
   (setq
    visible-bell t ;; turn on visual bell
@@ -176,6 +178,10 @@ emacs doesn't look to weird when starting.
   )
 #+END_SRC
 
+** Hydra
+#+BEGIN_SRC emacs-lisp
+  (use-package hydra)
+#+END_SRC
 ** Multiple Cursors
 #+BEGIN_SRC emacs-lisp
   (use-package multiple-cursors
@@ -408,6 +414,27 @@ Set english and german as main languages
     ))
 (bind-key "<f8>" 'dek-switch-dictionary)
 #+END_SRC
+** COMMENT Folding
+#+BEGIN_SRC emacs-lisp
+  (use-package origami
+    :config
+    (global-origami-mode 1)
+
+    (defhydra hydra-folding (:color red)
+      "
+    _o_pen node    _n_ext fold       toggle _f_orward
+    _c_lose node   _p_revious fold   toggle _a_ll
+    "
+      ("o" origami-open-node)
+      ("c" origami-close-node)
+      ("n" origami-next-fold)
+      ("p" origami-previous-fold)
+      ("f" origami-forward-toggle-node)
+      ("a" origami-toggle-all-nodes))
+
+    (bind-key "C-c f" 'hydra-folding/body origami-mode-map)
+    )
+#+END_SRC
 
 * Version Control / GIT
 ** Git
@@ -415,11 +442,6 @@ Magit is awesome...
 #+BEGIN_SRC emacs-lisp
   (use-package magit
     :commands (magit-status magit-log magit-dont-ignore-whitespace)
-    :bind (
-           ("C-x V s" . magit-status)
-           ("C-x V l" . magit-log)
-           )
-    :defer t
     :init
     (defun magit-toggle-whitespace ()
       (interactive)
@@ -442,15 +464,76 @@ Magit is awesome...
     (bind-key "W" 'magit-toggle-whitespace magit-status-mode-map)
     (bind-key "C-<tab>" 'other-window magit-mode-map)
     )
+   (bind-key "C-x V s" 'magit-status)
+   (bind-key "C-x V l" 'magit-log)
+   (message "magit loaded...")
 #+END_SRC
 
 * Project Management
+** Projectile package
 #+BEGIN_SRC emacs-lisp
-(use-package projectile
-  :config
-  (projectile-global-mode)
-  (setq projectile-enable-caching t))
+  (use-package projectile
+    :init
+    (setq projectile-keymap-prefix (kbd "C-c C-p"))
+    :config
+    (projectile-global-mode)
+    (setq projectile-enable-caching t)
+    (setq projectile-completion-system 'ivy))
 #+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (defhydra hydra-projectile-other-window (:color teal)
+    "projectile-other-window"
+    ("f"  projectile-find-file-other-window        "file")
+    ("g"  projectile-find-file-dwim-other-window   "file dwim")
+    ("d"  projectile-find-dir-other-window         "dir")
+    ("b"  projectile-switch-to-buffer-other-window "buffer")
+    ("q"  nil                                      "cancel" :color blue))
+
+  (defhydra hydra-projectile (:color teal
+                              :hint nil)
+    "
+       PROJECTILE: %(projectile-project-root)
+
+       Find File            Search/Tags          Buffers                Cache
+  ------------------------------------------------------------------------------------------
+    _f_: file            _a_: ag                _i_: Ibuffer           _c_: cache clear
+    _r_: recent file   _g_: update gtags      _b_: switch to buffer  _x_: remove known project
+    _d_: dir           _o_: multi-occur     _s-k_: Kill all buffers  _X_: cleanup non-existing
+                                                                   ^^^^_z_: cache current
+
+
+  "
+    ("a"   projectile-ag)
+    ("b"   projectile-switch-to-buffer)
+    ("c"   projectile-invalidate-cache)
+    ("d"   projectile-find-dir)
+    ("f"  projectile-find-file-dwim)
+    ("s-f" projectile-find-file)
+    ;("ff"  projectile-find-file-dwim)
+    ;("fd"  projectile-find-file-in-directory)
+    ("g"   ggtags-update-tags)
+    ("s-g" ggtags-update-tags)
+    ("i"   projectile-ibuffer)
+    ("K"   projectile-kill-buffers)
+    ("s-k" projectile-kill-buffers)
+    ("m"   projectile-multi-occur)
+    ("o"   projectile-multi-occur)
+    ("s-p" projectile-switch-project "switch project")
+    ("p"   projectile-switch-project)
+    ("s"   projectile-switch-project)
+    ("r"   projectile-recentf)
+    ("x"   projectile-remove-known-project)
+    ("X"   projectile-cleanup-known-projects)
+    ("z"   projectile-cache-current-file)
+    ("`"   hydra-projectile-other-window/body "other window")
+    ("q"   nil "cancel" :color blue))
+
+  (global-unset-key (kbd "C-c p"))
+  (bind-key "C-c p" 'hydra-projectile/body)
+  (bind-key "M-<f2>" 'hydra-projectile/body)
+#+END_SRC
+
 
 * Selection helpers
 ** Helm
@@ -857,14 +940,16 @@ Format comments and comment region as needed
 ** Pairs and Parens
 
 #+BEGIN_SRC emacs-lisp
-;;;;;;;;;;;;;;;;;;;;; autopair ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (require 'autopair)
-;; (autopair-global-mode -1) ;; to enable in all buffers
+  ;;;;;;;;;;;;;;;;;;;;; autopair ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; (require 'autopair)
+  ;; (autopair-global-mode -1) ;; to enable in all buffers
 
-;;;;;;;;;;;;;;;;;;;;; smartparens ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'smartparens-config)
-(smartparens-global-mode t)
-(show-smartparens-global-mode t)
+  ;;;;;;;;;;;;;;;;;;;;; smartparens ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (use-package smartparens
+    :config
+    (require 'smartparens-config)
+    (smartparens-global-mode t)
+    (show-smartparens-global-mode t))
 #+END_SRC
 
 * Email
@@ -897,25 +982,26 @@ Use mutt email client
 * Auto-completion
 ** Yasnippet
 #+BEGIN_SRC emacs-lisp
-(use-package yasnippet
-  :commands (yas-global-mode yas-minor-mode)
-  :ensure t
-  :diminish yas-minor-mode
-  :init
-  (defun dek-find-elpa-yasnippet-snippet-dir ()
-    (interactive)
-    (concat
-     package-user-dir "/"
-     (car (directory-files package-user-dir nil "^yasnippet-[0-9.]+"))
-     "/snippets"))
-  (defvar dek-yasnippet-dir
-    (expand-file-name "dek-lisp/yasnippet-snippets" user-emacs-directory))
-  (setq yas-snippet-dirs
-	(list dek-yasnippet-dir
-	      (dek-find-elpa-yasnippet-snippet-dir)))
-
-  (yas-global-mode 1)
-  )
+  (use-package yasnippet
+    :commands (yas-global-mode yas-minor-mode)
+    :ensure t
+    :diminish yas-minor-mode
+    :init
+    (defun dek-find-elpa-yasnippet-snippet-dir ()
+      (interactive)
+      (concat
+       package-user-dir "/"
+       (car (directory-files package-user-dir nil "^yasnippet-[0-9.]+"))
+       "/snippets"))
+    (defvar dek-yasnippet-dir
+      (expand-file-name "dek-lisp/yasnippet-snippets" user-emacs-directory))
+    (setq yas-snippet-dirs
+          (list dek-yasnippet-dir
+                (dek-find-elpa-yasnippet-snippet-dir)))
+    :config
+    (yas-global-mode 1)
+    (yas-reload-all)
+    )
 #+END_SRC
 
 ** Company mode
@@ -1012,10 +1098,9 @@ Use mutt email client
     (bind-key "<tab>" 'expand-snippet-or-complete-selection company-active-map)
     (bind-key "<backtab>" 'company-complete-common-or-previous-cycle company-active-map)
 
-    (unbind-key "<tab>" yas-minor-mode-map)
-    (bind-key "<tab>" 'tab-complete-or-next-field yas-keymap)
-    (bind-key "C-<tab>" 'yas-next-field yas-keymap)
-    (bind-key "C-g" 'abort-company-or-yas yas-keymap)
+    ;; (bind-key "<tab>" 'tab-complete-or-next-field yas-keymap)
+    ;; (bind-key "C-<tab>" 'yas-next-field yas-keymap)
+    ;; (bind-key "C-g" 'abort-company-or-yas yas-keymap)
     )
 #+END_SRC
 
@@ -1182,7 +1267,11 @@ Setup a whole bunch of stuff for org mode
   ;;;;;;;;;;;;;;; ORG BABEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((python . t) (sh . t)))
+   '((python . t)
+     (sh . t)
+     (dot . t)))
+
+  (add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))
 
   ;;;;;;;;;;;;;;;;; ORG publish ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (setq org-publish-project-alist
@@ -1217,9 +1306,33 @@ Setup a whole bunch of stuff for org mode
 
 Fix weird error which will probably be fixed in next release
 #+BEGIN_SRC emacs-lisp
-  (setq org-planning-line-re "")
-  (setq org-clock-line-re "")
+  ;; (setq org-planning-line-re "")
+  ;; (setq org-clock-line-re "")
+  ;; (setq org-export--registered-backends "")
 #+END_SRC
+
+Yasnippet does not play well with org-mode... we will always have to fiddle
+around with this until it works. Remember to check the yasnippet documentation if this doesn't work anymore.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook
+            (let ((original-command (lookup-key org-mode-map [tab])))
+              `(lambda ()
+                 (setq yas-fallback-behavior
+                       '(apply ,original-command))
+                 (local-set-key [tab] 'yas-expand))))
+#+END_SRC
+
+For some reason archiving also doesn't work because of deprecated packages and functions
+#+BEGIN_SRC emacs-lisp
+  (defalias 'outline-show-all 'show-all)
+#+END_SRC
+
+**** Presentations with reveal.js
+#+BEGIN_SRC emacs-lisp
+  (setq org-reveal-root "file:///home/dek/Documents/Code/reveal.js")
+#+END_SRC
+
 
 *** markdown
 
@@ -1851,14 +1964,21 @@ Incompatible with power line so we can't use this
     (find-file-existing (shell-command-to-string "cat ~/.ld|head -c -1"))
     )
 
+  ;; (defun sd ()
+  ;;   "Switch to current directory by creating new window in tmux."
+  ;;   (interactive)
+  ;;   ;; (concat "echo " "'" (file-name-directory (buffer-file-name)) "' > ~/.ld" )
+  ;;   (concat "echo " "'" default-directory "' > ~/.ld" )
+  ;;   (shell-command "tmux neww")
+  ;;   )
+
   (defun sd ()
     "Switch to current directory by creating new window in tmux."
     (interactive)
     ;; (concat "echo " "'" (file-name-directory (buffer-file-name)) "' > ~/.ld" )
     (concat "echo " "'" default-directory "' > ~/.ld" )
-    (shell-command "tmux neww")
+    (shell-command (concat "guake -n " default-directory))
     )
-
 
   ;;; FOR WHATEVER PROJECT YOUR WORDKING ON ;;;;;;;;;;;;;;;;
   (setq yas/triggers-in-field t)
