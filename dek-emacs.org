@@ -1978,6 +1978,9 @@ Incompatible with power line so we can't use this
     ;; (concat "echo " "'" (file-name-directory (buffer-file-name)) "' > ~/.ld" )
     (concat "echo " "'" default-directory "' > ~/.ld" )
     (shell-command (concat "guake -n " default-directory))
+    (shell-command (concat "guake -r " (file-name-nondirectory
+                                        (directory-file-name default-directory))))
+    (shell-command (concat "guake --show "))
     )
 
   ;;; FOR WHATEVER PROJECT YOUR WORDKING ON ;;;;;;;;;;;;;;;;
