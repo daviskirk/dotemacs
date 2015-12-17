@@ -15,3 +15,4 @@ yasnippet-snippets/*
 .mc-lists.el
 semanticdb/*
 smex-items
+dek-emacs.el

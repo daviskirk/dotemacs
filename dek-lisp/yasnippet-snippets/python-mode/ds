@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: docstring
+# key: ds
+# --
+"""$0
+
+Parameters
+----------
+${2:parameters}
+
+Returns
+-------
+${2:return_type}
+
+"""
