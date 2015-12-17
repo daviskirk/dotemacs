@@ -199,8 +199,13 @@ emacs doesn't look to weird when starting.
 
 ** Window navigation and handling
 #+BEGIN_SRC emacs-lisp
+
   (bind-key "C-<tab>" 'other-window)
-  (bind-key "C-x o" 'switch-window)
+  (use-package switch-window
+    :config
+    (bind-key "C-x o" 'switch-window)
+    (key-chord-define-global "ww" 'switch-window)
+  )
   (winner-mode 1)
   (setq winner-mode 1)
 
@@ -818,7 +823,6 @@ Save recent files every 10 minutes and a maximum of 100 files
 Use smart-operator to put spaces around operators when we neet them.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package smart-operator)
   (require 'smart-operator)
 
   (defun my-matlab-mode-smart-operator-hook()
