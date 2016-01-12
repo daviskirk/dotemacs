@@ -450,21 +450,22 @@ Magit is awesome...
     :init
     (defun magit-toggle-whitespace ()
       (interactive)
-      (if (member "--ignore-space-change" magit-diff-options)
+      (if (member "--ignore-space-change" magit-diff-arguments)
           (magit-dont-ignore-whitespace)
         (magit-ignore-whitespace)))
 
     (defun magit-ignore-whitespace ()
       (interactive)
-      (add-to-list 'magit-diff-options "--ignore-space-change")
+      (add-to-list 'magit-diff-arguments "--ignore-space-change")
       (message "ignoring whitespace")
       (magit-refresh))
 
     (defun magit-dont-ignore-whitespace ()
       (interactive)
-      (setq magit-diff-options (remove "--ignore-space-change" magit-diff-options))
+      (setq magit-diff-arguments (remove "--ignore-space-change" magit-diff-arguments))
       (message "paying attention to whitespace")
       (magit-refresh))
+
     :config
     (bind-key "W" 'magit-toggle-whitespace magit-status-mode-map)
     (bind-key "C-<tab>" 'other-window magit-mode-map)
@@ -823,6 +824,7 @@ Save recent files every 10 minutes and a maximum of 100 files
 Use smart-operator to put spaces around operators when we neet them.
 
 #+BEGIN_SRC emacs-lisp
+  (use-package smart-operator)
   (require 'smart-operator)
 
   (defun my-matlab-mode-smart-operator-hook()
@@ -834,22 +836,19 @@ Use smart-operator to put spaces around operators when we neet them.
     (local-unset-key (kbd "/"))
     (local-unset-key (kbd "%"))
     )
-  ;; (defun my-python-mode-smart-operator-hook()
-  ;;   (smart-insert-operator-hook)
-  ;;   (local-unset-key (kbd "."))
-  ;;   (local-unset-key (kbd ":"))
-  ;;   (local-unset-key (kbd "*"))
-  ;;   (local-unset-key (kbd "/"))
-  ;;   (define-key python-mode-map "="
-  ;;     '(lambda ()
-  ;;        (interactive)
-  ;;        (if (looking-back "([^)]+[^ ]")
-  ;;         (self-insert-command 1)
-  ;;       (smart-insert-operator "="))))
-  ;;   )
+  (defun my-python-mode-smart-operator-hook()
+    (smart-insert-operator-hook)
+    (local-unset-key (kbd "."))
+    (define-key python-mode-map "="
+      '(lambda ()
+         (interactive)
+         (if (looking-back "([^)]+[^ ]" (min (point) 600))
+             (self-insert-command 1)
+           (smart-insert-operator "="))))
+    )
 
   (add-hook 'matlab-mode-hook 'my-matlab-mode-smart-operator-hook)
-  ;; (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
+  (add-hook 'python-mode-hook 'my-python-mode-smart-operator-hook)
 #+END_SRC
 
 When we want the start of a line, most of the time we want to go back to the
@@ -919,7 +918,6 @@ Use automatic indentation
     (auto-indent-global-mode)
     (setq auto-indent-known-indent-level-variables
           '( c-basic-offset lisp-body-indent sgml-basic-offset)))
-
 #+END_SRC
 
 ** Comments
@@ -1099,6 +1097,21 @@ Use mutt email client
           (yas-abort-snippet)
         (company-abort)))
 
+    (defun company-yasnippet-or-completion ()
+      "Solve company yasnippet conflicts."
+      (interactive)
+      (let ((yas-fallback-behavior
+             (apply 'company-complete-common nil)))
+        (yas-expand)))
+
+    (add-hook 'company-mode-hook
+              (lambda ()
+                (substitute-key-definition
+                 'company-complete-common
+                 'company-yasnippet-or-completion
+                 company-active-map)))
+
+
     (bind-key "<tab>" 'expand-snippet-or-complete-selection company-active-map)
     (bind-key "<backtab>" 'company-complete-common-or-previous-cycle company-active-map)
 
@@ -1170,10 +1183,6 @@ Use mutt email client
               (rainbow-delimiters-mode 1)
               (set-face-attribute 'flyspell-incorrect nil :foreground "#ac736f" :weight 'bold)
               (set-face-attribute 'flyspell-duplicate nil :foreground "#8c836f" :underline t)))
-  (add-hook 'prog-mode-hook 'hs-minor-mode)
-  (bind-key "C-c h" 'hs-toggle-hiding prog-mode-map)
-  (bind-key "C-c <f7>" 'hs-hide-all prog-mode-map)
-  (bind-key "C-c <f8>" 'hs-show-all prog-mode-map)
 #+END_SRC
 
 ** Markup Languages
@@ -1324,12 +1333,13 @@ around with this until it works. Remember to check the yasnippet documentation i
               `(lambda ()
                  (setq yas-fallback-behavior
                        '(apply ,original-command))
+                 ;; (defalias 'outline-show-all 'show-all)
                  (local-set-key [tab] 'yas-expand))))
 #+END_SRC
 
 For some reason archiving also doesn't work because of deprecated packages and functions
 #+BEGIN_SRC emacs-lisp
-  (defalias 'outline-show-all 'show-all)
+  ;; (defalias 'outline-show-all 'nil)
 #+END_SRC
 
 **** Presentations with reveal.js
@@ -1435,7 +1445,9 @@ Load elpy python programming environment
   (message "loading python environment (elpy)...")
   (use-package elpy
     :commands elpy-enable
-    :init (elpy-enable))
+    :init
+    (defalias 'format-message 'format)
+    (elpy-enable))
 #+END_SRC
 
 Load custom commands for python buffers
@@ -1478,28 +1490,28 @@ Load custom commands for python buffers
     (interactive)
     (helm-swoop :$query "\\(class[[:space:]].*\\)\\|\\(def[[:space:]].*\\)"))
 
-  (add-hook 'python-mode-hook
-            '(lambda ()
-               ;; (flycheck-mode 1)
-               (elpy-mode 1)
-               (auto-indent-mode -1)
-               (setq-local auto-indent-kill-line-at-eol nil)
-               (setq-local auto-indent-on-yank-or-paste nil)
-               (bind-key "RET" 'newline-and-indent python-mode-map)
-               (bind-key "#" 'dek-python-crunch python-mode-map)
-               (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
-               (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
-               (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
-               (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
-               (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
-               (magit-dont-ignore-whitespace)
-               ;; (setq paragraph-start "\\(\\s-*$\\)\\|\\(\\.$)")
-               ;; (setq paragraph-start "\f\\|\\(\s-*$\\)\\|\\([-:] +.+$\\)" paragraph-seperate "$")
-               (rainbow-delimiters-mode 1)
-               ;; Do this for numpy style docstring filling
-               (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
-               (auto-complete-mode 0)
-               ))
+  (defun dek-python-hook ()
+    ;; (flycheck-mode 1)
+    (elpy-mode 1)
+    (auto-indent-mode -1)
+    (setq-local auto-indent-kill-line-at-eol nil)
+    (setq-local auto-indent-on-yank-or-paste nil)
+    (bind-key "RET" 'newline-and-indent python-mode-map)
+    (bind-key "#" 'dek-python-crunch python-mode-map)
+    (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
+    (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
+    (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
+    (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
+    (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
+    ;; (setq paragraph-start "\\(\\s-*$\\)\\|\\(\\.$)")
+    ;; (setq paragraph-start "\f\\|\\(\s-*$\\)\\|\\([-:] +.+$\\)" paragraph-seperate "$")
+    (rainbow-delimiters-mode 1)
+    ;; Do this for numpy style docstring filling
+    (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
+    (auto-complete-mode 0)
+    )
+
+  (add-hook 'python-mode-hook 'dek-python-hook)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -1984,7 +1996,7 @@ Incompatible with power line so we can't use this
     (shell-command (concat "guake -n " default-directory))
     (shell-command (concat "guake -r " (file-name-nondirectory
                                         (directory-file-name default-directory))))
-    (shell-command (concat "guake --show "))
+    (shell-command "guake --show")
     )
 
   ;;; FOR WHATEVER PROJECT YOUR WORDKING ON ;;;;;;;;;;;;;;;;

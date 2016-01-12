@@ -39,6 +39,7 @@
  '(ivy-mode t)
  '(ivy-wrap t)
  '(jedi:key-complete [backtab])
+ '(magit-diff-arguments (quote ("--stat" "--no-ext-diff" "--ignore-space-change")))
  '(magit-diff-options (quote ("--ignore-space-change")))
  '(matlab-case-level (quote (4 . 4)))
  '(matlab-fill-code nil)
@@ -81,6 +82,9 @@
            (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
      (8709 nil "\\<nil\\>"
            (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
+ '(py-indent-honors-multiline-listing t)
+ '(py-lhs-inbound-indent 0)
+ '(python-shell-interpreter "ipython")
  '(pyvenv-virtualenvwrapper-python "~/anaconda/bin/python")
  '(reftex-ref-style-alist
    (quote
