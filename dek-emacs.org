@@ -917,7 +917,8 @@ Use automatic indentation
     :config
     (auto-indent-global-mode)
     (setq auto-indent-known-indent-level-variables
-          '( c-basic-offset lisp-body-indent sgml-basic-offset)))
+          '( c-basic-offset lisp-body-indent sgml-basic-offset))
+    (add-to-list 'auto-indent-disabled-modes-list 'yaml-mode))
 #+END_SRC
 
 ** Comments
