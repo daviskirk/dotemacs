@@ -55,6 +55,7 @@
  '(org-confirm-babel-evaluate nil)
  '(org-export-babel-evaluate t)
  '(org-export-backends (quote (ascii html icalendar latex md odt)))
+ '(org-plantuml-jar-path "/opt/plantuml/plantuml.jar")
  '(pretty-symbol-categories (lambda relational))
  '(pretty-symbol-patterns
    (quote
@@ -82,6 +83,7 @@
            (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode))
      (8709 nil "\\<nil\\>"
            (emacs-lisp-mode inferior-lisp-mode inferior-emacs-lisp-mode lisp-mode scheme-mode)))))
+ '(puml-plantuml-jar-path "/opt/plantuml/plantuml.jar")
  '(py-indent-honors-multiline-listing t)
  '(py-lhs-inbound-indent 0)
  '(python-shell-interpreter "ipython")

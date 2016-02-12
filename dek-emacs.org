@@ -1282,6 +1282,7 @@ Setup a whole bunch of stuff for org mode
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((python . t)
+     (plantuml . t)
      (sh . t)
      (dot . t)))
 
