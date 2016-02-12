@@ -1329,13 +1329,13 @@ Yasnippet does not play well with org-mode... we will always have to fiddle
 around with this until it works. Remember to check the yasnippet documentation if this doesn't work anymore.
 
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'org-mode-hook
-            (let ((original-command (lookup-key org-mode-map [tab])))
-              `(lambda ()
-                 (setq yas-fallback-behavior
-                       '(apply ,original-command))
-                 ;; (defalias 'outline-show-all 'show-all)
-                 (local-set-key [tab] 'yas-expand))))
+  ;; (add-hook 'org-mode-hook
+  ;;           (let ((original-command (lookup-key org-mode-map [tab])))
+  ;;             `(lambda ()
+  ;;                (setq yas-fallback-behavior
+  ;;                      '(apply ,original-command))
+  ;;                ;; (defalias 'outline-show-all 'show-all)
+  ;;                (local-set-key [tab] 'yas-expand))))
 #+END_SRC
 
 For some reason archiving also doesn't work because of deprecated packages and functions
