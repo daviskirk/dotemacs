@@ -19,11 +19,12 @@
    (quote
     ("f4deb2b3c1a11ed40a4a6a8d3d3fe5a024fb81488452ac3b34aa6fc56bbcc69a" "6c2f1685374aeff638a923f1ec5408d5db20c83ab1b3e137600c8501ec7df5ee" "f5eb916f6bd4e743206913e6f28051249de8ccfd070eae47b5bde31ee813d55f" "1cf3f29294c5a3509b7eb3ff9e96f8e8db9d2d08322620a04d862e40dc201fe2" "cd70962b469931807533f5ab78293e901253f5eeb133a46c2965359f23bfb2ea" "769bb56fb9fd7e73459dcdbbfbae1f13e734cdde3cf82f06a067439568cdaa95" "253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
  '(dired-dwim-target t)
+ '(electric-operator-enable-in-docs t)
  '(elpy-mode-hook nil)
  '(elpy-modules
    (quote
     (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-pyvenv elpy-module-yasnippet elpy-module-sane-defaults)))
- '(elpy-rpc-python-command "~/anaconda/bin/python")
+ '(elpy-rpc-python-command "~/anaconda/envs/emacs/bin/python")
  '(elpy-test-runner (quote elpy-test-pytest-runner))
  '(fci-rule-color "#2b2b2b")
  '(fill-column 79)
@@ -41,6 +42,8 @@
  '(jedi:key-complete [backtab])
  '(magit-diff-arguments (quote ("--stat" "--no-ext-diff" "--ignore-space-change")))
  '(magit-diff-options (quote ("--ignore-space-change")))
+ '(markdown-command "marked")
+ '(markdown-link-space-sub-char "-")
  '(matlab-case-level (quote (4 . 4)))
  '(matlab-fill-code nil)
  '(matlab-shell-command-switches (quote ("-nodesktop" "-nosplash")) t)
@@ -86,7 +89,9 @@
  '(puml-plantuml-jar-path "/opt/plantuml/plantuml.jar")
  '(py-indent-honors-multiline-listing t)
  '(py-lhs-inbound-indent 0)
- '(python-shell-interpreter "ipython")
+ '(python-check-command "~/anaconda/envs/emacs/bin/flake8")
+ '(python-shell-exec-path (quote ("~/anaconda/envs/emacs/bin")))
+ '(python-shell-interpreter "~/anaconda/envs/emacs/bin/ipython")
  '(pyvenv-virtualenvwrapper-python "~/anaconda/bin/python")
  '(reftex-ref-style-alist
    (quote
@@ -141,11 +146,10 @@
  '(virtualenv-root "~/anaconda/envs/")
  '(warning-suppress-types (quote ((undo discard-info)))))
 
+(message "Config Loaded!")
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
-
-(message "Config Loaded!")
+ '(company-template-field ((t (:background "dark sea green" :foreground "black")))))
