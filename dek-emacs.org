@@ -546,43 +546,45 @@ Magit is awesome...
 * Selection helpers
 ** Helm
 #+BEGIN_SRC emacs-lisp
-(use-package helm
-  :bind (("C-x w w" . helm-swap-windows)
-         ("C-x f" . helm-for-files)
-         ("C-x y" . helm-show-kill-ring)
-         ("C-x i" . helm-imenu))
-  :config
-  (if (not (boundp 'helm-source-projectile-files-list))
-      (setq helm-source-projectile-files-list '()))
+  (use-package helm
+    :bind (("C-x w w" . helm-swap-windows)
+           ("C-x f" . helm-for-files)
+           ("C-x y" . helm-show-kill-ring)
+           ("C-x i" . helm-imenu))
+    :config
+    (if (not (boundp 'helm-source-projectile-files-list))
+        (setq helm-source-projectile-files-list '()))
 
-  (defun dek-helm-for-files ()
-    "Use projectile with Helm instead of ido."
-    (interactive)
-    (helm :sources '(helm-source-projectile-files-list
-                     helm-source-projectile-recentf-list
-                     helm-source-projectile-buffers-list
-                     helm-source-buffers-list
-                     helm-source-recentf
-                     helm-source-locate)))
+    (defun dek-helm-for-files ()
+      "Use projectile with Helm instead of ido."
+      (interactive)
+      (helm :sources '(helm-source-projectile-files-list
+                       helm-source-projectile-recentf-list
+                       helm-source-projectile-buffers-list
+                       helm-source-buffers-list
+                       helm-source-recentf
+                       helm-source-locate)))
 
-  (defun dek-helm-browse-code (regexp)
-    (interactive "s")
-    (setq helm-multi-occur-buffer-list (list (buffer-name (current-buffer))))
-    (helm-occur-init-source)
-    (helm :sources 'helm-source-occur
-          :buffer "*helm occur*"
-          :preselect (and (memq 'helm-source-occur helm-sources-using-default-as-input)
-                          (format "%s:%d:" (buffer-name) (line-number-at-pos (point))))
-          :input regexp
-          :truncate-lines t))
-  )
+    (defun dek-helm-browse-code (regexp)
+      (interactive "s")
+      (setq helm-multi-occur-buffer-list (list (buffer-name (current-buffer))))
+      (helm-occur-init-source)
+      (helm :sources 'helm-source-occur
+            :buffer "*helm occur*"
+            :preselect (and (memq 'helm-source-occur helm-sources-using-default-as-input)
+                            (format "%s:%d:" (buffer-name) (line-number-at-pos (point))))
+            :input regexp
+            :truncate-lines t))
+    )
 
-(use-package helm-themes)
-(use-package helm-swoop
-  :bind ("M-i" . helm-swoop)
-  :config
-  (setq helm-swoop-pre-input-function (lambda () nil))
-  )
+  (use-package helm-themes)
+  (use-package helm-swoop
+    :bind ("M-i" . helm-swoop)
+    :config
+    (setq helm-swoop-pre-input-function (lambda () nil))
+    )
+
+  (use-package helm-ag)
 #+END_SRC
 
 
@@ -855,20 +857,16 @@ Use smart-operator to put spaces around operators when we neet them.
        ((electric-operator-python-mode-type-annotation) " = ")
        ((eq (electric-operator-enclosing-paren) ?\() "=")
        (t " = ")))
+
+    (defun electric-operator-python-mode-: ()
+      (cond
+       ((electric-operator-python-mode-in-lambda-args?) ": ")
+       ((eq (electric-operator-enclosing-paren) ?\{) ": ")
+       ((eq (electric-operator-enclosing-paren) ?\() ": ")
+       (t ":")
+       ))
     )
 
-
-  ;;  (defun my-python-mode-smart-operator-hook()
-  ;;    (smart-insert-operator-hook)
-  ;;    (local-unset-key (kbd "."))
-  ;;    (define-key python-mode-map "="
-  ;;      '(lambda ()
-  ;;         (interactive)
-  ;;         (if (looking-back "([^)]+[^ ]" (min (point) 600))
-  ;;             (self-insert-command 1)
-  ;;           (smart-insert-operator "="))))
-  ;;    )
-  ;;
 
 #+END_SRC
 
@@ -1398,6 +1396,10 @@ For some reason archiving also doesn't work because of deprecated packages and f
                               ))
 #+END_SRC
 
+*** YAML
+#+BEGIN_SRC emacs-lisp
+  (use-package yaml-mode)
+#+END_SRC
 ** Web Mode
 #+BEGIN_SRC emacs-lisp
   (use-package web-mode
