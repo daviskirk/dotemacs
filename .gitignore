@@ -1,6 +1,7 @@
 *~
 *[#]*[#]
-elpa/*
+elpa/
+elpa.bakup/
 ac-comphist.dat
 *~
 session*
@@ -16,3 +17,5 @@ yasnippet-snippets/*
 semanticdb/*
 smex-items
 dek-emacs.el
+image-dired
+.python-environments
