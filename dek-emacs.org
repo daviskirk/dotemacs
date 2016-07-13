@@ -1225,9 +1225,9 @@ Setup a whole bunch of stuff for org mode
 #+BEGIN_SRC emacs-lisp
   (message "loading org mode configurations ...")
   (setq org-startup-folded t)
-  (setq  org-directory  "~/org")
+  (setq org-directory  "~/org")
   (setq org-src-fontify-natively t)
-  (setq  org-default-notes-file  (expand-file-name org-directory "TODO.org"))
+  (setq org-default-notes-file  (expand-file-name org-directory "TODO.org"))
                                           ;(add-hook 'org-mode-hook 'turn-on-org-cdlatex)
   (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
   ;; Make TAB the yas trigger key in the org-mode-hook
@@ -1271,7 +1271,7 @@ Setup a whole bunch of stuff for org mode
   (setq org-log-note-clock-out t)
 
   ;; ORG-Agenda
-  (setq org-agenda-files (file-expand-wildcards "~/Documents/Code/aise/aia.org")) ; setting agenda files
+  (setq org-agenda-files (file-expand-wildcards "~/Documents/athion/athion.org")) ; setting agenda files
   ;; (if (equal user-login-name "dek")
   ;;     (load-file "~/bin/org-agenda/org-agenda-export.el")
   ;;   (message "dek is not the user ... external mashine ... org-agenda-export not loaded"))
@@ -1382,7 +1382,6 @@ For some reason archiving also doesn't work because of deprecated packages and f
 #+BEGIN_SRC emacs-lisp
   (setq org-reveal-root "file:///home/dek/Documents/Code/reveal.js")
 #+END_SRC
-
 
 *** markdown
 
