@@ -1502,7 +1502,7 @@ Parsing, checking and understanding javascript.
         (eldoc-mode +1)
         (company-mode-on))
       )
-    (add-hook 'web-mode-hook 'dek-typescript-on-web-mode)
+    (add-hook 'web-mode-hook 'dek-typescript-web-mode-hook)
     )
 #+END_SRC
 
