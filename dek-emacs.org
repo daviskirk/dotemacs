@@ -143,7 +143,7 @@ emacs doesn't look to weird when starting.
   (setq key-chord-one-key-delay 0.15)
   :config
   (key-chord-mode 1)
-  (key-chord-define-global "xf" 'helm-for-files)
+  (key-chord-define-global "xf" 'helm-projectile)
   (key-chord-define-global "xb" 'ido-switch-buffer)
   (key-chord-define-global "xs" 'save-buffer)
 
@@ -482,11 +482,19 @@ Magit is awesome...
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
     :init
+    (setq projectile-require-project-root nil)
+    (setq projectile-enable-caching t)
+    (setq projectile-completion-system 'ivy)
     (setq projectile-keymap-prefix (kbd "C-c C-p"))
     :config
     (projectile-global-mode)
-    (setq projectile-enable-caching t)
-    (setq projectile-completion-system 'ivy))
+    )
+
+  ;; ag is a search tool used by projectile
+  (use-package ag)
+
+  ;; helm-projectile makes managing files nicer
+  (use-package helm-projectile)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -632,6 +640,7 @@ There is a bunch of custom code in this file dealing with IDO and smex.
               )))
     (bind-key "TAB" 'dek-ivy-partial ivy-minibuffer-map)
     (bind-key "C-m" 'ivy-alt-done ivy-minibuffer-map)
+    (bind-key "C-j" 'ivy-immediate-done ivy-minibuffer-map)
     (ivy-mode 1)
     (setq ivy-use-virtual-buffers t)
     )
@@ -1011,6 +1020,7 @@ Use mutt email client
     :ensure t
     :diminish yas-minor-mode
     :init
+
     (defun dek-find-elpa-yasnippet-snippet-dir ()
       (interactive)
       (concat
