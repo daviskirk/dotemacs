@@ -2115,6 +2115,10 @@ Incompatible with power line so we can't use this
   ;; (message "MATLAB ALL LOADED!!!")
 #+END_SRC
 
+** Haskell
+#+BEGIN_SRC emacs-lisp
+(use-package haskell-mode)
+#+END_SRC
 
 * Pretty Symbols
 #+BEGIN_SRC emacs-lisp
