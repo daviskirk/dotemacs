@@ -1514,72 +1514,108 @@ Load elpy python programming environment
     :commands elpy-enable
     :init
     (defalias 'format-message 'format)
-    (elpy-use-ipython)
     (elpy-enable))
 #+END_SRC
 
 Load custom commands for python buffers
 #+BEGIN_SRC emacs-lisp
-  (defun my-set-python-compile-command ()
-    "Set python compile command."
-    (set (make-local-variable 'compile-command)
-         (concat "python " (file-name-base buffer-file-name) ".py")))
+    (defun my-set-python-compile-command ()
+      "Set python compile command."
+      (set (make-local-variable 'compile-command)
+           (concat "python " (file-name-base buffer-file-name) ".py")))
 
-  (defun dek-python-add-breakpoint ()
-    (interactive)
-    (let (pdb-regexp)
-      (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
-      (if (string-match pdb-regexp (thing-at-point 'line))
-          (kill-whole-line)
-        (end-of-line)
-        (newline-and-indent)
-        (insert "import ipdb; ipdb.set_trace()")
-        (highlight-lines-matching-regexp pdb-regexp)
-        )))
+    (defun dek-python-add-breakpoint ()
+      (interactive)
+      (let (pdb-regexp)
+        (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
+        (if (string-match pdb-regexp (thing-at-point 'line))
+            (kill-whole-line)
+          (end-of-line)
+          (newline-and-indent)
+          (insert "import ipdb; ipdb.set_trace()")
+          (highlight-lines-matching-regexp pdb-regexp)
+          )))
 
-  (defun dek-python-find-all-breakpoints ()
-    (interactive)
-    (let (pdb-regexp point)
-      (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()$")
-      (occur pdb-regexp)
-      ))
+    (defun dek-python-find-all-breakpoints ()
+      (interactive)
+      (let (pdb-regexp point)
+        (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()$")
+        (occur pdb-regexp)
+        ))
 
-  (defun dek-python-crunch ()
-    "Comment region if region is active, have 2 spaces for inline comments."
-    (interactive)
-    (if (region-active-p)
-        (comment-region (point) (mark))
-      (when (and (looking-at "$") (not (looking-back "^\\|\\([[:space:]]\\{2\\}\\)")))
-        (just-one-space 2))
-      (insert "#")))
+    (defun dek-python-crunch ()
+      "Comment region if region is active, have 2 spaces for inline comments."
+      (interactive)
+      (if (region-active-p)
+          (comment-region (point) (mark))
+        (when (and (looking-at "$") (not (looking-back "^\\|\\([[:space:]]\\{2\\}\\)")))
+          (just-one-space 2))
+        (insert "#")))
 
-  (defun dek-browse-code-python ()
-    "Browse code with helm swoop (classes and functions)"
-    (interactive)
-    (helm-swoop :$query "\\(class[[:space:]].*\\)\\|\\(def[[:space:]].*\\)"))
+    (defun dek-browse-code-python ()
+      "Browse code with helm swoop (classes and functions)"
+      (interactive)
+      (helm-swoop :$query "\\(class[[:space:]].*\\)\\|\\(def[[:space:]].*\\)"))
 
-  (defun dek-python-hook ()
-    ;; (flycheck-mode 1)
-    (elpy-mode 1)
-    (auto-indent-mode -1)
-    (setq-local auto-indent-kill-line-at-eol nil)
-    (setq-local auto-indent-on-yank-or-paste nil)
-    (bind-key "RET" 'newline-and-indent python-mode-map)
-    (bind-key "#" 'dek-python-crunch python-mode-map)
-    (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
-    (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
-    (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
-    (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
-    (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
-    (setq-local paragraph-separate "\\([  ]*$\\)\\|\\( *[A-Z]\\w*:$\\)")
-    (setq-local paragraph-start "\\(\\s-*$\\)\\|\\( *[A-Z]\\w*:$\\)\\|\\( *\\(\\w\\|[_*-]\\)+\\( ([^()])\\)?:\\( [^ ].*\\)?$\\)")
-    (rainbow-delimiters-mode 1)
-    ;; Do this for numpy style docstring filling
-    (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
-    (auto-complete-mode 0)
-    )
+    (defun dek-python-nav-end-of-defun (s)
+      (python-nav-end-of-defun)
+      (previous-line)
+      (end-of-line)
+      )
 
-  (add-hook 'python-mode-hook 'dek-python-hook)
+    (defun dek-python-hs-adjust-block-beginning (p)
+      (save-excursion
+        (goto-char p)
+        (debug)
+        (or
+         (re-search-forward ":$" (+ p 1000) t)
+         p)
+        )
+      )
+
+    (defun dek-python-hs-hook ()
+      (setq hs-special-modes-alist
+            '(
+              (python-mode "^\\s-*\\(?:def\\|class\\)\\>" "" "#"
+                           dek-python-nav-end-of-defun
+                           nil)
+              (c-mode "{" "}" "/[*/]" nil nil)
+              (c++-mode "{" "}" "/[*/]" nil nil)
+              (bibtex-mode
+               ("@\\S(*\\(\\s(\\)" 1))
+              (java-mode "{" "}" "/[*/]" nil nil)
+              (js-mode "{" "}" "/[*/]" nil)
+              )
+            )
+      (setq hs-block-end-regexp nil)
+      )
+
+    (defun dek-python-hook ()
+      ;; (flycheck-mode 1)
+      (elpy-mode 1)
+      (auto-indent-mode -1)
+      (setq-local auto-indent-kill-line-at-eol nil)
+      (setq-local auto-indent-on-yank-or-paste nil)
+      (hs-minor-mode 1)
+      (hs-hide-all)
+      (bind-key "C-M-<return>" 'hs-toggle-hiding python-mode-map)
+      (bind-key "RET" 'newline-and-indent python-mode-map)
+      (bind-key "#" 'dek-python-crunch python-mode-map)
+      (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
+      (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
+      (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
+      (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
+      (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
+      (setq-local paragraph-separate "\\([  ]*$\\)\\|\\( *[A-Z]\\w*:$\\)")
+      (setq-local paragraph-start "\\(\\s-*$\\)\\|\\( *[A-Z]\\w*:$\\)\\|\\( *\\(\\w\\|[_*-]\\)+\\( ([^()])\\)?:\\( [^ ].*\\)?$\\)")
+      (rainbow-delimiters-mode 1)
+      ;; Do this for numpy style docstring filling
+      (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
+      (auto-complete-mode 0)
+      )
+
+    (add-hook 'python-mode-hook 'dek-python-hook)
+    (add-hook 'python-mode-hook 'dek-python-hs-hook)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
