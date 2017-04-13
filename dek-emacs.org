@@ -251,6 +251,25 @@ emacs doesn't look to weird when starting.
     )
 
 #+END_SRC
+
+*** Balanced Window Splitting
+When splitting and deleting windows, most of the time we want to have equally
+large windows. The following code changes the default behaviour to
+automatically resize windows to be equally sized after a window is split or
+deleted.
+
+#+BEGIN_SRC emacs-lisp
+  (defun dek-rebalance-windows (&optional orig-fun &rest args)
+    (balance-windows))
+
+  (defun dek-rebalance-windows-after-delete (&rest args)
+    (balance-windows))
+
+  (advice-add 'split-window-right :after 'dek-rebalance-windows)
+  (advice-add 'split-window-below :after 'dek-rebalance-windows)
+  (advice-add 'delete-window :after 'dek-rebalance-windows-after-delete)
+#+END_SRC
+
 ** Menu bar
 Grasping for the mouse is stupid... use lacarte instead
 #+BEGIN_SRC emacs-lisp
