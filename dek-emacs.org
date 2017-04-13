@@ -38,7 +38,11 @@ emacs doesn't look to weird when starting.
 #+BEGIN_SRC emacs-lisp
   (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
   (menu-bar-mode 0)
-  (set-face-attribute 'default nil :height 98 :family "Monaco")
+  ;; (set-face-attribute 'default nil :height 118 :family "Inconsolata")
+  ;; (set-face-attribute 'default nil :height 110 :family "Monaco")
+  (set-face-attribute 'default nil :height 130 :family "Ubuntu Mono")
+  ;; (set-face-attribute 'default nil :height 110 :family "Input")
+  ;; (set-face-attribute 'default nil :height 120 :family "mononoki")
   ;; (setq debug-on-error t)
   (setq frame-title-format '("" "Emacs - %b - %m"))
 #+END_SRC
@@ -55,7 +59,9 @@ emacs doesn't look to weird when starting.
   ;; (setq package-enable-at-startup nil)
   (require 'package)
   (add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
+               '("melpa" . "https://melpa.org/packages/") t)
+  (add-to-list 'package-archives
+               '("elpy" . "http://jorgenschaefer.github.io/packages/"))
   ;;(setq package-archives
   ;;      '(("gnu" . "https://elpa.gnu.org/packages/")
   ;;        ("MELPA" . "https://melpa.org/packages/")
@@ -65,7 +71,11 @@ emacs doesn't look to weird when starting.
 
   (eval-when-compile
     (require 'use-package))
+  (use-package use-package-chords
+    :config (key-chord-mode 1))
   (require 'diminish)                ;; if you use :diminish
+  (diminish 'flyspell-mode)
+  (diminish 'hs-minor-mode)
   (require 'bind-key)
 
   (setq use-package-always-ensure t)
@@ -116,7 +126,7 @@ emacs doesn't look to weird when starting.
 
   ;; BROWSER
   (setq browse-url-browser-function 'browse-url-generic
-        browse-url-generic-program "chromium")
+        browse-url-generic-program "chromium-browser")
 #+END_SRC
 
 ** Zooming
@@ -200,6 +210,9 @@ emacs doesn't look to weird when starting.
 #+END_SRC
 
 ** Window navigation and handling
+Switching to other windows should be really quick instead of using multiple C-x
+C-o commands all over the place.
+
 #+BEGIN_SRC emacs-lisp
 
   (bind-key "C-<tab>" 'other-window)
@@ -440,28 +453,28 @@ Set english and german as main languages
     ))
 (bind-key "<f8>" 'dek-switch-dictionary)
 #+END_SRC
-** COMMENT Folding
-#+BEGIN_SRC emacs-lisp
-  (use-package origami
-    :config
-    (global-origami-mode 1)
+** Folding
+*** Origami
+# #+BEGIN_SRC emacs-lisp
+#   (use-package origami
+#     :config
+#     (global-origami-mode 1)
 
-    (defhydra hydra-folding (:color red)
-      "
-    _o_pen node    _n_ext fold       toggle _f_orward
-    _c_lose node   _p_revious fold   toggle _a_ll
-    "
-      ("o" origami-open-node)
-      ("c" origami-close-node)
-      ("n" origami-next-fold)
-      ("p" origami-previous-fold)
-      ("f" origami-forward-toggle-node)
-      ("a" origami-toggle-all-nodes))
+#     (defhydra hydra-folding (:color red)
+#       "
+#     _o_pen node    _n_ext fold       toggle _f_orward
+#     _c_lose node   _p_revious fold   toggle _a_ll
+#     "
+#       ("o" origami-open-node)
+#       ("c" origami-close-node)
+#       ("n" origami-next-fold)
+#       ("p" origami-previous-fold)
+#       ("f" origami-forward-toggle-node)
+#       ("a" origami-toggle-all-nodes))
 
-    (bind-key "C-c f" 'hydra-folding/body origami-mode-map)
-    )
-#+END_SRC
-
+#     (bind-key "C-c f" 'hydra-folding/body origami-mode-map)
+#     )
+# #+END_SRC
 * Version Control / GIT
 ** Git
 Magit is awesome...
@@ -497,6 +510,15 @@ Magit is awesome...
 #+END_SRC
 
 * Project Management
+** Preject Explorer
+Provides an ide-like sidebar fore browsing through files
+#+BEGIN_SRC emacs-lisp
+  (use-package neotree
+    :init
+    (setq neo-theme (if window-system 'icons 'arrow))
+    (global-set-key (kbd "M-e") 'neotree-toggle)
+    )
+#+END_SRC
 ** Projectile package
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
@@ -678,7 +700,7 @@ There is a bunch of custom code in this file dealing with IDO and smex.
 * Navigation and Keybinding for miving around buffer
 ** Navigation
 #+BEGIN_SRC emacs-lisp
-  (bind-key "RET" 'reindent-then-newline-and-indent)
+  ;; (bind-key "RET" 'reindent-then-newline-and-indent)
 
   (define-key key-translation-map [?\M-h] [?\C-b])
   (define-key key-translation-map [?\M-l] [?\C-f])
@@ -692,17 +714,12 @@ There is a bunch of custom code in this file dealing with IDO and smex.
   (bind-key "M-SPC" 'cycle-spacing)
 
   (use-package iy-go-to-char
-    :config
-    (key-chord-define-global "fg"  'iy-go-to-char)
-    (key-chord-define-global "fd"  'iy-go-to-char-backward)
-    )
+    :bind (("C-M-=" . iy-go-to-char)
+           ("C-M--" . iy-go-to-char-backward)))
 
   (use-package avy
-    :bind (("M-," . avy-goto-char)
-           ("M-." . avy-goto-word-1))
-    :config
-    (key-chord-define-global "fs" 'avy-goto-char)
-    (key-chord-define-global "fw" 'avy-goto-word-1)
+    :chords ((",," . avy-goto-char)
+             (",." . avy-goto-word-1))
     )
 #+END_SRC
 
@@ -862,40 +879,53 @@ Use smart-operator to put spaces around operators when we neet them.
 
 #+BEGIN_SRC emacs-lisp
   (use-package electric-operator
-    :init
-    (add-hook 'python-mode-hook #'electric-operator-mode)
-    (add-hook 'matlab-mode-hook #'electric-operator-mode)
-    (add-hook 'javascript-mode-hook #'electric-operator-mode)
-    :config
-    (electric-operator-add-rules-for-mode 'python-mode
-                                          (cons "->" " -> ")
-                                          (cons "=>" " => "))
-    (defun electric-operator-python-mode-type-annotation ()
-      (interactive)
-      (and
-       (eq (electric-operator-enclosing-paren) ?\()
-       (let ((linestart (save-excursion
-                          (beginning-of-line)
-                          (point))))
-         (looking-back ": ?[^( ]+ ?" linestart))))
+      :init
+      (add-hook 'python-mode-hook #'electric-operator-mode)
+      (add-hook 'go-mode-hook #'electric-operator-mode)
+      (add-hook 'matlab-mode-hook #'electric-operator-mode)
+      (add-hook 'javascript-mode-hook #'electric-operator-mode)
+      :config
+      (electric-operator-add-rules-for-mode 'go-mode
+                                            (cons "=" " = ")
+                                            (cons "<" " < ")
+                                            (cons ">" " > ")
+                                            (cons ":" " : ")
+                                            (cons ":=" " := ")
+                                            (cons "==" " == ")
+                                            (cons ">=" " >= ")
+                                            (cons "<=" " <= ")
+                                            (cons "!=" " != ")
+                                            (cons "," ", ")
+                                            (cons ";" "; ")
+                                            (cons "{" " {"))
 
-    (defun electric-operator-python-mode-kwargs-= ()
-      (cond
-       ((electric-operator-python-mode-in-lambda-args?) "=")
-       ((electric-operator-python-mode-type-annotation) " = ")
-       ((eq (electric-operator-enclosing-paren) ?\() "=")
-       (t " = ")))
+      (electric-operator-add-rules-for-mode 'python-mode
+                                            (cons "->" " -> ")
+                                            (cons "=>" " => "))
+      (defun electric-operator-python-mode-type-annotation ()
+        (interactive)
+        (and
+         (eq (electric-operator-enclosing-paren) ?\()
+         (let ((linestart (save-excursion
+                            (beginning-of-line)
+                            (point))))
+           (looking-back ": ?[^( ]+ ?" linestart))))
 
-    (defun electric-operator-python-mode-: ()
-      (cond
-       ((electric-operator-python-mode-in-lambda-args?) ": ")
-       ((eq (electric-operator-enclosing-paren) ?\{) ": ")
-       ((eq (electric-operator-enclosing-paren) ?\() ": ")
-       (t ":")
-       ))
-    )
+      (defun electric-operator-python-mode-kwargs-= ()
+        (cond
+         ((electric-operator-python-mode-in-lambda-args?) "=")
+         ((electric-operator-python-mode-type-annotation) " = ")
+         ((eq (electric-operator-enclosing-paren) ?\() "=")
+         (t " = ")))
 
-
+      (defun electric-operator-python-mode-: ()
+        (cond
+         ((electric-operator-python-mode-in-lambda-args?) ": ")
+         ((eq (electric-operator-enclosing-paren) ?\{) ": ")
+         ((eq (electric-operator-enclosing-paren) ?\() ": ")
+         (t ":")
+         ))
+      )
 #+END_SRC
 
 When we want the start of a line, most of the time we want to go back to the
@@ -966,6 +996,7 @@ Use automatic indentation
     (setq auto-indent-known-indent-level-variables
           '( c-basic-offset lisp-body-indent sgml-basic-offset))
     (add-to-list 'auto-indent-disabled-modes-list 'yaml-mode)
+    (add-to-list 'auto-indent-disabled-modes-list 'go-mode)
     )
 #+END_SRC
 
@@ -1001,7 +1032,10 @@ Format comments and comment region as needed
     :config
     (require 'smartparens-config)
     (smartparens-global-mode t)
-    (show-smartparens-global-mode t))
+    (show-smartparens-global-mode t)
+    :diminish smartparens-mode
+  )
+
 #+END_SRC
 
 * Email
@@ -1029,7 +1063,6 @@ Use mutt email client
 
   (add-hook 'mail-mode-hook 'deks-mail-mode-hook)
 #+END_SRC
-
 
 * Auto-completion
 ** Yasnippet
@@ -1120,7 +1153,7 @@ Use mutt email client
     (global-company-mode)
     (bind-key "C-n" 'company-select-next-or-abort company-active-map)
     (bind-key "C-p" 'company-select-previous-or-abort company-active-map)
-    (add-to-list 'company-backends 'company-anaconda)
+    ;; (add-to-list 'company-backends 'company-anaconda)
 
     (defun tab-complete-or-next-field ()
       (interactive)
@@ -1260,7 +1293,6 @@ Setup a whole bunch of stuff for org mode
 
   (setq org-odd-levels-only nil)
   (setq org-hide-leading-stars t)
-  (setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css\"><script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js\"></script><body style=\"margin-left:15%;margin-right:15%;\">")
 
   (setq org-clock-persist 'history)
   (org-clock-persistence-insinuate)
@@ -1294,7 +1326,7 @@ Setup a whole bunch of stuff for org mode
   ;; (if (equal user-login-name "dek")
   ;;     (load-file "~/bin/org-agenda/org-agenda-export.el")
   ;;   (message "dek is not the user ... external mashine ... org-agenda-export not loaded"))
-
+  (setq org-agenda-start-day "-7d")
 
   ;; ORG-remember Mode
                                           ;(org-remember-insinuate)  ;this apperantly doesn't work: so:
@@ -1372,6 +1404,18 @@ Setup a whole bunch of stuff for org mode
           ))
 #+END_SRC
 
+Add [[https://github.com/yjwen/org-reveal][org reveal]] for presentations in org mode
+#+BEGIN_SRC emacs-lisp
+  (require 'ox-reveal)
+  (setq org-reveal-root "/home/dek/.emacs.d/dek-lisp/reveal.js-3.3.0")
+#+END_SRC
+
+For html export we like to have everything in nice bootstrap style.
+- *WARNING*: When using reveal.js set this to nil otherwise stuff will look weird!
+#+BEGIN_SRC emacs-lisp
+  (setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css\"><script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js\"></script><body style=\"margin-left:15%;margin-right:15%;\">")
+#+END_SRC
+
 Fix weird error which will probably be fixed in next release
 #+BEGIN_SRC emacs-lisp
   ;; (setq org-planning-line-re "")
@@ -1426,7 +1470,10 @@ For some reason archiving also doesn't work because of deprecated packages and f
 
 *** YAML
 #+BEGIN_SRC emacs-lisp
-  (use-package yaml-mode)
+  (use-package yaml-mode
+    :config
+    (add-hook 'yaml-mode-hook 'highlight-indentation-mode)
+    )
 #+END_SRC
 ** Web Mode
 #+BEGIN_SRC emacs-lisp
@@ -1526,19 +1573,38 @@ Parsing, checking and understanding javascript.
 #+END_SRC
 
 ** Python
+*** Elpy
 Load elpy python programming environment
 #+BEGIN_SRC emacs-lisp
   (message "loading python environment (elpy)...")
   (use-package elpy
     :commands elpy-enable
+    :diminish elpy-mode
     :init
     (defalias 'format-message 'format)
     (elpy-enable))
 #+END_SRC
 
+*** Anaconda mode
+# Use anaconda mode as an alternative to elpy
+# #+BEGIN_SRC emacs-lisp
+#     (message "loading python environment (anaconda)...")
+#     (use-package anaconda-mode
+#       :commands anaconda-mode
+#       :diminish anaconda-mode)
+
+#   (use-package company-anaconda
+#     :init
+#     (eval-after-load "company"
+#       '(add-to-list 'company-backends 'company-anaconda)))
+
+#   (add-hook 'python-mode-hook 'anaconda-mode)
+# #+END_SRC
+
+*** Custom commands
 Load custom commands for python buffers
 #+BEGIN_SRC emacs-lisp
-    (defun my-set-python-compile-command ()
+  (defun my-set-python-compile-command ()
       "Set python compile command."
       (set (make-local-variable 'compile-command)
            (concat "python " (file-name-base buffer-file-name) ".py")))
@@ -1546,19 +1612,22 @@ Load custom commands for python buffers
     (defun dek-python-add-breakpoint ()
       (interactive)
       (let (pdb-regexp)
-        (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
+        (setq pdb-regexp "^\\s-*\\(import \\(ip\\|pu\\|p\\)db; ?\\)?\\(ip\\|pu\\|p\\)db.set_trace()")
+        ;; (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
         (if (string-match pdb-regexp (thing-at-point 'line))
             (kill-whole-line)
           (end-of-line)
           (newline-and-indent)
-          (insert "import ipdb; ipdb.set_trace()")
+          ;; (insert "import ipdb; ipdb.set_trace()")
+          ;; (insert "import pudb; pudb.set_trace()")
+          (insert "import pdb; pdb.set_trace()")
           (highlight-lines-matching-regexp pdb-regexp)
           )))
 
     (defun dek-python-find-all-breakpoints ()
       (interactive)
       (let (pdb-regexp point)
-        (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()$")
+        (setq pdb-regexp "^\\s-*\\(import \\(ip\\|pu\\|p\\)db; ?\\)?\\(ip\\|pu\\|p\\)db.set_trace()$")
         (occur pdb-regexp)
         ))
 
@@ -1585,12 +1654,46 @@ Load custom commands for python buffers
     (defun dek-python-hs-adjust-block-beginning (p)
       (save-excursion
         (goto-char p)
-        (debug)
         (or
          (re-search-forward ":$" (+ p 1000) t)
          p)
-        )
-      )
+        ))
+    (defun hs-hide-leafs-recursive (minp maxp)
+      "Hide blocks below point that do not contain further blocks
+        in region (MINP MAXP)."
+      (when (hs-find-block-beginning)
+        (setq minp (1+ (point)))
+        (funcall hs-forward-sexp-func 1)
+        (setq maxp (1- (point))))
+      (unless hs-allow-nesting
+        (hs-discard-overlays minp maxp))
+      (goto-char minp)
+      (let ((leaf t))
+        (while (progn
+                 (forward-comment (buffer-size))
+                 (and (< (point) maxp)
+                      (re-search-forward hs-block-start-regexp maxp t)))
+          (setq pos (match-beginning hs-block-start-mdata-select))
+          (if (hs-hide-leafs-recursive minp maxp)
+              (save-excursion
+                (goto-char pos)
+                (hs-hide-block-at-point t)))
+          (setq leaf nil))
+        (goto-char maxp)
+        leaf))
+
+    (defun hs-hide-leafs ()
+      "Hide all blocks in the buffer that do not contain subordinate
+        blocks.  The hook `hs-hide-hook' is run; see `run-hooks'."
+      (interactive)
+      (hs-life-goes-on
+       (save-excursion
+         (message "Hiding blocks ...")
+         (save-excursion
+           (goto-char (point-min))
+           (hs-hide-leafs-recursive (point-min) (point-max)))
+         (message "Hiding blocks ... done"))
+       (run-hooks 'hs-hide-hook)))
 
     (defun dek-python-hs-hook ()
       (setq hs-special-modes-alist
@@ -1606,35 +1709,48 @@ Load custom commands for python buffers
               (js-mode "{" "}" "/[*/]" nil)
               )
             )
-      (setq hs-block-end-regexp nil)
-      )
-
-    (defun dek-python-hook ()
-      ;; (flycheck-mode 1)
-      (elpy-mode 1)
-      (auto-indent-mode -1)
-      (setq-local auto-indent-kill-line-at-eol nil)
-      (setq-local auto-indent-on-yank-or-paste nil)
+      (setq hs-block-end-regexp "")
       (hs-minor-mode 1)
-      (hs-hide-all)
-      (bind-key "C-M-<return>" 'hs-toggle-hiding python-mode-map)
-      (bind-key "RET" 'newline-and-indent python-mode-map)
-      (bind-key "#" 'dek-python-crunch python-mode-map)
-      (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
-      (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
-      (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
-      (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
-      (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
-      (setq-local paragraph-separate "\\([  ]*$\\)\\|\\( *[A-Z]\\w*:$\\)")
-      (setq-local paragraph-start "\\(\\s-*$\\)\\|\\( *[A-Z]\\w*:$\\)\\|\\( *\\(\\w\\|[_*-]\\)+\\( ([^()])\\)?:\\( [^ ].*\\)?$\\)")
-      (rainbow-delimiters-mode 1)
-      ;; Do this for numpy style docstring filling
-      (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
-      (auto-complete-mode 0)
+      ;; (hs-show-all)
+      ;; (message "all hidden")
       )
 
-    (add-hook 'python-mode-hook 'dek-python-hook)
-    (add-hook 'python-mode-hook 'dek-python-hs-hook)
+  (defun dek-python-hook ()
+    ;; (flycheck-mode 1)
+    (auto-indent-mode -1)
+    (setq python-shell-interpreter "ipython3" python-shell-interpreter-args "--simple-prompt --pprint")
+    (setenv "WORKON_HOME" "/home/dek/anaconda/envs")
+    (setq-local auto-indent-kill-line-at-eol nil)
+    (setq-local auto-indent-on-yank-or-paste nil)
+    (bind-key "C-M-<return>" 'hs-toggle-hiding python-mode-map)
+    (bind-key "RET" 'newline-and-indent python-mode-map)
+    (bind-key "#" 'dek-python-crunch python-mode-map)
+    (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
+    (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
+    (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
+    (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
+    (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
+    (setq-local paragraph-separate "\\([  ]*$\\)\\|\\( *[A-Z]\\w*:$\\)")
+    (setq-local paragraph-start "\\(\\s-*$\\)\\|\\( *[A-Z]\\w*:$\\)\\|\\( *\\(\\w\\|[_*-]\\)+\\( ([^()])\\)?:\\( [^ ].*\\)?$\\)")
+    (rainbow-delimiters-mode 1)
+    ;; Do this for numpy style docstring filling
+    (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
+    (message "turning autocomplete off")
+    (auto-complete-mode 0)
+    )
+
+
+  (defun dek-python-imenu-hook ()
+    "Hook for creating imenu index faster"
+    (set (make-local-variable 'imenu-create-index-function)
+         #'python-imenu-create-index))
+#+END_SRC
+
+Add hooks to python mode
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'python-mode-hook 'dek-python-hook)
+  (add-hook 'python-mode-hook 'dek-python-hs-hook)
+  (add-hook 'python-mode-hook 'dek-python-imenu-hook)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -1671,6 +1787,7 @@ Use anaconda if available
   ;;      python-shell-completion-string-code "';'.join(get_ipython().complete('''%s''')[1])\n"
   ;;      ))
 #+END_SRC
+*** python mode setup
 
 *** Cython
 #+BEGIN_SRC emacs-lisp
@@ -1845,6 +1962,7 @@ Use anaconda if available
   (use-package omnisharp
     :commands omnisharp-mode
     :init
+    (setq c-basic-offset 4)
     (add-hook 'csharp-mode-hook 'omnisharp-mode)
     (setq omnisharp-server-executable-path "~/Documents/Code/omnisharp-server/OmniSharp/bin/Debug/OmniSharp.exe")
     :config
@@ -1854,20 +1972,26 @@ Use anaconda if available
 #+END_SRC
 
 ** GOLANG
-Run gofmt automatically when saving files
+For development we want to automatically format code when saved and initialize godoc eldoc functions.
+
 #+BEGIN_SRC emacs-lisp
   (use-package go-mode
     :commands go-mode
     :bind (
-           ("M-," . godef-jump)
+           ("M-." . godef-jump)
            )
     :init
-    (defun my-go-mode-hook ()
-      ;; Call Gofmt before saving
+
+    (defun go-mode-setup ()
+      (setq compile-command "go build -v && go test -v && go vet")
+      (define-key (current-local-map) "\C-c\C-c" 'compile)
+      (go-eldoc-setup)
+      (setq gofmt-command "goimports")
       (add-hook 'before-save-hook 'gofmt-before-save)
+      (local-set-key (kbd "M-.") 'godef-jump)
+
       )
-    (add-hook 'go-mode-hook 'my-go-mode-hook)
-    )
+    (add-hook 'go-mode-hook 'go-mode-setup))
 #+END_SRC
 
 Enable autocomplete for go
@@ -1887,18 +2011,6 @@ Enable autocomplete for go
       )
     (add-hook 'go-mode-hook 'dek-only-use-go-company-in-go)
     )
-
-
-#+END_SRC
-
-Add hooks and shortcuts for godef
-#+BEGIN_SRC emacs-lisp
-(defun my-go-mode-hook ()
-  ; Call Gofmt before saving
-  (add-hook 'before-save-hook 'gofmt-before-save)
-  ; Godef jump key binding
-  (local-set-key (kbd "M-.") 'godef-jump))
-(add-hook 'go-mode-hook 'my-go-mode-hook)
 #+END_SRC
 
 ** JAVA

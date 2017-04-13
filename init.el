@@ -1,3 +1,10 @@
+
+;; Added by Package.el.  This must come before configurations of
+;; installed packages.  Don't delete this line.  If you don't want it,
+;; just comment it out by adding a semicolon to the start of the line.
+;; You may delete these explanatory comments.
+(package-initialize)
+
 (require 'org)
 (org-babel-load-file
  (expand-file-name "dek-emacs.org" user-emacs-directory))
@@ -15,6 +22,7 @@
  '(ansi-term-color-vector
    [unspecified "#282a2e" "#cc6666" "#b5bd68" "#f0c674" "#81a2be" "#b294bb" "#81a2be" "#e0e0e0"] t)
  '(auto-indent-on-visit-pretend-nothing-changed nil)
+ '(c-basic-offset 4)
  '(custom-safe-themes
    (quote
     ("f4deb2b3c1a11ed40a4a6a8d3d3fe5a024fb81488452ac3b34aa6fc56bbcc69a" "6c2f1685374aeff638a923f1ec5408d5db20c83ab1b3e137600c8501ec7df5ee" "f5eb916f6bd4e743206913e6f28051249de8ccfd070eae47b5bde31ee813d55f" "1cf3f29294c5a3509b7eb3ff9e96f8e8db9d2d08322620a04d862e40dc201fe2" "cd70962b469931807533f5ab78293e901253f5eeb133a46c2965359f23bfb2ea" "769bb56fb9fd7e73459dcdbbfbae1f13e734cdde3cf82f06a067439568cdaa95" "253bd40645913cc95b9f8ef0533082cb9a4cb0810f854c030f3ef833ee5b9731" "1f31a5f247d0524ef9c051d45f72bae6045b4187ed7578a7b1f8cb8758f92b60" default)))
@@ -24,7 +32,8 @@
  '(elpy-modules
    (quote
     (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-pyvenv elpy-module-yasnippet elpy-module-sane-defaults)))
- '(elpy-rpc-python-command "~/anaconda/envs/emacs/bin/python")
+ '(elpy-rpc-backend "jedi")
+ '(elpy-rpc-python-command "python")
  '(elpy-test-runner (quote elpy-test-pytest-runner))
  '(fci-rule-color "#2b2b2b")
  '(fill-column 79)
@@ -54,11 +63,23 @@
  '(nrepl-message-colors
    (quote
     ("#CC9393" "#DFAF8F" "#F0DFAF" "#7F9F7F" "#BFEBBF" "#93E0E3" "#94BFF3" "#DC8CC3")))
+ '(org-agenda-prefix-format
+   (quote
+    ((agenda . " %i %-12:c%?-12t% s")
+     (timeline . "  % s % t ")
+     (todo . " %i %-12:c")
+     (tags . " %i %-12:c")
+     (search . " %i %-12:c"))))
+ '(org-agenda-remove-times-when-in-prefix nil)
+ '(org-agenda-span (quote month))
  '(org-babel-python-command "python")
  '(org-confirm-babel-evaluate nil)
  '(org-export-babel-evaluate t)
  '(org-export-backends (quote (ascii html icalendar latex md odt)))
  '(org-plantuml-jar-path "/opt/plantuml/plantuml.jar")
+ '(package-selected-packages
+   (quote
+    (zoom-frm zenburn-theme yaml-mode web-mode web-beautify use-package toml-mode tide switch-window swiper smartparens scss-mode sass-mode request-deferred rainbow-delimiters python pretty-symbols powerline origami org omnisharp multiple-cursors markdown-mode magit lacarte keychain-environment key-chord json-mode js2-mode jinja2-mode iy-go-to-char hydra helm-themes helm-swoop helm-projectile helm-ag haskell-mode gh-md expand-region elpy electric-operator edit-server dokuwiki-mode dockerfile-mode docker dired-details dired+ cython-mode csv-mode company-tern company-go clojure-mode buffer-move auto-indent-mode auctex anaconda-mode ag ace-window)))
  '(pretty-symbol-categories (lambda relational))
  '(pretty-symbol-patterns
    (quote
@@ -89,10 +110,11 @@
  '(puml-plantuml-jar-path "/opt/plantuml/plantuml.jar")
  '(py-indent-honors-multiline-listing t)
  '(py-lhs-inbound-indent 0)
- '(python-check-command "~/anaconda/envs/emacs/bin/flake8")
- '(python-shell-exec-path (quote ("~/anaconda/envs/emacs/bin")))
- '(python-shell-interpreter "~/anaconda/envs/emacs/bin/ipython")
- '(pyvenv-virtualenvwrapper-python "~/anaconda/bin/python")
+ '(python-check-command "/home/dek/anaconda/envs/emacs/bin/flake8")
+ '(python-shell-completion-native-enable nil)
+ '(python-shell-exec-path (quote ("/home/dek/anaconda/envs/emacs/bin")))
+ '(python-shell-interpreter "python")
+ '(pyvenv-virtualenvwrapper-python "/home/dek/anaconda/envs/emacs/bin/python")
  '(reftex-ref-style-alist
    (quote
     (("Default" t
@@ -120,7 +142,8 @@
  '(smex-completion-method (quote ivy))
  '(smex-save-file "~/.emacs.d/.smex-items")
  '(switch-window-shortcut-style (quote qwerty))
- '(test-case-python-executable "~/anaconda/bin/python")
+ '(tab-width 4)
+ '(test-case-python-executable "/home/anaconda/envs/emacs/bin/python")
  '(vc-annotate-background "#2B2B2B")
  '(vc-annotate-color-map
    (quote
@@ -144,7 +167,8 @@
      (360 . "#DC8CC3"))))
  '(vc-annotate-very-old-color "#DC8CC3")
  '(virtualenv-root "~/anaconda/envs/")
- '(warning-suppress-types (quote ((undo discard-info)))))
+ '(warning-suppress-types (quote ((undo discard-info))))
+ '(web-mode-enable-auto-expanding t))
 
 (message "Config Loaded!")
 (custom-set-faces
@@ -152,4 +176,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(company-template-field ((t (:background "dark sea green" :foreground "black")))))
+ '(default ((t (:inherit nil :stipple nil :background "#31323A" :foreground "#DCDCCC" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 120 :width normal :foundry "ADBO" :family "Source Code Pro"))))
+ '(company-template-field ((t (:background "dark sea green" :foreground "black"))))
+ '(highlight-indentation-face ((t (:background "gray27" :width normal))))
+ '(powerline-active2 ((t (:inherit mode-line :background "#5f5f5f")))))
+(put 'narrow-to-region 'disabled nil)
