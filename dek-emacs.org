@@ -1580,8 +1580,9 @@ Load elpy python programming environment
     :commands elpy-enable
     :diminish elpy-mode
     :init
-    (defalias 'format-message 'format)
-    (elpy-enable))
+    (elpy-enable)
+    )
+
 #+END_SRC
 
 *** Anaconda mode
