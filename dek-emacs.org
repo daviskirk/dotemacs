@@ -126,7 +126,7 @@ emacs doesn't look to weird when starting.
 
   ;; BROWSER
   (setq browse-url-browser-function 'browse-url-generic
-        browse-url-generic-program "chromium-browser")
+        browse-url-generic-program "vivaldi")
 #+END_SRC
 
 ** Zooming
@@ -508,7 +508,6 @@ Magit is awesome...
    (bind-key "C-x V l" 'magit-log)
    (message "magit loaded...")
 #+END_SRC
-
 * Project Management
 ** Preject Explorer
 Provides an ide-like sidebar fore browsing through files
