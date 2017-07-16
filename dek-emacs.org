@@ -511,13 +511,13 @@ Magit is awesome...
 * Project Management
 ** Preject Explorer
 Provides an ide-like sidebar fore browsing through files
-#+BEGIN_SRC emacs-lisp
-  (use-package neotree
-    :init
-    (setq neo-theme (if window-system 'icons 'arrow))
-    (global-set-key (kbd "M-e") 'neotree-toggle)
-    )
-#+END_SRC
+# #+BEGIN_SRC emacs-lisp
+#   (use-package neotree
+#     :init
+#     (setq neo-theme (if window-system 'icons 'arrow))
+#     (global-set-key (kbd "M-e") 'neotree-toggle)
+#     )
+# #+END_SRC
 ** Projectile package
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
@@ -1787,8 +1787,6 @@ Use anaconda if available
   ;;      python-shell-completion-string-code "';'.join(get_ipython().complete('''%s''')[1])\n"
   ;;      ))
 #+END_SRC
-*** python mode setup
-
 *** Cython
 #+BEGIN_SRC emacs-lisp
   (use-package cython-mode)
