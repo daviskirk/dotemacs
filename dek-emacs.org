@@ -2,12 +2,16 @@
 #+AUTHOR: Davis Kirkendall
 #+EMAIL: davis.e.kirkendall@gmail.com
 
+
+
 * Initialization
 #+BEGIN_SRC emacs-lisp
   (require 'cl)
   (require 'epa-file)
   (epa-file-enable)
   (setenv "GPG_AGENT_INFO" nil)
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'utf-8)
 #+END_SRC
 
 Set path to know where to look for our python distribution.
@@ -38,11 +42,6 @@ emacs doesn't look to weird when starting.
 #+BEGIN_SRC emacs-lisp
   (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
   (menu-bar-mode 0)
-  ;; (set-face-attribute 'default nil :height 118 :family "Inconsolata")
-  ;; (set-face-attribute 'default nil :height 110 :family "Monaco")
-  (set-face-attribute 'default nil :height 130 :family "Ubuntu Mono")
-  ;; (set-face-attribute 'default nil :height 110 :family "Input")
-  ;; (set-face-attribute 'default nil :height 120 :family "mononoki")
   ;; (setq debug-on-error t)
   (setq frame-title-format '("" "Emacs - %b - %m"))
 #+END_SRC
@@ -2249,14 +2248,6 @@ Incompatible with power line so we can't use this
 (use-package haskell-mode)
 #+END_SRC
 
-* Pretty Symbols
-#+BEGIN_SRC emacs-lisp
-  (use-package pretty-symbols
-    :config
-    (add-hook 'matlab-mode-hook 'pretty-symbols-mode)
-    (add-hook 'python-mode-hook 'pretty-symbols-mode)
-    (add-hook 'emacs-lisp-mode-hook 'pretty-symbols-mode))
-#+END_SRC
 * Random stuff
 #+BEGIN_SRC emacs-lisp
   (message "loading custom functions...")
@@ -2299,18 +2290,6 @@ Incompatible with power line so we can't use this
   (setq yas/triggers-in-field t)
 
   (setq tetris-score-file (expand-file-name ".tetris-scores" user-emacs-directory))
-
-  (defun dek-set-system-dependant-default-font(fontlist)
-    "Set system dependent font. TODO: implement this correctly."
-    (if (>= (length fontlist) 2)
-        (let (tmpsystem tmpfont tmpfontheight)
-      (setq tmpsystem (car fontlist)
-            tmpfont (cadr fontlist)
-            tmpfontheight (caddr fontlist))
-      (if (equal system-name tmpsystem)
-          (set-face-attribute 'default nil :family tmpfont :height tmpfontheight)
-        (dek-set-system-dependant-default-font (cddr fontlist)))
-      )))
   (put 'upcase-region 'disabled nil)
   (put 'erase-buffer 'disabled nil)
   (put 'downcase-region 'disabled nil)
@@ -2321,3 +2300,107 @@ Incompatible with power line so we can't use this
 (use-package keychain-environment)
 (keychain-refresh-environment)
 #+END_SRC
+
+* Font
+** Default Font
+Set font to hasklig and enable ligatures and pretty symbols for python.
+#+BEGIN_SRC emacs-lisp
+
+  (global-prettify-symbols-mode 1)
+
+  (add-hook
+   'python-mode-hook
+   (lambda ()
+     (setq prettify-symbols-alist '())
+     (mapc (lambda (pair) (push pair prettify-symbols-alist))
+           '(;; Latex
+             ("\\cdot" . #x2219)
+             ("\\in" . #x2221)
+             ("\\Delta" . #x0394)
+             ("\\lambda" . #x0394)
+             ;; Syntax
+             ;; ("def" .      #x2131)
+             ;; ("not" .      #x2757)
+             ;; ("in" .       #x2208)
+             ;; ("not in" .   #x2209)
+             ;; ("return" .   #x27fc)
+             ;; ("yield" .    #x27fb)
+             ;; ("for" .      #x2200)
+             ;; Base Types
+             ("int" .      #x2124)
+             ("float" .    #x211d)
+             ("str" .      #x1d54a)
+             ;; ("True" .     #x1d54b)
+             ;; ("False" .    #x1d53d)
+             ;; Mypy
+             ("Dict" .     #x1d507)
+             ("List" .     #x2112)
+             ;; ("Tuple" .    #x2a02)
+             ;; ("Set" .      #x2126)
+             ;; ("Iterable" . #x1d50a)
+             ("Any" .      #x2754)
+             ("Union" .    #x22c3)))))
+
+  (defun dek-correct-symbol-bounds (pretty-alist)
+    "Prepend a TAB character to each symbol in this alist,
+          this way compose-region called by prettify-symbols-mode
+          will use the correct width of the symbols
+          instead of the width measured by char-width."
+    (mapcar (lambda (el)
+              (setcdr el (string ?\t (cdr el)))
+              el)
+            pretty-alist))
+
+  (defun dek-ligature-list (ligatures codepoint-start)
+    "Create an alist of strings to replace with
+          codepoints starting from codepoint-start."
+    (let ((codepoints (-iterate '1+ codepoint-start (length ligatures))))
+      (-zip-pair ligatures codepoints)))
+
+                                          ; list can be found at https://github.com/i-tu/Hasklig/blob/master/GlyphOrderAndAliasDB#L1588
+  (setq dek-hasklig-ligatures
+        (let* ((ligs '("&&" "***" "*>" "\\\\" "||" "|>" "::"
+                       "==" "===" "==>" "=>" "=<<" "!!" ">>"
+                       ">>=" ">>>" ">>-" ">-" "->" "-<" "-<<"
+                       "<*" "<*>" "<|" "<|>" "<$>" "<>" "<-"
+                       "<<" "<<<" "<+>" ".." "..." "++" "+++"
+                       "/=" ":::" ">=>" "->>" "<=>" "<=<" "<->")))
+          (dek-correct-symbol-bounds (dek-ligature-list ligs #Xe100))))
+
+  ;; nice glyphs for haskell with hasklig
+  (defun dek-set-hasklig-ligatures ()
+    "Add hasklig ligatures for use with prettify-symbols-mode."
+    (mapc (lambda (pair) (push pair prettify-symbols-alist))
+          dek-hasklig-ligatures))
+  ;; (setq prettify-symbols-alist
+  ;;       (append dek-hasklig-ligatures prettify-symbols-alist))
+  ;; (prettify-symbols-mode))
+
+  (add-hook 'prog-mode-hook 'dek-set-hasklig-ligatures)
+
+  (setq dek-default-font "Hasklig 11")
+  (set-default-font dek-default-font)
+  ;; set default font for emacs --daemon / emacsclient
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (add-to-list 'default-frame-alist (cons 'font dek-default-font))
+#+END_SRC
+
+** Additional Pretty Symbols
+We don't use pretty symbols any more (see ligatures and replacements above)
+
+#+BEGIN_SRC emacs-lisp
+
+  ;; (use-package pretty-symbols
+  ;;   :config
+  ;;   (add-hook 'matlab-mode-hook 'pretty-symbols-mode)
+  ;;   (add-hook 'python-mode-hook 'pretty-symbols-mode)
+  ;;   (add-hook 'emacs-lisp-mode-hook 'pretty-symbols-mode))
+
+#+END_SRC
+
+** Fira Code ligatures
+Since we can use the ligatures provided by
+the fira code font: http://www.modernemacs.com/post/prettify-mode/.
+In our case, it's saved in dek-lisp/pretty-fonts.el.
+
+(Right now we use the hasklig ligatures so we don't care)

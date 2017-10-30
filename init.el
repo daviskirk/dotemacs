@@ -176,7 +176,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "#31323A" :foreground "#DCDCCC" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 120 :width normal :foundry "ADBO" :family "Source Code Pro"))))
  '(company-template-field ((t (:background "dark sea green" :foreground "black"))))
  '(highlight-indentation-face ((t (:background "gray27" :width normal))))
  '(powerline-active2 ((t (:inherit mode-line :background "#5f5f5f")))))
