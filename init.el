@@ -79,7 +79,7 @@
  '(org-plantuml-jar-path "/opt/plantuml/plantuml.jar")
  '(package-selected-packages
    (quote
-    (zoom-frm zenburn-theme yaml-mode web-mode web-beautify use-package toml-mode tide switch-window swiper smartparens scss-mode sass-mode request-deferred rainbow-delimiters python pretty-symbols powerline origami org omnisharp multiple-cursors markdown-mode magit lacarte keychain-environment key-chord json-mode js2-mode jinja2-mode iy-go-to-char hydra helm-themes helm-swoop helm-projectile helm-ag haskell-mode gh-md expand-region elpy electric-operator edit-server dokuwiki-mode dockerfile-mode docker dired-details dired+ cython-mode csv-mode company-tern company-go clojure-mode buffer-move auto-indent-mode auctex anaconda-mode ag ace-window)))
+    (git-timemachine company-terraform terraform-mode smooth-scrolling helm-gitlab gitlab zoom-frm zenburn-theme yaml-mode web-mode web-beautify use-package toml-mode tide switch-window swiper smartparens scss-mode sass-mode request-deferred rainbow-delimiters python pretty-symbols powerline origami org omnisharp multiple-cursors markdown-mode magit lacarte keychain-environment key-chord json-mode js2-mode jinja2-mode iy-go-to-char hydra helm-themes helm-swoop helm-projectile helm-ag haskell-mode gh-md expand-region elpy electric-operator edit-server dokuwiki-mode dockerfile-mode docker dired-details dired+ cython-mode csv-mode company-tern company-go clojure-mode buffer-move auto-indent-mode auctex anaconda-mode ag ace-window)))
  '(pretty-symbol-categories (lambda relational))
  '(pretty-symbol-patterns
    (quote

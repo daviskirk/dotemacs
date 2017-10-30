@@ -1,0 +1,20 @@
+name: emacs
+dependencies:
+  - python=3.6
+  - ipython
+  - numpy
+  - pandas
+  - sqlalchemy
+  - xarray
+  - scikit-learn
+  - yaml
+  - psycopg2
+  - flask
+  - pip:
+    - nameko
+    - jedi
+    - rope
+    - importmagic
+    - yapf
+    - flake8
+    - autopep8
