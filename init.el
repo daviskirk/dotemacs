@@ -35,7 +35,7 @@
  '(elpy-rpc-backend "jedi")
  '(elpy-rpc-python-command "python")
  '(elpy-test-runner (quote elpy-test-pytest-runner))
- '(fci-rule-color "#2b2b2b")
+ '(fci-rule-color "#383838")
  '(fill-column 79)
  '(flycheck-check-syntax-automatically (quote (save new-line mode-enabled)))
  '(flycheck-idle-change-delay 2)
@@ -74,12 +74,13 @@
  '(org-agenda-span (quote month))
  '(org-babel-python-command "python")
  '(org-confirm-babel-evaluate nil)
- '(org-export-babel-evaluate t)
  '(org-export-backends (quote (ascii html icalendar latex md odt)))
+ '(org-export-use-babel t)
+ '(org-md-headline-style (quote atx))
  '(org-plantuml-jar-path "/opt/plantuml/plantuml.jar")
  '(package-selected-packages
    (quote
-    (git-timemachine company-terraform terraform-mode smooth-scrolling helm-gitlab gitlab zoom-frm zenburn-theme yaml-mode web-mode web-beautify use-package toml-mode tide switch-window swiper smartparens scss-mode sass-mode request-deferred rainbow-delimiters python pretty-symbols powerline origami org omnisharp multiple-cursors markdown-mode magit lacarte keychain-environment key-chord json-mode js2-mode jinja2-mode iy-go-to-char hydra helm-themes helm-swoop helm-projectile helm-ag haskell-mode gh-md expand-region elpy electric-operator edit-server dokuwiki-mode dockerfile-mode docker dired-details dired+ cython-mode csv-mode company-tern company-go clojure-mode buffer-move auto-indent-mode auctex anaconda-mode ag ace-window)))
+    (amx git-timemachine company-terraform terraform-mode smooth-scrolling helm-gitlab gitlab zoom-frm zenburn-theme yaml-mode web-mode web-beautify use-package toml-mode tide switch-window swiper smartparens scss-mode sass-mode request-deferred rainbow-delimiters python pretty-symbols powerline org omnisharp multiple-cursors markdown-mode magit lacarte keychain-environment key-chord json-mode js2-mode jinja2-mode iy-go-to-char hydra helm-themes helm-swoop helm-projectile helm-ag haskell-mode gh-md expand-region elpy electric-operator edit-server dokuwiki-mode dockerfile-mode docker dired-details dired+ cython-mode csv-mode company-tern company-go clojure-mode buffer-move auto-indent-mode auctex anaconda-mode ag ace-window)))
  '(pretty-symbol-categories (lambda relational))
  '(pretty-symbol-patterns
    (quote
@@ -139,8 +140,6 @@
    (quote
     (global-semantic-decoration-mode global-semantic-stickyfunc-mode global-semantic-idle-scheduler-mode global-semanticdb-minor-mode)))
  '(semantic-mode t)
- '(smex-completion-method (quote ivy))
- '(smex-save-file "~/.emacs.d/.smex-items")
  '(switch-window-shortcut-style (quote qwerty))
  '(tab-width 4)
  '(test-case-python-executable "/home/anaconda/envs/emacs/bin/python")
@@ -178,5 +177,6 @@
  ;; If there is more than one, they won't work right.
  '(company-template-field ((t (:background "dark sea green" :foreground "black"))))
  '(highlight-indentation-face ((t (:background "gray27" :width normal))))
+ '(markdown-code-face ((t (:inherit fixed-pitch :background "#3f3f55"))))
  '(powerline-active2 ((t (:inherit mode-line :background "#5f5f5f")))))
 (put 'narrow-to-region 'disabled nil)

@@ -125,22 +125,22 @@ emacs doesn't look to weird when starting.
 
   ;; BROWSER
   (setq browse-url-browser-function 'browse-url-generic
-        browse-url-generic-program "chromium-browser")
+        browse-url-generic-program "google-chrome")
 #+END_SRC
 
 ** Zooming
 #+BEGIN_SRC emacs-lisp
 (use-package zoom-frm
-  :commands (zoom-in zoom-out)
-  :init
-  (global-set-key (if (boundp 'mouse-wheel-down-event) ; Emacs 22+
-                      (vector (list 'control mouse-wheel-down-event))
-                    [C-mouse-wheel])    ; Emacs 20, 21
-                  'zoom-in)
-  (when (boundp 'mouse-wheel-up-event) ; Emacs 22+
-    (global-set-key (vector (list 'control mouse-wheel-up-event))
-                    'zoom-out))
-  )
+    :commands (zoom-in zoom-out)
+    :init
+    (global-set-key (if (boundp 'mouse-wheel-down-event) ; Emacs 22+
+                        (vector (list 'control mouse-wheel-down-event))
+                      [C-mouse-wheel])    ; Emacs 20, 21
+                    'zoom-in)
+    (when (boundp 'mouse-wheel-up-event) ; Emacs 22+
+      (global-set-key (vector (list 'control mouse-wheel-up-event))
+                      'zoom-out))
+    )
 #+END_SRC
 
 ** Scrolling
@@ -152,47 +152,47 @@ emacs doesn't look to weird when starting.
 ** Key chord
 #+BEGIN_SRC emacs-lisp
 (use-package key-chord
-  :commands (key-chord-define-global key-chord-mode)
-  :init
-  (setq key-chord-two-keys-delay 0.001)
-  (setq key-chord-one-key-delay 0.15)
-  :config
-  (key-chord-mode 1)
-  (key-chord-define-global "xf" 'helm-projectile)
-  (key-chord-define-global "xb" 'ido-switch-buffer)
-  (key-chord-define-global "xs" 'save-buffer)
+    :commands (key-chord-define-global key-chord-mode)
+    :init
+    (setq key-chord-two-keys-delay 0.001)
+    (setq key-chord-one-key-delay 0.15)
+    :config
+    (key-chord-mode 1)
+    (key-chord-define-global "xf" 'helm-projectile)
+    (key-chord-define-global "xb" 'ido-switch-buffer)
+    (key-chord-define-global "xs" 'save-buffer)
 
-  ;; fast delimiters
-  (key-chord-define-global
-   "((" '(lambda ()
-           (interactive)
-           (insert "(")
-           (forward-sexp)
-           (insert ")")
-           (forward-char)
-           ))
+    ;; fast delimiters
+    (key-chord-define-global
+     "((" '(lambda ()
+             (interactive)
+             (insert "(")
+             (forward-sexp)
+             (insert ")")
+             (forward-char)
+             ))
 
-  (key-chord-define-global
-   "[[" '(lambda ()
-           (interactive)
-           (insert "[")
-           (forward-sexp)
-           (insert "]")
-           (forward-char)
-           ))
+    (key-chord-define-global
+     "[[" '(lambda ()
+             (interactive)
+             (insert "[")
+             (forward-sexp)
+             (insert "]")
+             (forward-char)
+             ))
 
-  (key-chord-define-global
-   "{{" '(lambda ()
-           (interactive)
-           (insert "[")
-           (forward-sexp)
-           (insert "]")
-           (forward-char)
-           ))
+    (key-chord-define-global
+     "{{" '(lambda ()
+             (interactive)
+             (insert "[")
+             (forward-sexp)
+             (insert "]")
+             (forward-char)
+             ))
 
-  (key-chord-define-global
-   "w2" 'dek-current-buffer-to-other-window)
-  )
+    (key-chord-define-global
+     "w2" 'dek-current-buffer-to-other-window)
+    )
 #+END_SRC
 
 ** Hydra
@@ -691,14 +691,14 @@ There is a bunch of custom code in this file dealing with IDO and smex.
     )
 #+END_SRC
 
-** Smex
+** Amx (smex
 #+BEGIN_SRC emacs-lisp
-  (require 'smex)
-  (smex-initialize)
-  (bind-key "M-x" 'smex)
-  (bind-key "M-X" 'smex-major-mode-commands)
-  ;; This is your old M-x.
-  (bind-key "C-c M-x" 'execute-extended-command)
+  (use-package amx
+    :commands (amx-mode)
+    :init
+    (setq amx-history-length 50)
+    (setq amx-prompt-string "A M-x "))
+  (amx-mode 1)
 #+END_SRC
 
 * Navigation and Keybinding for miving around buffer
@@ -1623,6 +1623,7 @@ Load custom commands for python buffers
         ;; (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
         (if (string-match pdb-regexp (thing-at-point 'line))
             (kill-whole-line)
+          (forward-line -1)
           (end-of-line)
           (newline-and-indent)
           ;; (insert "import ipdb; ipdb.set_trace()")
