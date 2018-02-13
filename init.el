@@ -45,6 +45,11 @@
  '(global-semantic-decoration-mode t)
  '(global-semantic-highlight-func-mode t)
  '(global-semantic-stickyfunc-mode nil)
+ '(highlight-symbol-highlight-single-occurrence t)
+ '(highlight-symbol-idle-delay 1)
+ '(highlight-symbol-ignore-list
+   (quote
+    ("if" "self" "for" "and" "or" "not" "return" "def" "class")))
  '(ivy-height 15)
  '(ivy-mode t)
  '(ivy-wrap t)
@@ -80,7 +85,7 @@
  '(org-plantuml-jar-path "/opt/plantuml/plantuml.jar")
  '(package-selected-packages
    (quote
-    (amx git-timemachine company-terraform terraform-mode smooth-scrolling helm-gitlab gitlab zoom-frm zenburn-theme yaml-mode web-mode web-beautify use-package toml-mode tide switch-window swiper smartparens scss-mode sass-mode request-deferred rainbow-delimiters python pretty-symbols powerline org omnisharp multiple-cursors markdown-mode magit lacarte keychain-environment key-chord json-mode js2-mode jinja2-mode iy-go-to-char hydra helm-themes helm-swoop helm-projectile helm-ag haskell-mode gh-md expand-region elpy electric-operator edit-server dokuwiki-mode dockerfile-mode docker dired-details dired+ cython-mode csv-mode company-tern company-go clojure-mode buffer-move auto-indent-mode auctex anaconda-mode ag ace-window)))
+    (ox-reveal diminish python-switch-quotes python-docstring csharp-mode org-clock-csv highlight-symbol amx git-timemachine company-terraform terraform-mode smooth-scrolling helm-gitlab gitlab zoom-frm zenburn-theme yaml-mode web-mode web-beautify use-package toml-mode tide switch-window swiper smartparens scss-mode sass-mode request-deferred rainbow-delimiters python pretty-symbols powerline org omnisharp multiple-cursors markdown-mode magit lacarte keychain-environment key-chord json-mode js2-mode jinja2-mode iy-go-to-char hydra helm-themes helm-swoop helm-projectile helm-ag haskell-mode gh-md expand-region elpy electric-operator edit-server dokuwiki-mode dockerfile-mode docker dired-details dired+ cython-mode csv-mode company-tern company-go clojure-mode buffer-move auto-indent-mode auctex ag ace-window)))
  '(pretty-symbol-categories (lambda relational))
  '(pretty-symbol-patterns
    (quote

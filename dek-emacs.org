@@ -71,7 +71,10 @@ emacs doesn't look to weird when starting.
   (eval-when-compile
     (require 'use-package))
   (use-package use-package-chords
+    :ensure t
     :config (key-chord-mode 1))
+  (use-package diminish
+    :ensure t)
   (require 'diminish)                ;; if you use :diminish
   (diminish 'flyspell-mode)
   (diminish 'hs-minor-mode)
@@ -1001,6 +1004,8 @@ Use automatic indentation
           '( c-basic-offset lisp-body-indent sgml-basic-offset))
     (add-to-list 'auto-indent-disabled-modes-list 'yaml-mode)
     (add-to-list 'auto-indent-disabled-modes-list 'go-mode)
+    (add-to-list 'auto-indent-disabled-modes-list 'python-mode)
+    (add-to-list 'auto-indent-disabled-modes-list 'csharp-mode)
     )
 #+END_SRC
 
@@ -1280,6 +1285,8 @@ Use mutt email client
 Setup a whole bunch of stuff for org mode
 #+BEGIN_SRC emacs-lisp
   (message "loading org mode configurations ...")
+  (use-package ox-reveal
+    :ensure t)
   (setq org-startup-folded t)
   (setq org-directory  "~/org")
   (setq org-src-fontify-natively t)
@@ -1330,7 +1337,7 @@ Setup a whole bunch of stuff for org mode
   ;; (if (equal user-login-name "dek")
   ;;     (load-file "~/bin/org-agenda/org-agenda-export.el")
   ;;   (message "dek is not the user ... external mashine ... org-agenda-export not loaded"))
-  (setq org-agenda-start-day "-7d")
+  (setq org-agenda-start-day "-300d")
 
   ;; ORG-remember Mode
                                           ;(org-remember-insinuate)  ;this apperantly doesn't work: so:
@@ -1592,22 +1599,6 @@ Load elpy python programming environment
     )
 #+END_SRC
 
-*** Anaconda mode
-# Use anaconda mode as an alternative to elpy
-# #+BEGIN_SRC emacs-lisp
-#     (message "loading python environment (anaconda)...")
-#     (use-package anaconda-mode
-#       :commands anaconda-mode
-#       :diminish anaconda-mode)
-
-#   (use-package company-anaconda
-#     :init
-#     (eval-after-load "company"
-#       '(add-to-list 'company-backends 'company-anaconda)))
-
-#   (add-hook 'python-mode-hook 'anaconda-mode)
-# #+END_SRC
-
 *** Custom commands
 Load custom commands for python buffers
 #+BEGIN_SRC emacs-lisp
@@ -1730,7 +1721,8 @@ Load custom commands for python buffers
     (setenv "WORKON_HOME" "/home/dek/anaconda/envs")
     (setq-local auto-indent-kill-line-at-eol nil)
     (setq-local auto-indent-on-yank-or-paste nil)
-    (bind-key "C-M-<return>" 'hs-toggle-hiding python-mode-map)
+    ;; (bind-key "C-M-<return>" 'hs-toggle-hiding python-mode-map)
+    ;; (bind-key "RET" 'newline-and-indent python-mode-map)
     (bind-key "RET" 'newline-and-indent python-mode-map)
     (bind-key "#" 'dek-python-crunch python-mode-map)
     (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
@@ -1745,6 +1737,7 @@ Load custom commands for python buffers
     (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
     (message "turning autocomplete off")
     (auto-complete-mode 0)
+    (semantic-mode nil)
     )
 
 
@@ -1922,11 +1915,14 @@ Use anaconda if available
 
 ** C and C++
 #+BEGIN_SRC emacs-lisp
-  (defun my-turn-on-auto-newline ()
-    (c-toggle-auto-newline 1))
-  (add-hook 'c-mode-common-hook 'my-turn-on-auto-newline)
+  (setq c-basic-offset 4)
 
-  (setq c-default-style "linux")
+  (defun dek-c-mode-common-hook ()
+    (c-toggle-auto-newline 1)
+    (setq c-basic-offset 4)
+    (c-set-offset 'substatement-open 0))
+  (add-hook 'c-mode-common-hook 'dek-c-mode-common-hook)
+
   (setq-default c-basic-offset 4)
   (setq c-indent-level 4)
   (setq-default indent-tabs-mode nil)
@@ -1945,6 +1941,7 @@ Use anaconda if available
                (setq c-basic-offset 4)
                (setq c-indent-level 4)
                (setq indent-tabs-mode nil)
+               (setq-default c-basic-offset 4)
                (auto-indent-mode -1)
                ))
 
@@ -1954,14 +1951,25 @@ Use anaconda if available
 #+END_SRC
 
 ** c#
+#+BEGIN_SRC emacs-lisp
+  (use-package csharp-mode
+    :commands csharp-mode
+    :init
+    (defun dek-csharp-mode-fn ()
+      "function that runs when csharp-mode is initialized for a buffer."
+      (setq default-tab-width 4)
+      (setq c-basic-offset 4)
+      (setq-default c-basic-offset 4)
+      (message "asdl")
+      )
+    (add-hook  'csharp-mode-hook 'dek-csharp-mode-fn))
+#+END_SRC
 
 #+BEGIN_SRC emacs-lisp
   (use-package omnisharp
     :commands omnisharp-mode
     :init
-    (setq c-basic-offset 4)
     (add-hook 'csharp-mode-hook 'omnisharp-mode)
-    (setq omnisharp-server-executable-path "~/Documents/Code/omnisharp-server/OmniSharp/bin/Debug/OmniSharp.exe")
     :config
     (eval-after-load 'company
       '(add-to-list 'company-backends 'company-omnisharp)))
@@ -2113,13 +2121,6 @@ Incompatible with power line so we can't use this
   (add-to-list 'auto-mode-alist '("\\.[Cc][Ss][Vv]\\'" . csv-mode))
   (autoload 'csv-mode "csv-mode"
     "Major mode for editing comma-separated value files." t)
-#+END_SRC
-
-** Modelica
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path (expand-file-name "site-lisp/modelica" user-emacs-directory))
-  (autoload 'modelica-mode "modelica-mode" "Modelica Editing Mode" t)
-  (setq auto-mode-alist (cons '("\.mop?$" . modelica-mode) auto-mode-alist))
 #+END_SRC
 
 ** Matlab
