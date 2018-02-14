@@ -1603,143 +1603,70 @@ Load elpy python programming environment
 Load custom commands for python buffers
 #+BEGIN_SRC emacs-lisp
   (defun my-set-python-compile-command ()
-      "Set python compile command."
-      (set (make-local-variable 'compile-command)
-           (concat "python " (file-name-base buffer-file-name) ".py")))
+    "Set python compile command."
+    (set (make-local-variable 'compile-command)
+         (concat "python " (file-name-base buffer-file-name) ".py")))
 
-    (defun dek-python-add-breakpoint ()
-      (interactive)
-      (let (pdb-regexp)
-        (setq pdb-regexp "^\\s-*\\(import \\(ip\\|pu\\|p\\)db; ?\\)?\\(ip\\|pu\\|p\\)db.set_trace()")
-        ;; (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
-        (if (string-match pdb-regexp (thing-at-point 'line))
-            (kill-whole-line)
-          (forward-line -1)
-          (end-of-line)
-          (newline-and-indent)
-          ;; (insert "import ipdb; ipdb.set_trace()")
-          ;; (insert "import pudb; pudb.set_trace()")
-          (insert "import pdb; pdb.set_trace()  # noqa: E702")
-          (highlight-lines-matching-regexp pdb-regexp)
-          )))
+  (defun dek-python-add-breakpoint ()
+    (interactive)
+    (let (pdb-regexp)
+      (setq pdb-regexp "^\\s-*\\(import \\(ip\\|pu\\|p\\)db; ?\\)?\\(ip\\|pu\\|p\\)db.set_trace()")
+      ;; (setq pdb-regexp "^\\s-*\\(import ipdb; ?\\)?ipdb.set_trace()")
+      (if (string-match pdb-regexp (thing-at-point 'line))
+          (kill-whole-line)
+        (forward-line -1)
+        (end-of-line)
+        (newline-and-indent)
+        ;; (insert "import ipdb; ipdb.set_trace()")
+        ;; (insert "import pudb; pudb.set_trace()")
+        (insert "import pdb; pdb.set_trace()  # noqa: E702")
+        (highlight-lines-matching-regexp pdb-regexp)
+        )))
 
-    (defun dek-python-find-all-breakpoints ()
-      (interactive)
-      (let (pdb-regexp point)
-        (setq pdb-regexp "^\\s-*\\(import \\(ip\\|pu\\|p\\)db; ?\\)?\\(ip\\|pu\\|p\\)db.set_trace()$")
-        (occur pdb-regexp)
-        ))
+  (defun dek-python-find-all-breakpoints ()
+    (interactive)
+    (let (pdb-regexp point)
+      (setq pdb-regexp "^\\s-*\\(import \\(ip\\|pu\\|p\\)db; ?\\)?\\(ip\\|pu\\|p\\)db.set_trace()$")
+      (occur pdb-regexp)
+      ))
 
-    (defun dek-python-crunch ()
-      "Comment region if region is active, have 2 spaces for inline comments."
-      (interactive)
-      (if (region-active-p)
-          (comment-region (point) (mark))
-        (when (and (looking-at "$") (not (looking-back "^\\|\\([[:space:]]\\{2\\}\\)")))
-          (just-one-space 2))
-        (insert "#")))
+  (defun dek-python-crunch ()
+    "Comment region if region is active, have 2 spaces for inline comments."
+    (interactive)
+    (if (region-active-p)
+        (comment-region (point) (mark))
+      (when (and (looking-at "$") (not (looking-back "^\\|\\([[:space:]]\\{2\\}\\)")))
+        (just-one-space 2))
+      (insert "#")))
 
-    (defun dek-browse-code-python ()
-      "Browse code with helm swoop (classes and functions)"
-      (interactive)
-      (helm-swoop :$query "\\(class[[:space:]].*\\)\\|\\(def[[:space:]].*\\)"))
+  (defun dek-browse-code-python ()
+    "Browse code with helm swoop (classes and functions)"
+    (interactive)
+    (helm-swoop :$query "\\(class[[:space:]].*\\)\\|\\(def[[:space:]].*\\)"))
 
-    (defun dek-python-nav-end-of-defun (s)
-      (python-nav-end-of-defun)
-      (previous-line)
-      (end-of-line)
-      )
-
-    (defun dek-python-hs-adjust-block-beginning (p)
-      (save-excursion
-        (goto-char p)
-        (or
-         (re-search-forward ":$" (+ p 1000) t)
-         p)
-        ))
-    (defun hs-hide-leafs-recursive (minp maxp)
-      "Hide blocks below point that do not contain further blocks
-        in region (MINP MAXP)."
-      (when (hs-find-block-beginning)
-        (setq minp (1+ (point)))
-        (funcall hs-forward-sexp-func 1)
-        (setq maxp (1- (point))))
-      (unless hs-allow-nesting
-        (hs-discard-overlays minp maxp))
-      (goto-char minp)
-      (let ((leaf t))
-        (while (progn
-                 (forward-comment (buffer-size))
-                 (and (< (point) maxp)
-                      (re-search-forward hs-block-start-regexp maxp t)))
-          (setq pos (match-beginning hs-block-start-mdata-select))
-          (if (hs-hide-leafs-recursive minp maxp)
-              (save-excursion
-                (goto-char pos)
-                (hs-hide-block-at-point t)))
-          (setq leaf nil))
-        (goto-char maxp)
-        leaf))
-
-    (defun hs-hide-leafs ()
-      "Hide all blocks in the buffer that do not contain subordinate
-        blocks.  The hook `hs-hide-hook' is run; see `run-hooks'."
-      (interactive)
-      (hs-life-goes-on
-       (save-excursion
-         (message "Hiding blocks ...")
-         (save-excursion
-           (goto-char (point-min))
-           (hs-hide-leafs-recursive (point-min) (point-max)))
-         (message "Hiding blocks ... done"))
-       (run-hooks 'hs-hide-hook)))
-
-    (defun dek-python-hs-hook ()
-      (setq hs-special-modes-alist
-            '(
-              (python-mode "^\\s-*\\(?:def\\|class\\)\\>" "" "#"
-                           dek-python-nav-end-of-defun
-                           nil)
-              (c-mode "{" "}" "/[*/]" nil nil)
-              (c++-mode "{" "}" "/[*/]" nil nil)
-              (bibtex-mode
-               ("@\\S(*\\(\\s(\\)" 1))
-              (java-mode "{" "}" "/[*/]" nil nil)
-              (js-mode "{" "}" "/[*/]" nil)
-              )
-            )
-      (setq hs-block-end-regexp "")
-      (hs-minor-mode 1)
-      ;; (hs-show-all)
-      ;; (message "all hidden")
-      )
+  (defun dek-python-nav-end-of-defun (s)
+    (python-nav-end-of-defun)
+    (previous-line)
+    (end-of-line)
+    )
 
   (defun dek-python-hook ()
     ;; (flycheck-mode 1)
-    (auto-indent-mode -1)
     (setq python-shell-interpreter "ipython3" python-shell-interpreter-args "--simple-prompt --pprint")
     (setenv "WORKON_HOME" "/home/dek/anaconda/envs")
-    (setq-local auto-indent-kill-line-at-eol nil)
-    (setq-local auto-indent-on-yank-or-paste nil)
-    ;; (bind-key "C-M-<return>" 'hs-toggle-hiding python-mode-map)
-    ;; (bind-key "RET" 'newline-and-indent python-mode-map)
-    (bind-key "RET" 'newline-and-indent python-mode-map)
     (bind-key "#" 'dek-python-crunch python-mode-map)
     (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
     (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
     (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
+    (bind-key "RET" 'newline-and-indent python-mode-map)
     (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
     (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
     (setq-local paragraph-separate "\\([  ]*$\\)\\|\\( *[A-Z]\\w*:$\\)")
     (setq-local paragraph-start "\\(\\s-*$\\)\\|\\( *[A-Z]\\w*:$\\)\\|\\( *\\(\\w\\|[_*-]\\)+\\( ([^()])\\)?:\\( [^ ].*\\)?$\\)")
     (rainbow-delimiters-mode 1)
     ;; Do this for numpy style docstring filling
-    (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
-    (message "turning autocomplete off")
-    (auto-complete-mode 0)
-    (semantic-mode nil)
+    ;; (setq-local paragraph-separate "\\([        \f]*$\\)\\|\\(.* : .*$\\)\\|\\(.*-+$\\)")
     )
-
 
   (defun dek-python-imenu-hook ()
     "Hook for creating imenu index faster"
@@ -1749,9 +1676,8 @@ Load custom commands for python buffers
 
 Add hooks to python mode
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'python-mode-hook 'dek-python-hook)
-  (add-hook 'python-mode-hook 'dek-python-hs-hook)
-  (add-hook 'python-mode-hook 'dek-python-imenu-hook)
+  ;; (add-hook 'python-mode-hook 'dek-python-hook)
+  ;; (add-hook 'python-mode-hook 'dek-python-imenu-hook)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
