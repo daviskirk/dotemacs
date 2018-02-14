@@ -882,6 +882,11 @@ Save recent files every 10 minutes and a maximum of 100 files
 
 * Formatting and indentation
 ** Whitespace handling
+Indent using spaces and not tabs
+#+BEGIN_SRC emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+END_SRC
+
 Use smart-operator to put spaces around operators when we neet them.
 
 #+BEGIN_SRC emacs-lisp
@@ -995,18 +1000,21 @@ Sentences do not need double spaces to end. Period.
 #+END_SRC
 
 ** Indentation
-Use automatic indentation
+Use automatic indentation.  (This mode has to be disabled for now as it will break elpy)
+
 #+BEGIN_SRC emacs-lisp
-  (use-package auto-indent-mode
-    :config
-    (auto-indent-global-mode)
-    (setq auto-indent-known-indent-level-variables
-          '( c-basic-offset lisp-body-indent sgml-basic-offset))
-    (add-to-list 'auto-indent-disabled-modes-list 'yaml-mode)
-    (add-to-list 'auto-indent-disabled-modes-list 'go-mode)
-    (add-to-list 'auto-indent-disabled-modes-list 'python-mode)
-    (add-to-list 'auto-indent-disabled-modes-list 'csharp-mode)
-    )
+  ;; (use-package auto-indent-mode
+  ;;   :ensure t
+  ;;   :config
+  ;;   ;; (auto-indent-global-mode)
+  ;;   (setq auto-indent-known-indent-level-variables
+  ;;         '( c-basic-offset lisp-body-indent sgml-basic-offset))
+  ;;   )
+  ;; (add-to-list 'auto-indent-disabled-modes-list 'yaml-mode)
+  ;; (add-to-list 'auto-indent-disabled-modes-list 'go-mode)
+  ;; (add-to-list 'auto-indent-disabled-modes-list 'python-mode)
+  ;; (add-to-list 'auto-indent-disabled-modes-list 'csharp-mode)
+
 #+END_SRC
 
 ** Comments
@@ -1654,6 +1662,7 @@ Load custom commands for python buffers
     ;; (flycheck-mode 1)
     (setq python-shell-interpreter "ipython3" python-shell-interpreter-args "--simple-prompt --pprint")
     (setenv "WORKON_HOME" "/home/dek/anaconda/envs")
+    (setq python-indent-offset 4)
     (bind-key "#" 'dek-python-crunch python-mode-map)
     (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
     (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
