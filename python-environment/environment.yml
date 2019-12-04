@@ -1,6 +1,7 @@
 name: emacs
 dependencies:
   - python=3.6
+  - pip
   - ipython
   - numpy
   - pandas
@@ -11,8 +12,17 @@ dependencies:
   - psycopg2
   - flask
   - flake8
+  - click
+  - mypy
+  - networkx
+  - plotly
+  - jinja2
+  - requests
+  - wrapt
   - pip:
     - nameko
+    - nameko-sqlalchemy
+    - apache-libcloud
     - jedi
     - rope
     - importmagic
@@ -20,3 +30,10 @@ dependencies:
     - autopep8
     - mypy
     - flake8-docstrings
+    - apispec
+    - marshmallow
+    - marshmallow-sqlalchemy
+    - cerberus
+    - sqlalchemy-utils
+    - cachetools
+    - pendulum

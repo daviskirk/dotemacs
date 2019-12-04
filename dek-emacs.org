@@ -1282,10 +1282,10 @@ Use mutt email client
   (message "loading programming modes...")
   (add-hook 'prog-mode-hook
             (lambda ()
-              (flyspell-prog-mode)
-              (rainbow-delimiters-mode 1)
-              (set-face-attribute 'flyspell-incorrect nil :foreground "#ac736f" :weight 'bold)
-              (set-face-attribute 'flyspell-duplicate nil :foreground "#8c836f" :underline t)))
+              ;;(flyspell-prog-mode)
+              ;;(set-face-attribute 'flyspell-incorrect nil :foreground "#ac736f" :weight 'bold)
+              ;;(set-face-attribute 'flyspell-duplicate nil :foreground "#8c836f" :underline t)
+              (rainbow-delimiters-mode 1)))
 #+END_SRC
 
 ** Markup Languages
@@ -1306,7 +1306,6 @@ Setup a whole bunch of stuff for org mode
             #'(lambda ()
                 (defvar yas/key-syntaxes (list "!_." "w" "w_.\\" "^ "))
                 (auto-fill-mode 0)
-                (auto-indent-mode -1)
                 (define-key org-mode-map (kbd "C-<tab>") 'other-window)
                 ))
 
@@ -1387,7 +1386,7 @@ Setup a whole bunch of stuff for org mode
    'org-babel-load-languages
    '((python . t)
      (plantuml . t)
-     (sh . t)
+     (shell . t)
      (dot . t)))
 
   (add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))
@@ -1432,7 +1431,8 @@ Add [[https://github.com/yjwen/org-reveal][org reveal]] for presentations in org
 For html export we like to have everything in nice bootstrap style.
 - *WARNING*: When using reveal.js set this to nil otherwise stuff will look weird!
 #+BEGIN_SRC emacs-lisp
-  (setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css\"><script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js\"></script><body style=\"margin-left:15%;margin-right:15%;\">")
+  (setq org-html-head-extra nil)
+  ;; (setq org-html-head-extra "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css\"><script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js\"></script><body style=\"margin-left:15%;margin-right:15%;\">")
 #+END_SRC
 
 Fix weird error which will probably be fixed in next release
@@ -1468,7 +1468,14 @@ For some reason archiving also doesn't work because of deprecated packages and f
 *** markdown
 
 #+BEGIN_SRC emacs-lisp
-  (use-package markdown-mode)
+  (use-package markdown-mode
+    :ensure t
+    :mode (("README\\.md\\'" . gfm-mode)
+           ("\\.md\\'" . markdown-mode)
+           ("\\.markdown\\'" . markdown-mode))
+    :init (setq markdown-command "multimarkdown")
+  )
+
   (use-package gh-md
     :defer t
     :config
@@ -1480,7 +1487,6 @@ For some reason archiving also doesn't work because of deprecated packages and f
 #+BEGIN_SRC emacs-lisp
   (add-hook 'rst-mode-hook '(lambda ()
                               (flycheck-mode 1)
-                              (auto-indent-mode -1)
                               (setq-local auto-indent-kill-line-at-eol nil)
                               (setq-local auto-indent-on-yank-or-paste nil)
                               (define-key rst-mode-map (kbd "RET") 'newline-and-indent)
@@ -1563,10 +1569,22 @@ Parsing, checking and understanding javascript.
 #+END_SRC
 
 
+** Terraform
+#+BEGIN_SRC emacs-lisp
+  (use-package terraform-mode
+    :commands terraform-mode
+    :config
+    (use-package company-terraform
+      :config
+      (company-terraform-init)
+      )
+  )
+#+END_SRC
 ** Typescript
 #+BEGIN_SRC emacs-lisp
   (use-package tide
     :commands typescript-mode
+    :bind (("C-x C-n" . next-error))
     :init
     (defun dek-typescript-hook ()
       (tide-setup)
@@ -1667,7 +1685,7 @@ Load custom commands for python buffers
     (bind-key "<f12>" 'dek-python-add-breakpoint python-mode-map)
     (bind-key "S-<f12>" 'dek-python-find-all-breakpoints python-mode-map)
     (bind-key "C-c t r" 'test-case-run-or-run-again python-mode-map)
-    (bind-key "RET" 'newline-and-indent python-mode-map)
+    ;; (bind-key "RET" 'newline-and-indent python-mode-map)
     (bind-key "C-c b" 'dek-browse-code-python python-mode-map)
     (bind-key "C-c C-b" 'dek-browse-code-python python-mode-map)
     (setq-local paragraph-separate "\\([  ]*$\\)\\|\\( *[A-Z]\\w*:$\\)")
@@ -1685,8 +1703,8 @@ Load custom commands for python buffers
 
 Add hooks to python mode
 #+BEGIN_SRC emacs-lisp
-  ;; (add-hook 'python-mode-hook 'dek-python-hook)
-  ;; (add-hook 'python-mode-hook 'dek-python-imenu-hook)
+  (add-hook 'python-mode-hook 'dek-python-hook)
+  (add-hook 'python-mode-hook 'dek-python-imenu-hook)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -1761,93 +1779,6 @@ Use anaconda if available
            ("\\.j2.html$" . jinja2-mode)))
 #+END_SRC
 
-** Latex
-#+BEGIN_SRC emacs-lisp
-  (use-package auctex
-    :commands (LaTeX-mode TeX-latex-mode)
-    :config
-    (defun flymake-get-tex-args (file-name)
-      (list "pdflatex" (list "-file-line-error" "-draftmode" "-interaction=nonstopmode" file-name)))
-
-                                          ;(add-hook 'LaTeX-mode-hook 'auto-fill-mode)
-    (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-                                          ;(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-    (add-hook 'LaTeX-mode-hook
-              '(lambda ()
-                 (modify-syntax-entry ?\$ "$")
-                 (tex-pdf-mode 1)
-                 (auto-fill-mode t)
-                 (setq TeX-auto-save t)
-                 (setq TeX-parse-self t)
-                 (setq ispell-enable-tex-parser t)
-                 (flyspell-mode 1)
-                 (LaTeX-math-mode t)
-                 (local-set-key [tab] 'yas/expand)
-                 ;; (load-library "latex-commands")
-                 (define-key LaTeX-mode-map (kbd "M-q") 'fill-sentence)
-                 (define-key LaTeX-mode-map (kbd "<tab>") 'LaTeX-indent-line)
-                 ;; (load-library (expand-file-name "dek-lisp/latex-snippets" user-emacs-directory))
-                 ;; (load-library (expand-file-name "dek-lisp/latex-math-snippets" user-emacs-directory))
-                 (key-chord-define LaTeX-mode-map ". "  ".\C-j")
-                 (rainbow-delimiters-mode 1)
-                 ))
-
-    ;; (add-hook 'TeX-mode-hook
-    ;;       '(lambda ()
-    ;;    (define-key TeX-mode-map (kbd "\C-c\C-c")
-    ;;      (lambda ()
-    ;;    (interactive)
-    ;;    (save-buffer)
-    ;;    (TeX-command-menu "LaTeX")))
-    ;;    (define-key TeX-mode-map (kbd "<f12>")
-    ;;      (lambda ()
-    ;;    (interactive)
-    ;;    (TeX-view)
-    ;;    [return]))))
-
-    (defun fill-sentence ()
-      (interactive)
-      (save-excursion
-        (or (eq (point) (point-max)) (forward-char))
-        (forward-sentence -1)
-        (indent-relative t)
-        (let ((beg (point))
-              (ix (string-match "LaTeX" mode-name)))
-          (forward-sentence)
-          (if (and ix (equal "LaTeX" (substring mode-name ix)))
-              (LaTeX-fill-region-as-paragraph beg (point))
-            (fill-region-as-paragraph beg (point))))))
-
-    (defun end-fill-and-start-new-sentence ()
-      (interactive)
-      (fill-sentence)
-      (insert ".")
-      (reindent-then-newline-and-indent)
-      )
-
-    (setq LaTeX-math-abbrev-prefix "`")
-    (setq TeX-electric-escape nil)
-                                          ;(setq TeX-fold-auto t)
-    (setq TeX-newline-function (quote reindent-then-newline-and-indent))
-    (setq TeX-fold-env-spec-list
-          (quote
-           (
-            (2 ("frame")
-               ("[comment]" ("comment"))
-               ))))
-
-    )
-
-
-                                          ;(autoload 'whizzytex-mode "whizzytex"
-                                          ;"WhizzyTeX, a minor-mode WYSIWIG environment for LaTeX" t)
-                                          ;(setq-default whizzy-viewers '(("-pdf" "evince %s" )("-dvi" "evince %s")("-ps" "gv") ))
-
-
-#+END_SRC
-
-
 ** C and C++
 #+BEGIN_SRC emacs-lisp
   (setq c-basic-offset 4)
@@ -1877,7 +1808,6 @@ Use anaconda if available
                (setq c-indent-level 4)
                (setq indent-tabs-mode nil)
                (setq-default c-basic-offset 4)
-               (auto-indent-mode -1)
                ))
 
   ;(define-key c++-mode-map "<f5>" 'compile)
@@ -1905,10 +1835,12 @@ Use anaconda if available
     :commands omnisharp-mode
     :init
     (add-hook 'csharp-mode-hook 'omnisharp-mode)
+    (setq omnisharp-server-executable-path "~/bin/omnisharp/OmniSharp.exe")
     :config
     (eval-after-load 'company
-      '(add-to-list 'company-backends 'company-omnisharp)))
-
+      '(add-to-list 'company-backends 'company-omnisharp))
+    (bind-key "M-." 'omnisharp-go-to-definition omnisharp-mode-map)
+    )
 #+END_SRC
 
 ** GOLANG
@@ -1917,9 +1849,6 @@ For development we want to automatically format code when saved and initialize g
 #+BEGIN_SRC emacs-lisp
   (use-package go-mode
     :commands go-mode
-    :bind (
-           ("M-." . godef-jump)
-           )
     :init
 
     (defun go-mode-setup ()
@@ -1952,52 +1881,6 @@ Enable autocomplete for go
     (add-hook 'go-mode-hook 'dek-only-use-go-company-in-go)
     )
 #+END_SRC
-
-** JAVA
-#+BEGIN_SRC emacs-lisp
-
-  ;; (defun java-run ()
-  ;;   "thisandthat."
-  ;;   (interactive)
-  ;;   (compile (concat "java " (file-name-sans-extension buffer-file-name)))
-  ;;   )
-
-  ;(define-key java-mode-map "\C-c\C-v" 'java-run)
-
-  ;; (defun java-open-brace ()
-  ;;   "thisandthat."
-  ;;   (interactive)
-  ;;   (insert "{")
-  ;;   (newline-and-indent)
-  ;;     )
-
-  ;; (setq auto-mode-alist
-  ;;       (append '(("\\.java$" . java-mode)) auto-mode-alist))
-
-
-  ;; (add-hook 'java-mode-hook
-  ;;           (lambda ()
-  ;;      (define-key java-mode-map "\C-c\C-c" 'compile)
-  ;;      (define-key java-mode-map (kbd "RET") 'newline-and-indent)
-  ;;      (set (make-local-variable 'compile-command)
-  ;;       (concat "javac "
-  ;;           (buffer-file-name)
-  ;;           ;" && java "
-  ;;           ;(file-name-sans-extension buffer-file-name)
-  ;;           ))
-  ;;      (require 'java-docs)
-  ;;      ; replace docs lookup funktion with better one
-  ;;      (load-library "java-docs-dek-plus")
-  ;;      (java-docs-clear)
-  ;;      (java-docs "/usr/share/doc/openjdk-6-jdk/api")
-  ;;      (define-key java-mode-map "\C-cd" 'java-docs-lookup)
-  ;;      (define-key java-mode-map "{" 'java-open-brace)
-  ;;      (c-toggle-auto-hungry-state 1)
-  ;;      (c-toggle-auto-newline 1)
-  ;;      ))
-
-#+END_SRC
-
 ** Fortran
 #+BEGIN_SRC emacs-lisp
   ;; (add-to-list 'auto-mode-alist '("\\.f\\'" . fortran-mode))
@@ -2015,41 +1898,6 @@ Enable autocomplete for go
 #+END_SRC
 
 
-** Clojure
-#+BEGIN_SRC emacs-lisp
-  (use-package clojure-mode
-    :commands clojure-mode
-    :config
-    (add-hook 'clojure-mode-hook 'paredit-mode)
-    (use-package cider
-      :config
-      (defun my/cider-mode-hooks ()
-        "Clojure specific setup code that should only be run when we
-    have a CIDER REPL connection"
-        (cider-turn-on-eldoc-mode))
-
-      (add-hook 'cider-mode-hook
-                'my/cider-mode-hooks)
-
-      (defun my/cider-repl-mode-hooks ()
-        (my/turn-on 'paredit
-                    'rainbow-delimiters
-                    'highlight-parentheses))
-
-      (add-hook 'cider-repl-mode-hook
-                'my/cider-repl-mode-hooks)
-
-      )
-    )
-#+END_SRC
-
-** Haskell
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-#+END_SRC
-
 ** CSV-mode
 Incompatible with power line so we can't use this
 #+BEGIN_SRC emacs-lisp
@@ -2058,130 +1906,12 @@ Incompatible with power line so we can't use this
     "Major mode for editing comma-separated value files." t)
 #+END_SRC
 
-** Matlab
+** Rest client
+
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path (expand-file-name "site-lisp/matlab" user-emacs-directory))
-  (require 'matlab-load)
-
-  (setq matlab-shell-command-switches (quote ("-nodesktop" "-nosplash")))
-
-  ;; Enable CEDET feature support for MATLAB code. (Optional)
-                                          ; (matlab-cedet-setup)
-  ;; (message "matlab-cedet loaded")
-  (if (equal user-login-name "davis")
-      (setq matlab-shell-command "/pds/opt/matlab/bin/matlab")
-    (setq matlab-shell-command "~/opt/matlab/bin/matlab"))
-
-  (defun dek-matlab-switch-to-shell ()
-    "Switch to inferior Python process buffer."
-    (interactive)
-    (if (get-buffer "*MATLAB*")
-        (pop-to-buffer "*MATLAB*" t)
-      (matlab-shell)))
-
-  (defun dek-matlab-set-ssh (host)
-    "Set matlab binary to matlab binary on HOST over ssh."
-    (interactive "sHost: ")
-    (shell-command (concat "echo 'ssh -X davis@" host " matlab' > ~/bin/matlab_ssh"))
-    (setq matlab-shell-command "~/bin/matlab_ssh")
-    (message (concat "AIA Matlab host set to " host))
-    )
-
-  (defun dek-matlab-set-breakpoint ()
-    "Set breakpoint in matlab."
-    (interactive)
-    (let (line-number m-file-name command-string current-mfile-buffer)
-      (setq line-number (number-to-string (line-number-at-pos)))
-      (setq m-file-name (file-name-sans-extension buffer-file-name))
-      (setq command-string (concat "dbstop in '" m-file-name "' at " line-number "\n"))
-      (setq current-mfile-buffer (buffer-name))
-      (matlab-show-matlab-shell-buffer)
-      (matlab-shell-send-string command-string)
-      (switch-to-buffer-other-window  current-mfile-buffer)
-      )
-    )
-
-  (defun dek-matlab-goto-error-line ()
-    "Get last error line, switch buffer and go to that line."
-    (interactive)
-    (let (errline original-pos)
-      (setq original-pos (point))
-      (search-backward-regexp "(line [0-9]*)")
-      (search-forward-regexp "[0-9]")
-      (setq errline (thing-at-point 'number))
-      (goto-char original-pos)
-      (other-window 1)
-      (goto-line errline)
-      ))
-
-  (defun dek-matlab-send-dbstep ()
-    "Send dbstep to matlab buffer."
-    (interactive)
-    (matlab-shell-send-string "dbstep\n")
-    )
-
-  (defun dek-matlab-send-dbcont ()
-    "Sends dbcont to matlab shell if you're in the matlab shell buffer."
-    (interactive)
-    (matlab-shell-send-string "dbcont\n")
-    )
-
-  (defun dek-clear-all-matlab ()
-    "Browse code with helm swoop (classes and functions)"
-    (interactive)
-    (matlab-shell-send-string "close all\nclear all\nclear classes\n")
-    )
-
-  (defun dek-browse-code-matlab ()
-    "Browse code with helm swoop (classes and functions)"
-    (interactive)
-    ;; (helm-swoop :$query "\\(function[[:space:]]+[^=]*=[[:space:]]*\\)\\|\\(classdef[[:space:]]+\\)")
-    (helm-imenu))
-
-
-  (add-hook 'matlab-shell-mode-hook
-            '(lambda ()
-               (define-key matlab-shell-mode-map (kbd "<f5>") 'dek-matlab-send-dbcont)
-               (define-key matlab-shell-mode-map (kbd "<f11>") 'dek-matlab-send-dbstep)
-               (define-key matlab-shell-mode-map (kbd "C-l") 'erase-buffer)
-               (define-key matlab-shell-mode-map (kbd "C-c <tab>") 'dek-matlab-goto-error-line)
-               (define-key matlab-shell-mode-map (kbd "<f6>") 'matlab-shell-close-figures)
-               (define-key matlab-shell-mode-map (kbd "<f7>") 'dek-clear-all-matlab)
-               (setq-local comint-input-ring-file-name "~/.matlab/R2014a/history.m")
-               ))
-
-
-  (add-hook 'matlab-mode-hook
-            '(lambda ()
-               (require 'matlab-expansions)
-               ;; (auto-complete-mode 1)
-               (define-key matlab-mode-map (kbd "<f12>") 'dek-matlab-set-breakpoint)
-               (key-chord-define matlab-mode-map ";;"  "\C-e;")
-               (setq matlab-imenu-generic-expression
-                     '((nil "^\\s-*\\(function *.*\\)" 1)
-                       (nil "^\\s-*\\(classdef *.*\\)" 1)))
-               (define-key matlab-mode-map (kbd "<f6>") 'matlab-shell-close-figures)
-               (define-key matlab-mode-map "\C-c\C-z" 'dek-matlab-switch-to-shell)
-               (define-key matlab-mode-map (kbd "C-c b") 'dek-browse-code-matlab)
-               (define-key matlab-mode-map (kbd "<f7>") 'dek-clear-all-matlab)
-               ))
-
-  (defun mfindent ()
-    (interactive)
-    (let (rectstart)
-      (re-search-forward "^function.*\n\\(%.*\n\\)*")
-      (setq rectstart (point))
-      (re-search-forward "\\(\\([[:space:]]+.*\\)?\n\\)*?end")
-      (if (y-or-n-p "Do it?")
-          (progn
-            (insert " ")
-            (replace-rectangle rectstart (point) "")))))
-  ;; (message "MATLAB ALL LOADED!!!")
-#+END_SRC
-
-** Haskell
-#+BEGIN_SRC emacs-lisp
-(use-package haskell-mode)
+  (use-package restclient
+      :commands restclient-mode
+      :mode (("\\.rest" . jinja2-mode)))
 #+END_SRC
 
 * Random stuff
@@ -2215,8 +1945,8 @@ Incompatible with power line so we can't use this
     "Switch to current directory by creating new window in tmux."
     (interactive)
     ;; (concat "echo " "'" (file-name-directory (buffer-file-name)) "' > ~/.ld" )
-    (concat "echo " "'" default-directory "' > ~/.ld" )
-    (shell-command (concat "guake -n " default-directory))
+    (shell-command (concat "echo " "'" default-directory "' > ~/.ld" ))
+    (shell-command (concat "guake --new-tab=" default-directory))
     (shell-command (concat "guake -r " (file-name-nondirectory
                                         (directory-file-name default-directory))))
     (shell-command "guake --show")
